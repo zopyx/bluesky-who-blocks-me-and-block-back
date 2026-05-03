@@ -20,30 +20,22 @@ You can optionally block all one-way blockers with a single command.
 
 ## Python implementation
 
-`who-blocks-me.py` — a self-contained script using `uv`.
-
-### Dependencies
-
-```bash
-uv pip install diskcache tqdm httpx
-```
-
-Or let `uv` handle it automatically via the inline script metadata.
+`who-blocks-me.py` — a self-contained script using `uv run`.
 
 ### Usage
 
 ```bash
 # Preview only (writes blocks.json)
-./who-blocks-me.py yourhandle.bsky.social your-app-password
+uv run who-blocks-me.py yourhandle.bsky.social your-app-password
 
 # Preview + block all one-way blockers back
-./who-blocks-me.py yourhandle.bsky.social your-app-password --block-back
+uv run who-blocks-me.py yourhandle.bsky.social your-app-password --block-back
 
 # Custom parallelism (default 4 concurrent block requests)
-./who-blocks-me.py yourhandle.bsky.social your-app-password --block-back --block-workers 8
+uv run who-blocks-me.py yourhandle.bsky.social your-app-password --block-back --block-workers 8
 
 # Verbose logging
-./who-blocks-me.py yourhandle.bsky.social your-app-password -v
+uv run who-blocks-me.py yourhandle.bsky.social your-app-password -v
 ```
 
 ### Output (`blocks.json`)
