@@ -14,6 +14,8 @@ const CLEARSKY_API: &str = "https://public.api.clearsky.services";
 const BSKY_PUBLIC: &str = "https://public.api.bsky.app";
 const BSKY_SOCIAL: &str = "https://bsky.social";
 const BLOCK_COLLECTION: &str = "app.bsky.graph.block";
+const LIST_COLLECTION: &str = "app.bsky.graph.list";
+const LIST_ITEM_COLLECTION: &str = "app.bsky.graph.listitem";
 const CACHE_FILE: &str = "cache.json";
 
 #[derive(Parser)]
@@ -27,6 +29,8 @@ struct Args {
     block_back: bool,
     #[arg(long, default_value_t = 4)]
     block_workers: usize,
+    #[arg(long)]
+    list: Option<String>,
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 }
@@ -397,6 +401,98 @@ async fn block_accounts(
     Ok(count)
 }
 
+async fn create_list(
+    client: &Client,
+    pds: &str,
+    token: &str,
+    my_did: &str,
+    name: &str,
+) -> Result<String> {
+    let body = serde_json::json!({
+        "repo": my_did,
+        "collection": LIST_COLLECTION,
+        "record": {
+            "$type": LIST_COLLECTION,
+            "purpose": "app.bsky.graph.defs#curatelist",
+            "name": name,
+            "createdAt": iso_now(),
+        }
+    });
+    let res = bluesky_api(client, pds, "com.atproto.repo.createRecord", "POST", &[], Some(body), Some(token)).await?;
+    let uri = res["uri"].as_str().context("createRecord did not return a URI for the list")?;
+    Ok(uri.to_string())
+}
+
+async fn add_to_list_batch(
+    client: &Client,
+    pds: &str,
+    token: &str,
+    my_did: &str,
+    list_uri: &str,
+    dids: &[String],
+) -> Result<usize> {
+    const BATCH_SIZE: usize = 200;
+    let mut total_added = 0;
+    let pb = ProgressBar::new(dids.len() as u64);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} {msg}")?
+            .progress_chars("#>-"),
+    );
+    pb.set_message("Adding to list");
+
+    for chunk in dids.chunks(BATCH_SIZE) {
+        let mut writes = Vec::new();
+        for did in chunk {
+            writes.push(serde_json::json!({
+                "$type": "com.atproto.repo.applyWrites#create",
+                "collection": LIST_ITEM_COLLECTION,
+                "value": {
+                    "$type": LIST_ITEM_COLLECTION,
+                    "subject": did,
+                    "list": list_uri,
+                    "createdAt": iso_now(),
+                }
+            }));
+        }
+        let body = serde_json::json!({
+            "repo": my_did,
+            "writes": writes,
+        });
+        match bluesky_api(client, pds, "com.atproto.repo.applyWrites", "POST", &[], Some(body), Some(token)).await {
+            Ok(_) => {
+                total_added += chunk.len();
+                pb.inc(chunk.len() as u64);
+            }
+            Err(e) => {
+                eprintln!("Batch add failed: {}, falling back to individual creates", e);
+                for did in chunk {
+                    let fallback = serde_json::json!({
+                        "repo": my_did,
+                        "collection": LIST_ITEM_COLLECTION,
+                        "record": {
+                            "$type": LIST_ITEM_COLLECTION,
+                            "subject": did,
+                            "list": list_uri,
+                            "createdAt": iso_now(),
+                        }
+                    });
+                    match bluesky_api(client, pds, "com.atproto.repo.createRecord", "POST", &[], Some(fallback), Some(token)).await {
+                        Ok(_) => {
+                            total_added += 1;
+                            pb.inc(1);
+                        }
+                        Err(e2) => eprintln!("Failed to add {} to list: {}", did, e2),
+                    }
+                }
+            }
+        }
+        tokio::time::sleep(tokio::time::Duration::from_millis(250)).await;
+    }
+    pb.finish_and_clear();
+    Ok(total_added)
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
@@ -458,6 +554,16 @@ async fn main() -> Result<()> {
         let to_block: Vec<String> = i_dont_block_them.iter().map(|r| r.did.clone()).collect();
         let blocked_now = block_accounts(&client, &pds, &token, &my_did, &to_block, args.block_workers).await?;
         eprintln!("Blocked back {} account(s).", blocked_now);
+    }
+
+    if let Some(list_name) = &args.list {
+        if !blockers.is_empty() {
+            let list_uri = create_list(&client, &pds, &token, &my_did, list_name).await?;
+            eprintln!("Created list: {}", list_uri);
+            let to_add: Vec<String> = blockers.iter().map(|(did, _)| did.clone()).collect();
+            let added_now = add_to_list_batch(&client, &pds, &token, &my_did, &list_uri, &to_add).await?;
+            eprintln!("Added {} account(s) to list.", added_now);
+        }
     }
 
     let output = Output {

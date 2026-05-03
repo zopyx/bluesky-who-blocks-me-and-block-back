@@ -34,6 +34,12 @@ uv run who-blocks-me.py yourhandle.bsky.social your-app-password --block-back
 # Custom parallelism (default 4 concurrent block requests)
 uv run who-blocks-me.py yourhandle.bsky.social your-app-password --block-back --block-workers 8
 
+# Create a moderation list and add all one-way blockers
+uv run who-blocks-me.py yourhandle.bsky.social your-app-password --list "People Blocking Me"
+
+# Block back AND create a moderation list
+uv run who-blocks-me.py yourhandle.bsky.social your-app-password --block-back --list "People Blocking Me"
+
 # Verbose logging
 uv run who-blocks-me.py yourhandle.bsky.social your-app-password -v
 ```
@@ -81,6 +87,12 @@ cargo build --release
 
 # Custom parallelism
 ./target/release/who-blocks-me yourhandle.bsky.social your-app-password --block-back --block-workers 8
+
+# Create a moderation list and add all one-way blockers
+./target/release/who-blocks-me yourhandle.bsky.social your-app-password --list "People Blocking Me"
+
+# Block back AND create a moderation list
+./target/release/who-blocks-me yourhandle.bsky.social your-app-password --block-back --list "People Blocking Me"
 
 # Verbose
 ./target/release/who-blocks-me yourhandle.bsky.social your-app-password -v

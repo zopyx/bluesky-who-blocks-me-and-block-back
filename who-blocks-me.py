@@ -32,6 +32,8 @@ CLEARSKY = "https://public.api.clearsky.services"
 BSKY_PUBLIC = "https://public.api.bsky.app"
 BSKY_SOCIAL = "https://bsky.social"
 BLOCK_COLLECTION = "app.bsky.graph.block"
+LIST_COLLECTION = "app.bsky.graph.list"
+LIST_ITEM_COLLECTION = "app.bsky.graph.listitem"
 CACHE = diskcache.Cache(str(Path.home() / ".cache" / "who-blocks-me"))
 
 
@@ -230,6 +232,80 @@ async def block_accounts(
     return sum(results)
 
 
+async def create_list(
+    client: httpx.AsyncClient, pds: str, token: str, my_did: str, name: str
+) -> str:
+    body = {
+        "repo": my_did,
+        "collection": LIST_COLLECTION,
+        "record": {
+            "$type": LIST_COLLECTION,
+            "purpose": "app.bsky.graph.defs#curatelist",
+            "name": name,
+            "createdAt": iso_now(),
+        },
+    }
+    data = await bluesky_api(client, pds, "com.atproto.repo.createRecord", method="POST", token=token, body=body)
+    uri = data.get("uri")
+    if not uri:
+        raise RuntimeError("createRecord did not return a URI for the list")
+    return uri
+
+
+async def add_to_list_batch(
+    client: httpx.AsyncClient, pds: str, token: str, my_did: str, list_uri: str, dids: list[str]
+) -> int:
+    BATCH_SIZE = 200
+    total_added = 0
+    batches = [dids[i : i + BATCH_SIZE] for i in range(0, len(dids), BATCH_SIZE)]
+    pbar = tqdm(total=len(dids), desc="Adding to list", unit="account", file=sys.stderr)
+    for batch in batches:
+        writes = []
+        for did in batch:
+            writes.append({
+                "$type": "com.atproto.repo.applyWrites#create",
+                "collection": LIST_ITEM_COLLECTION,
+                "value": {
+                    "$type": LIST_ITEM_COLLECTION,
+                    "subject": did,
+                    "list": list_uri,
+                    "createdAt": iso_now(),
+                },
+            })
+        body = {"repo": my_did, "writes": writes}
+        try:
+            await bluesky_api(client, pds, "com.atproto.repo.applyWrites", method="POST", token=token, body=body)
+            total_added += len(batch)
+            pbar.update(len(batch))
+        except RuntimeError as exc:
+            logging.warning("Batch add failed: %s", exc)
+            # fall back to individual creates for this batch
+            for did in batch:
+                try:
+                    await bluesky_api(
+                        client, pds, "com.atproto.repo.createRecord",
+                        method="POST",
+                        token=token,
+                        body={
+                            "repo": my_did,
+                            "collection": LIST_ITEM_COLLECTION,
+                            "record": {
+                                "$type": LIST_ITEM_COLLECTION,
+                                "subject": did,
+                                "list": list_uri,
+                                "createdAt": iso_now(),
+                            },
+                        },
+                    )
+                    total_added += 1
+                    pbar.update(1)
+                except RuntimeError as exc2:
+                    logging.warning("Failed to add %s to list: %s", did, exc2)
+        await asyncio.sleep(0.25)
+    pbar.close()
+    return total_added
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(
         description="List accounts blocking you, split by whether you block them back. "
@@ -241,6 +317,7 @@ async def main() -> int:
     parser.add_argument("-o", "--output", default="blocks.json", help="output JSON file")
     parser.add_argument("--block-back", action="store_true", help="block all one-way blockers in parallel")
     parser.add_argument("--block-workers", type=int, default=4, help="max concurrent block requests (default: 4)")
+    parser.add_argument("--list", dest="list_name", metavar="NAME", help="create a curation list with NAME and add all one-way blockers")
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose >= 2 else logging.INFO if args.verbose else logging.WARNING
@@ -287,6 +364,13 @@ async def main() -> int:
             to_block = [r["did"] for r in i_dont_block_them]
             blocked_now = await block_accounts(client, pds, token, my_did, to_block, args.block_workers)
             print(f"Blocked back {blocked_now} account(s).", file=sys.stderr)
+
+        if args.list_name and blockers:
+            list_uri = await create_list(client, pds, token, my_did, args.list_name)
+            print(f"Created list: {list_uri}", file=sys.stderr)
+            to_add = [did for did, _ in blockers]
+            added_now = await add_to_list_batch(client, pds, token, my_did, list_uri, to_add)
+            print(f"Added {added_now} account(s) to list.", file=sys.stderr)
 
     result = {
         "i_block_them": i_block_them,
