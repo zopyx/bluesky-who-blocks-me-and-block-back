@@ -232,6 +232,19 @@ async def block_accounts(
     return sum(results)
 
 
+async def find_list_by_name(
+    client: httpx.AsyncClient, my_did: str, name: str
+) -> str | None:
+    data = await bluesky_api(
+        client, BSKY_PUBLIC, "app.bsky.graph.getLists",
+        params={"actor": my_did, "limit": 100},
+    )
+    for lst in data.get("lists", []):
+        if lst.get("name") == name:
+            return lst.get("uri")
+    return None
+
+
 async def create_list(
     client: httpx.AsyncClient, pds: str, token: str, my_did: str, name: str
 ) -> str:
@@ -366,8 +379,12 @@ async def main() -> int:
             print(f"Blocked back {blocked_now} account(s).", file=sys.stderr)
 
         if args.list_name and blockers:
-            list_uri = await create_list(client, pds, token, my_did, args.list_name)
-            print(f"Created list: {list_uri}", file=sys.stderr)
+            list_uri = await find_list_by_name(client, my_did, args.list_name)
+            if list_uri:
+                print(f"Reusing existing list: {list_uri}", file=sys.stderr)
+            else:
+                list_uri = await create_list(client, pds, token, my_did, args.list_name)
+                print(f"Created list: {list_uri}", file=sys.stderr)
             to_add = [did for did, _ in blockers]
             added_now = await add_to_list_batch(client, pds, token, my_did, list_uri, to_add)
             print(f"Added {added_now} account(s) to list.", file=sys.stderr)
