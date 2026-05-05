@@ -375,7 +375,7 @@ async def main() -> int:
             print(f"List currently has {len(existing_dids)} member(s).", file=sys.stderr)
 
             if args.add_to_list:
-                to_add = [r["did"] for r in blocked if r["did"] not in existing_dids]
+                to_add = [r["did"] for r in blocked if r["did"] not in existing_dids and r.get("handle")]
                 if to_add:
                     logging.debug("Adding %d new accounts to moderation list in batches of 100", len(to_add))
                     added_now = await add_to_list_batch(client, pds, token, my_did, list_uri, to_add)

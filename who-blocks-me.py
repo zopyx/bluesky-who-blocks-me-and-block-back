@@ -374,7 +374,10 @@ async def main() -> int:
                 i_dont_block_them.append(record)
 
         if args.block_back and i_dont_block_them:
-            to_block = [r["did"] for r in i_dont_block_them]
+            to_block = [r["did"] for r in i_dont_block_them if r["handle"]]
+            skipped = len(i_dont_block_them) - len(to_block)
+            if skipped:
+                print(f"Skipping {skipped} account(s) with unresolved handles.", file=sys.stderr)
             blocked_now = await block_accounts(client, pds, token, my_did, to_block, args.block_workers)
             print(f"Blocked back {blocked_now} account(s).", file=sys.stderr)
 
