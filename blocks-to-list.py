@@ -107,7 +107,7 @@ async def bluesky_api(
     Raises RuntimeError on non-2xx with a truncated body preview.
     """
     url = f"{base}/xrpc/{nsid}"
-    headers = {"Accept": "application/json", "User-Agent": "blocks-to-list/1.0"}
+    headers = {"Accept": "application/json", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
     if method == "GET":
