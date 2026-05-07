@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 blocks.json
 cache.json
+
+# Rust build artifacts
+who-blocks-me-rs/target/
+block-and-list-rs/target/
+
