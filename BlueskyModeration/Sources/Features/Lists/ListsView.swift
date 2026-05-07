@@ -28,12 +28,19 @@ struct ListsView: View {
                     List {
                         if let activeAccount = accountStore.activeAccount {
                             Section {
-                                AccountSummaryCard(
-                                    account: activeAccount,
-                                    avatarURL: viewModel.activeProfile?.avatarURL
-                                )
-                                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                                    .listRowBackground(Color.clear)
+                                NavigationLink {
+                                    BlueskyProfileView(
+                                        member: activeAccountMember(activeAccount),
+                                        list: nil
+                                    )
+                                } label: {
+                                    AccountSummaryCard(
+                                        account: activeAccount,
+                                        avatarURL: viewModel.activeProfile?.avatarURL
+                                    )
+                                }
+                                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                                .listRowBackground(Color.clear)
                             }
                         }
 
@@ -108,6 +115,18 @@ struct ListsView: View {
             for: accountStore.activeAccount,
             appPassword: password,
             using: blueskyClient
+        )
+    }
+
+    private func activeAccountMember(_ account: AppAccount) -> BlueskyListMember {
+        BlueskyListMember(
+            recordURI: "account:\(account.id.uuidString)",
+            actor: BlueskyActor(
+                did: account.did ?? account.handle,
+                handle: account.handle,
+                displayName: account.displayName,
+                avatarURL: viewModel.activeProfile?.avatarURL
+            )
         )
     }
 }

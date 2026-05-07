@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BlueskyProfileView: View {
     let member: BlueskyListMember
-    let list: BlueskyList
+    let list: BlueskyList?
 
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
@@ -78,8 +78,10 @@ struct BlueskyProfileView: View {
                         }
                     }
 
-                    Label("Member of \(list.name)", systemImage: "person.2.badge.gearshape")
-                        .foregroundStyle(.secondary)
+                    if let list {
+                        Label("Member of \(list.name)", systemImage: "person.2.badge.gearshape")
+                            .foregroundStyle(.secondary)
+                    }
                 }
             } else if viewModel.isLoading {
                 Section {
