@@ -7,7 +7,8 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
             did: "did:plc:previewaccount",
             handle: handle,
             accessJWT: "preview-access",
-            refreshJWT: nil
+            refreshJWT: nil,
+            pdsURL: URL(string: "https://bsky.social")!
         )
     }
 

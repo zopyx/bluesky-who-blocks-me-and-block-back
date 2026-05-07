@@ -41,7 +41,7 @@ struct AddAccountView: View {
                             let added = await accountStore.addAccount(
                                 handle: handle,
                                 appPassword: appPassword,
-                                authenticator: blueskyClient
+                                client: blueskyClient
                             )
                             if added {
                                 dismiss()

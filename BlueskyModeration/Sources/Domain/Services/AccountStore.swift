@@ -40,7 +40,7 @@ final class AccountStore: ObservableObject {
     func addAccount(
         handle: String,
         appPassword: String,
-        authenticator: BlueskyAuthenticating
+        client: LiveBlueskyClient
     ) async -> Bool {
         let trimmedHandle = handle.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedPassword = appPassword.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -59,13 +59,15 @@ final class AccountStore: ObservableObject {
         defer { isAddingAccount = false }
 
         do {
-            let session = try await authenticator.authenticate(handle: trimmedHandle, appPassword: trimmedPassword)
+            let session = try await client.authenticate(handle: trimmedHandle, appPassword: trimmedPassword)
             let account = AppAccount(
                 handle: session.handle,
                 displayName: session.handle,
-                did: session.did
+                did: session.did,
+                pdsURL: session.pdsURL
             )
             try keychain.save(trimmedPassword, service: passwordService, account: account.id.uuidString)
+            try await client.persistSession(session, for: account)
             accounts.insert(account, at: 0)
             activeAccountID = account.id
             persist()
@@ -77,11 +79,15 @@ final class AccountStore: ObservableObject {
         }
     }
 
-    func removeAccount(_ account: AppAccount) {
+    func removeAccount(_ account: AppAccount, client: LiveBlueskyClient? = nil) {
         do {
             try keychain.delete(service: passwordService, account: account.id.uuidString)
         } catch {
             errorMessage = "Failed to delete secure credentials."
+        }
+
+        if let client {
+            try? client.deletePersistedSession(for: account)
         }
 
         accounts.removeAll { $0.id == account.id }

@@ -23,7 +23,7 @@ struct AccountsView: View {
                             )
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
-                                    accountStore.removeAccount(account)
+                                    accountStore.removeAccount(account, client: blueskyClient)
                                 } label: {
                                     Label("Remove", systemImage: "trash")
                                 }

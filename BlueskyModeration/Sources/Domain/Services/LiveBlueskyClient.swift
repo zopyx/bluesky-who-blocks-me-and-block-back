@@ -1,10 +1,11 @@
 import Foundation
 
-struct BlueskySession: Sendable {
+struct BlueskySession: Codable, Sendable {
     let did: String
     let handle: String
     let accessJWT: String
     let refreshJWT: String?
+    let pdsURL: URL
 }
 
 enum BlueskyAPIError: LocalizedError {
@@ -37,50 +38,90 @@ protocol BlueskyAuthenticating {
 
 @MainActor
 class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListServicing {
-    private let baseURL: URL
+    private let entrywayURL: URL
     private let session: URLSession
+    private let keychain: KeychainServicing
+    private var cachedSessions: [String: BlueskySession] = [:]
+    private let persistedSessionService = "com.ajung.BlueskyModeration.session"
 
     init(
         baseURL: URL = URL(string: "https://bsky.social")!,
-        session: URLSession = .shared
+        session: URLSession = .shared,
+        keychain: KeychainServicing = KeychainService()
     ) {
-        self.baseURL = baseURL
+        self.entrywayURL = baseURL
         self.session = session
+        self.keychain = keychain
     }
 
     func clearCache() {
         session.configuration.urlCache?.removeAllCachedResponses()
         URLCache.shared.removeAllCachedResponses()
+        cachedSessions.removeAll()
     }
 
     func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
         let requestBody = CreateSessionRequest(identifier: handle, password: appPassword)
+        let authURL = try await authenticationURL(forHandle: handle)
         let response: CreateSessionResponse = try await send(
             path: "com.atproto.server.createSession",
             method: "POST",
             body: requestBody,
-            accessToken: nil
+            accessToken: nil,
+            hostURL: authURL
+        )
+
+        let pdsURL = try await resolvedPDSURL(
+            from: response.didDoc,
+            did: response.did,
+            fallback: authURL
         )
 
         return BlueskySession(
             did: response.did,
             handle: response.handle,
             accessJWT: response.accessJWT,
-            refreshJWT: response.refreshJWT
+            refreshJWT: response.refreshJWT,
+            pdsURL: pdsURL
         )
     }
 
+    func persistSession(_ authSession: BlueskySession, for account: AppAccount) async throws {
+        let data = try JSONEncoder().encode(authSession)
+        guard let value = String(data: data, encoding: .utf8) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        try keychain.save(value, service: persistedSessionService, account: account.id.uuidString)
+        cachedSessions[account.id.uuidString] = authSession
+    }
+
+    func deletePersistedSession(for account: AppAccount) throws {
+        cachedSessions.removeValue(forKey: account.id.uuidString)
+        try keychain.delete(service: persistedSessionService, account: account.id.uuidString)
+    }
+
+    func restoreSessions(for accounts: [AppAccount]) async {
+        for account in accounts {
+            _ = try? await cachedSession(for: account, appPassword: nil)
+        }
+    }
+
     func fetchLists(for account: AppAccount, appPassword: String) async throws -> [BlueskyList] {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
-        let response: GetListsResponse = try await send(
-            path: "app.bsky.graph.getLists",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "actor", value: authSession.did),
-                URLQueryItem(name: "limit", value: "100")
-            ],
-            accessToken: authSession.accessJWT
-        )
+        let response: GetListsResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            try await send(
+                path: "app.bsky.graph.getLists",
+                method: "GET",
+                queryItems: [
+                    URLQueryItem(name: "actor", value: authSession.did),
+                    URLQueryItem(name: "limit", value: "100")
+                ],
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
 
         return response.lists.map { item in
             BlueskyList(
@@ -98,16 +139,21 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws -> [BlueskyListMember] {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
-        let response: GetListResponse = try await send(
-            path: "app.bsky.graph.getList",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "list", value: list.id),
-                URLQueryItem(name: "limit", value: "100")
-            ],
-            accessToken: authSession.accessJWT
-        )
+        let response: GetListResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            try await send(
+                path: "app.bsky.graph.getList",
+                method: "GET",
+                queryItems: [
+                    URLQueryItem(name: "list", value: list.id),
+                    URLQueryItem(name: "limit", value: "100")
+                ],
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
 
         return response.items.map {
             BlueskyListMember(
@@ -132,16 +178,21 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             return []
         }
 
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
-        let response: SearchActorsResponse = try await send(
-            path: "app.bsky.actor.searchActorsTypeahead",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "q", value: trimmedQuery),
-                URLQueryItem(name: "limit", value: "12")
-            ],
-            accessToken: authSession.accessJWT
-        )
+        let response: SearchActorsResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            try await send(
+                path: "app.bsky.actor.searchActorsTypeahead",
+                method: "GET",
+                queryItems: [
+                    URLQueryItem(name: "q", value: trimmedQuery),
+                    URLQueryItem(name: "limit", value: "12")
+                ],
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
 
         return response.actors.map {
             BlueskyActor(
@@ -159,23 +210,30 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
-        let body = CreateRecordRequest(
-            repo: authSession.did,
-            collection: "app.bsky.graph.listitem",
-            record: ListItemRecord(
-                createdAt: ISO8601DateFormatter().string(from: .now),
-                list: list.id,
-                subject: actorDID
+        let _: EmptyResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = CreateRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.graph.listitem",
+                record: ListItemRecord(
+                    createdAt: ISO8601DateFormatter().string(from: .now),
+                    list: list.id,
+                    subject: actorDID
+                )
             )
-        )
 
-        let _: CreateRecordResponse = try await send(
-            path: "com.atproto.repo.createRecord",
-            method: "POST",
-            body: body,
-            accessToken: authSession.accessJWT
-        )
+            let _: CreateRecordResponse = try await send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+
+            return EmptyResponse()
+        }
     }
 
     func removeMember(
@@ -183,20 +241,25 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
         let record = try parseATURI(recordURI)
-        let body = DeleteRecordRequest(
-            repo: authSession.did,
-            collection: record.collection,
-            rkey: record.rkey
-        )
+        let _: EmptyResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = DeleteRecordRequest(
+                repo: authSession.did,
+                collection: record.collection,
+                rkey: record.rkey
+            )
 
-        let _: EmptyResponse = try await send(
-            path: "com.atproto.repo.deleteRecord",
-            method: "POST",
-            body: body,
-            accessToken: authSession.accessJWT
-        )
+            return try await send(
+                path: "com.atproto.repo.deleteRecord",
+                method: "POST",
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
     }
 
     func updateListMetadata(
@@ -206,27 +269,32 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws -> BlueskyList {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
         let record = try parseATURI(list.id)
-        let body = PutRecordRequest(
-            repo: authSession.did,
-            collection: record.collection,
-            rkey: record.rkey,
-            record: ListRecord(
-                type: "app.bsky.graph.list",
-                purpose: list.kind.purposeIdentifier,
-                name: title,
-                description: description.isEmpty ? nil : description,
-                createdAt: ISO8601DateFormatter().string(from: .now)
+        let _: CreateRecordResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = PutRecordRequest(
+                repo: authSession.did,
+                collection: record.collection,
+                rkey: record.rkey,
+                record: ListRecord(
+                    type: "app.bsky.graph.list",
+                    purpose: list.kind.purposeIdentifier,
+                    name: title,
+                    description: description.isEmpty ? nil : description,
+                    createdAt: ISO8601DateFormatter().string(from: .now)
+                )
             )
-        )
 
-        let _: CreateRecordResponse = try await send(
-            path: "com.atproto.repo.putRecord",
-            method: "POST",
-            body: body,
-            accessToken: authSession.accessJWT
-        )
+            return try await send(
+                path: "com.atproto.repo.putRecord",
+                method: "POST",
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
 
         return BlueskyList(
             id: list.id,
@@ -242,15 +310,20 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws -> BlueskyProfile {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
-        let response: ProfileViewDetailed = try await send(
-            path: "app.bsky.actor.getProfile",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "actor", value: actorDID)
-            ],
-            accessToken: authSession.accessJWT
-        )
+        let response: ProfileViewDetailed = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            try await send(
+                path: "app.bsky.actor.getProfile",
+                method: "GET",
+                queryItems: [
+                    URLQueryItem(name: "actor", value: actorDID)
+                ],
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
 
         return BlueskyProfile(
             id: response.did,
@@ -278,40 +351,46 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws -> ProfileInspection {
-        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
         let actor = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !actor.isEmpty else {
             throw BlueskyAPIError.server("Enter a Bluesky handle or DID.")
         }
 
-        async let profileResponse: ProfileViewDetailed = send(
-            path: "app.bsky.actor.getProfile",
-            method: "GET",
-            queryItems: [URLQueryItem(name: "actor", value: actor)],
-            accessToken: authSession.accessJWT
-        )
-        async let listMembershipResponse: ListsWithMembershipResponse = send(
-            path: "app.bsky.graph.getListsWithMembership",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "actor", value: actor),
-                URLQueryItem(name: "limit", value: "100")
-            ],
-            accessToken: authSession.accessJWT
-        )
-        async let starterPackMembershipResponse: StarterPacksWithMembershipResponse = send(
-            path: "app.bsky.graph.getStarterPacksWithMembership",
-            method: "GET",
-            queryItems: [
-                URLQueryItem(name: "actor", value: actor),
-                URLQueryItem(name: "limit", value: "100")
-            ],
-            accessToken: authSession.accessJWT
-        )
+        let (profile, lists, starterPacks): (ProfileViewDetailed, ListsWithMembershipResponse, StarterPacksWithMembershipResponse) =
+            try await performAuthenticatedRequest(
+                account: account,
+                appPassword: appPassword
+            ) { authSession in
+                async let profileResponse: ProfileViewDetailed = send(
+                    path: "app.bsky.actor.getProfile",
+                    method: "GET",
+                    queryItems: [URLQueryItem(name: "actor", value: actor)],
+                    accessToken: authSession.accessJWT,
+                    hostURL: authSession.pdsURL
+                )
+                async let listMembershipResponse: ListsWithMembershipResponse = send(
+                    path: "app.bsky.graph.getListsWithMembership",
+                    method: "GET",
+                    queryItems: [
+                        URLQueryItem(name: "actor", value: actor),
+                        URLQueryItem(name: "limit", value: "100")
+                    ],
+                    accessToken: authSession.accessJWT,
+                    hostURL: authSession.pdsURL
+                )
+                async let starterPackMembershipResponse: StarterPacksWithMembershipResponse = send(
+                    path: "app.bsky.graph.getStarterPacksWithMembership",
+                    method: "GET",
+                    queryItems: [
+                        URLQueryItem(name: "actor", value: actor),
+                        URLQueryItem(name: "limit", value: "100")
+                    ],
+                    accessToken: authSession.accessJWT,
+                    hostURL: authSession.pdsURL
+                )
 
-        let profile = try await profileResponse
-        let lists = try await listMembershipResponse
-        let starterPacks = try await starterPackMembershipResponse
+                return try await (profileResponse, listMembershipResponse, starterPackMembershipResponse)
+            }
 
         let mappedProfile = BlueskyProfile(
             id: profile.did,
@@ -360,9 +439,11 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         method: String,
         queryItems: [URLQueryItem] = [],
         body: Body?,
-        accessToken: String?
+        accessToken: String?,
+        hostURL: URL? = nil
     ) async throws -> Response {
-        guard var components = URLComponents(url: baseURL.appendingPathComponent("xrpc/\(path)"), resolvingAgainstBaseURL: false) else {
+        let targetURL = hostURL ?? entrywayURL
+        guard var components = URLComponents(url: targetURL.appendingPathComponent("xrpc/\(path)"), resolvingAgainstBaseURL: false) else {
             throw BlueskyAPIError.invalidURL
         }
         if !queryItems.isEmpty {
@@ -412,15 +493,227 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         path: String,
         method: String,
         queryItems: [URLQueryItem] = [],
-        accessToken: String?
+        accessToken: String?,
+        hostURL: URL? = nil
     ) async throws -> Response {
         try await send(
             path: path,
             method: method,
             queryItems: queryItems,
             body: Optional<String>.none,
-            accessToken: accessToken
+            accessToken: accessToken,
+            hostURL: hostURL
         )
+    }
+
+    private func performAuthenticatedRequest<Response>(
+        account: AppAccount,
+        appPassword: String,
+        operation: (BlueskySession) async throws -> Response
+    ) async throws -> Response {
+        var authSession = try await cachedSession(for: account, appPassword: appPassword)
+
+        do {
+            return try await operation(authSession)
+        } catch BlueskyAPIError.unauthorized {
+            authSession = try await recoverSession(
+                currentSession: authSession,
+                for: account,
+                appPassword: appPassword
+            )
+            return try await operation(authSession)
+        }
+    }
+
+    private func cachedSession(
+        for account: AppAccount,
+        appPassword: String?
+    ) async throws -> BlueskySession {
+        let sessionKey = account.id.uuidString
+        if let cachedSession = cachedSessions[sessionKey] {
+            if shouldRefresh(cachedSession.accessJWT) {
+                return try await recoverSession(
+                    currentSession: cachedSession,
+                    for: account,
+                    appPassword: appPassword
+                )
+            }
+            return cachedSession
+        }
+
+        if let restoredSession = try restoredSession(for: account) {
+            cachedSessions[sessionKey] = restoredSession
+            if shouldRefresh(restoredSession.accessJWT) {
+                return try await recoverSession(
+                    currentSession: restoredSession,
+                    for: account,
+                    appPassword: appPassword
+                )
+            }
+            return restoredSession
+        }
+
+        guard let appPassword else {
+            throw BlueskyAPIError.missingCredentials
+        }
+
+        let newSession = try await authenticate(handle: account.handle, appPassword: appPassword)
+        cachedSessions[sessionKey] = newSession
+        try await persistSession(newSession, for: account)
+        return newSession
+    }
+
+    private func recoverSession(
+        currentSession: BlueskySession,
+        for account: AppAccount,
+        appPassword: String?
+    ) async throws -> BlueskySession {
+        let sessionKey = account.id.uuidString
+
+        if let refreshedSession = try await refreshSession(currentSession) {
+            cachedSessions[sessionKey] = refreshedSession
+            try await persistSession(refreshedSession, for: account)
+            return refreshedSession
+        }
+
+        guard let appPassword else {
+            throw BlueskyAPIError.unauthorized
+        }
+
+        let recreatedSession = try await authenticate(handle: account.handle, appPassword: appPassword)
+        cachedSessions[sessionKey] = recreatedSession
+        try await persistSession(recreatedSession, for: account)
+        return recreatedSession
+    }
+
+    private func refreshSession(_ existingSession: BlueskySession) async throws -> BlueskySession? {
+        guard let refreshJWT = existingSession.refreshJWT, !refreshJWT.isEmpty else {
+            return nil
+        }
+
+        do {
+            let response: CreateSessionResponse = try await send(
+                path: "com.atproto.server.refreshSession",
+                method: "POST",
+                body: Optional<String>.none,
+                accessToken: refreshJWT,
+                hostURL: existingSession.pdsURL
+            )
+
+            let pdsURL = try await resolvedPDSURL(
+                from: response.didDoc,
+                did: response.did,
+                fallback: existingSession.pdsURL
+            )
+
+            return BlueskySession(
+                did: response.did,
+                handle: response.handle,
+                accessJWT: response.accessJWT,
+                refreshJWT: response.refreshJWT ?? refreshJWT,
+                pdsURL: pdsURL
+            )
+        } catch BlueskyAPIError.unauthorized {
+            return nil
+        }
+    }
+
+    private func restoredSession(for account: AppAccount) throws -> BlueskySession? {
+        guard let value = try keychain.read(service: persistedSessionService, account: account.id.uuidString),
+              let data = value.data(using: .utf8) else {
+            return nil
+        }
+
+        var restored = try JSONDecoder().decode(BlueskySession.self, from: data)
+        if restored.pdsURL.absoluteString.isEmpty, let pdsURL = account.pdsURL {
+            restored = BlueskySession(
+                did: restored.did,
+                handle: restored.handle,
+                accessJWT: restored.accessJWT,
+                refreshJWT: restored.refreshJWT,
+                pdsURL: pdsURL
+            )
+        }
+        return restored
+    }
+
+    private func authenticationURL(forHandle handle: String) async throws -> URL {
+        if handle.lowercased().hasSuffix(".bsky.social") {
+            return entrywayURL
+        }
+
+        if let did = try? await resolveHandle(handle),
+           let pdsURL = try? await resolvePDSURL(forDID: did) {
+            return pdsURL
+        }
+
+        return entrywayURL
+    }
+
+    private func resolveHandle(_ handle: String) async throws -> String {
+        let response: ResolveHandleResponse = try await send(
+            path: "com.atproto.identity.resolveHandle",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "handle", value: handle)],
+            accessToken: nil,
+            hostURL: entrywayURL
+        )
+        return response.did
+    }
+
+    private func resolvePDSURL(forDID did: String) async throws -> URL {
+        let didDocument: DIDDocument = try await send(
+            path: "com.atproto.identity.resolveDid",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "did", value: did)],
+            accessToken: nil,
+            hostURL: entrywayURL
+        )
+        return try await resolvedPDSURL(from: didDocument, did: did, fallback: nil)
+    }
+
+    private func resolvedPDSURL(
+        from didDocument: DIDDocument?,
+        did: String,
+        fallback: URL?
+    ) async throws -> URL {
+        if let serviceEndpoint = didDocument?.services.first(where: {
+            $0.id.contains("#atproto_pds") || $0.type == "AtprotoPersonalDataServer"
+        })?.serviceEndpoint {
+            return serviceEndpoint
+        }
+
+        if let fallback {
+            return fallback
+        }
+
+        return try await resolvePDSURL(forDID: did)
+    }
+
+    private func shouldRefresh(_ jwt: String) -> Bool {
+        guard let expiry = jwtExpiryDate(jwt) else {
+            return false
+        }
+
+        return expiry <= Date().addingTimeInterval(60)
+    }
+
+    private func jwtExpiryDate(_ jwt: String) -> Date? {
+        let segments = jwt.split(separator: ".")
+        guard segments.count >= 2 else { return nil }
+        var payload = String(segments[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let remainder = payload.count % 4
+        if remainder != 0 {
+            payload += String(repeating: "=", count: 4 - remainder)
+        }
+        guard let data = Data(base64Encoded: payload),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let exp = json["exp"] as? TimeInterval else {
+            return nil
+        }
+        return Date(timeIntervalSince1970: exp)
     }
 }
 
@@ -434,13 +727,33 @@ private struct CreateSessionResponse: Decodable {
     let handle: String
     let accessJWT: String
     let refreshJWT: String?
+    let didDoc: DIDDocument?
 
     enum CodingKeys: String, CodingKey {
         case did
         case handle
         case accessJWT = "accessJwt"
         case refreshJWT = "refreshJwt"
+        case didDoc
     }
+}
+
+private struct ResolveHandleResponse: Decodable {
+    let did: String
+}
+
+private struct DIDDocument: Codable {
+    let services: [DIDService]
+
+    enum CodingKeys: String, CodingKey {
+        case services = "service"
+    }
+}
+
+private struct DIDService: Codable {
+    let id: String
+    let type: String
+    let serviceEndpoint: URL
 }
 
 private struct GetListsResponse: Decodable {

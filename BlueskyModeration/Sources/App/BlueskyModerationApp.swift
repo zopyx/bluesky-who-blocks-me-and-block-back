@@ -10,6 +10,9 @@ struct BlueskyModerationApp: App {
             RootView()
                 .environmentObject(accountStore)
                 .environmentObject(blueskyClient)
+                .task {
+                    await blueskyClient.restoreSessions(for: accountStore.accounts)
+                }
         }
     }
 }
