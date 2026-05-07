@@ -107,6 +107,49 @@ final class AccountStore: ObservableObject {
         try? keychain.read(service: passwordService, account: account.id.uuidString)
     }
 
+    func refreshAccountProfiles(using client: LiveBlueskyClient) async {
+        guard !accounts.isEmpty else { return }
+
+        var updatedAccounts = accounts
+        var didChange = false
+
+        for index in updatedAccounts.indices {
+            let account = updatedAccounts[index]
+            guard let appPassword = appPassword(for: account), !appPassword.isEmpty else {
+                continue
+            }
+
+            do {
+                let profile = try await client.fetchProfile(
+                    did: account.did ?? account.handle,
+                    account: account,
+                    appPassword: appPassword
+                )
+
+                let title = profile.title
+                if updatedAccounts[index].displayName != title {
+                    updatedAccounts[index].displayName = title
+                    didChange = true
+                }
+                if updatedAccounts[index].avatarURL != profile.avatarURL {
+                    updatedAccounts[index].avatarURL = profile.avatarURL
+                    didChange = true
+                }
+                if updatedAccounts[index].did != profile.did {
+                    updatedAccounts[index].did = profile.did
+                    didChange = true
+                }
+            } catch {
+                continue
+            }
+        }
+
+        if didChange {
+            accounts = updatedAccounts
+            persist()
+        }
+    }
+
     private func load() {
         guard let data = defaults.data(forKey: accountsKey) else {
             return

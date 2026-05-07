@@ -5,6 +5,7 @@ struct AppAccount: Identifiable, Codable, Hashable {
     var handle: String
     var displayName: String
     var did: String?
+    var avatarURL: URL?
     var createdAt: Date
     var lastUsedAt: Date
 
@@ -13,6 +14,7 @@ struct AppAccount: Identifiable, Codable, Hashable {
         handle: String,
         displayName: String? = nil,
         did: String? = nil,
+        avatarURL: URL? = nil,
         createdAt: Date = .now,
         lastUsedAt: Date = .now
     ) {
@@ -20,6 +22,7 @@ struct AppAccount: Identifiable, Codable, Hashable {
         self.handle = handle
         self.displayName = displayName ?? handle
         self.did = did
+        self.avatarURL = avatarURL
         self.createdAt = createdAt
         self.lastUsedAt = lastUsedAt
     }

@@ -48,6 +48,11 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         self.session = session
     }
 
+    func clearCache() {
+        session.configuration.urlCache?.removeAllCachedResponses()
+        URLCache.shared.removeAllCachedResponses()
+    }
+
     func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
         let requestBody = CreateSessionRequest(identifier: handle, password: appPassword)
         let response: CreateSessionResponse = try await send(
@@ -191,6 +196,44 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             method: "POST",
             body: body,
             accessToken: authSession.accessJWT
+        )
+    }
+
+    func updateListMetadata(
+        list: BlueskyList,
+        title: String,
+        description: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> BlueskyList {
+        let authSession = try await authenticate(handle: account.handle, appPassword: appPassword)
+        let record = try parseATURI(list.id)
+        let body = PutRecordRequest(
+            repo: authSession.did,
+            collection: record.collection,
+            rkey: record.rkey,
+            record: ListRecord(
+                type: "app.bsky.graph.list",
+                purpose: list.kind.purposeIdentifier,
+                name: title,
+                description: description.isEmpty ? nil : description,
+                createdAt: ISO8601DateFormatter().string(from: .now)
+            )
+        )
+
+        let _: CreateRecordResponse = try await send(
+            path: "com.atproto.repo.putRecord",
+            method: "POST",
+            body: body,
+            accessToken: authSession.accessJWT
+        )
+
+        return BlueskyList(
+            id: list.id,
+            name: title,
+            description: description.isEmpty ? list.kind.title : description,
+            memberCount: list.memberCount,
+            kind: list.kind
         )
     }
 
@@ -470,6 +513,13 @@ private struct CreateRecordRequest: Encodable {
     let record: ListItemRecord
 }
 
+private struct PutRecordRequest: Encodable {
+    let repo: String
+    let collection: String
+    let rkey: String
+    let record: ListRecord
+}
+
 private struct ListItemRecord: Encodable {
     let createdAt: String
     let list: String
@@ -479,6 +529,22 @@ private struct ListItemRecord: Encodable {
         case createdAt
         case list
         case subject
+    }
+}
+
+private struct ListRecord: Encodable {
+    let type: String
+    let purpose: String
+    let name: String
+    let description: String?
+    let createdAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case purpose
+        case name
+        case description
+        case createdAt
     }
 }
 

@@ -49,7 +49,9 @@ struct ListsView: View {
                                 Section(kind.title) {
                                     ForEach(lists) { list in
                                         NavigationLink {
-                                            ListDetailView(list: list)
+                                            ListDetailView(list: list) { updatedList in
+                                                viewModel.updateList(updatedList)
+                                            }
                                         } label: {
                                             ListRowView(list: list)
                                         }
@@ -71,7 +73,10 @@ struct ListsView: View {
                         Button {
                             isShowingAccountPicker = true
                         } label: {
-                            AccountChip(account: activeAccount)
+                            AccountChip(
+                                account: activeAccount,
+                                avatarURL: viewModel.activeProfile?.avatarURL
+                            )
                         }
                         .buttonStyle(.plain)
                     }

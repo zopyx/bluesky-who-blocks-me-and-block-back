@@ -6,6 +6,7 @@ final class ListDetailViewModel: ObservableObject {
     @Published private(set) var searchResults: [BlueskyActor] = []
     @Published private(set) var isLoadingMembers = false
     @Published private(set) var isSearching = false
+    @Published private(set) var isUpdatingMetadata = false
     @Published private(set) var addingActorIDs: Set<String> = []
     @Published private(set) var removingMemberIDs: Set<String> = []
     @Published var errorMessage: String?
@@ -105,6 +106,41 @@ final class ListDetailViewModel: ObservableObject {
             members.removeAll { $0.id == member.id }
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func updateMetadata(
+        for list: BlueskyList,
+        title: String,
+        description: String,
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async -> BlueskyList? {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedTitle.isEmpty else {
+            errorMessage = "List title is required."
+            return nil
+        }
+
+        isUpdatingMetadata = true
+        defer { isUpdatingMetadata = false }
+
+        do {
+            let updatedList = try await client.updateListMetadata(
+                list: list,
+                title: trimmedTitle,
+                description: trimmedDescription,
+                account: account,
+                appPassword: appPassword
+            )
+            errorMessage = nil
+            return updatedList
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
         }
     }
 

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AccountsView: View {
     @EnvironmentObject private var accountStore: AccountStore
+    @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @State private var isPresentingAddAccount = false
 
     var body: some View {
@@ -57,6 +58,10 @@ struct AccountsView: View {
             .sheet(isPresented: $isPresentingAddAccount) {
                 AddAccountView()
                     .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
+            .task {
+                await accountStore.refreshAccountProfiles(using: blueskyClient)
             }
             .alert("Accounts", isPresented: .constant(accountStore.errorMessage != nil), actions: {
                 Button("OK") {
@@ -72,4 +77,5 @@ struct AccountsView: View {
 #Preview {
     AccountsView()
         .environmentObject(AccountStore(preview: true))
+        .environmentObject(PreviewBlueskyClient())
 }

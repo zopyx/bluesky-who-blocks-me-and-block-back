@@ -13,6 +13,36 @@ struct ProfileInspectorView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
 
+                    if viewModel.isSearching {
+                        HStack {
+                            ProgressView()
+                            Text("Searching")
+                                .foregroundStyle(.secondary)
+                        }
+                    } else if !viewModel.query.isEmpty && viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                        Text("Type at least 2 characters to search by handle or DID.")
+                            .foregroundStyle(.secondary)
+                    } else if !viewModel.searchResults.isEmpty {
+                        ForEach(viewModel.searchResults) { actor in
+                            Button {
+                                Task {
+                                    await viewModel.inspect(
+                                        actor: actor,
+                                        account: accountStore.activeAccount,
+                                        appPassword: activePassword,
+                                        using: blueskyClient
+                                    )
+                                }
+                            } label: {
+                                BlueskyActorRow(actor: actor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } else if !viewModel.query.isEmpty && !viewModel.isSearching {
+                        Text("No matching profiles found.")
+                            .foregroundStyle(.secondary)
+                    }
+
                     Button {
                         Task {
                             await viewModel.inspect(
@@ -62,22 +92,6 @@ struct ProfileInspectorView: View {
                             }
                         }
                         .padding(.vertical, 4)
-                    }
-
-                    Section("Relationship") {
-                        let viewer = inspection.profile.viewerState
-                        LabeledContent("Following", value: boolText(viewer?.isFollowing ?? false))
-                        LabeledContent("Follows You", value: boolText(viewer?.followsYou ?? false))
-                        LabeledContent("You Block", value: boolText(viewer?.isBlocking ?? false))
-                        LabeledContent("Blocked By", value: boolText(viewer?.blockedBy ?? false))
-                        LabeledContent("Muted", value: boolText(viewer?.muted ?? false))
-
-                        if let blockingByListName = viewer?.blockingByListName {
-                            LabeledContent("Blocked Via List", value: blockingByListName)
-                        }
-                        if let mutedByListName = viewer?.mutedByListName {
-                            LabeledContent("Muted Via List", value: mutedByListName)
-                        }
                     }
 
                     Section("Stats") {
@@ -152,6 +166,19 @@ struct ProfileInspectorView: View {
                 }
             }
             .navigationTitle("Profile")
+            .task(id: viewModel.query) {
+                do {
+                    try await Task.sleep(for: .milliseconds(300))
+                } catch {
+                    return
+                }
+
+                await viewModel.search(
+                    account: accountStore.activeAccount,
+                    appPassword: activePassword,
+                    using: blueskyClient
+                )
+            }
             .alert("Profile", isPresented: .constant(viewModel.errorMessage != nil), actions: {
                 Button("OK") {
                     viewModel.errorMessage = nil
@@ -164,10 +191,6 @@ struct ProfileInspectorView: View {
 
     private var activePassword: String? {
         accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }
-    }
-
-    private func boolText(_ value: Bool) -> String {
-        value ? "Yes" : "No"
     }
 
     private func countText(_ value: Int?) -> String {

@@ -22,11 +22,20 @@ struct BlueskyList: Identifiable, Hashable {
                 "person.3"
             }
         }
+
+        var purposeIdentifier: String {
+            switch self {
+            case .moderation:
+                "app.bsky.graph.defs#modlist"
+            case .regular:
+                "app.bsky.graph.defs#curatelist"
+            }
+        }
     }
 
     let id: String
-    let name: String
-    let description: String
+    var name: String
+    var description: String
     let memberCount: Int?
     let kind: Kind
 }

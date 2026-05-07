@@ -1,13 +1,20 @@
 import SwiftUI
 
 struct ListDetailView: View {
-    let list: BlueskyList
+    let onListUpdated: ((BlueskyList) -> Void)?
 
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @StateObject private var viewModel = ListDetailViewModel()
+    @State private var currentList: BlueskyList
     @State private var searchQuery = ""
     @State private var memberSearchQuery = ""
+    @State private var isShowingEditSheet = false
+
+    init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
+        self.onListUpdated = onListUpdated
+        _currentList = State(initialValue: list)
+    }
 
     var body: some View {
         Group {
@@ -22,8 +29,41 @@ struct ListDetailView: View {
                 )
             }
         }
-        .navigationTitle(list.name)
+        .navigationTitle(currentList.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    isShowingEditSheet = true
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingEditSheet) {
+            if let account = accountStore.activeAccount,
+               let appPassword = accountStore.appPassword(for: account) {
+                EditListMetadataSheet(
+                    list: currentList,
+                    isSaving: viewModel.isUpdatingMetadata
+                ) { title, description in
+                    Task {
+                        if let updatedList = await viewModel.updateMetadata(
+                            for: currentList,
+                            title: title,
+                            description: description,
+                            account: account,
+                            appPassword: appPassword,
+                            using: blueskyClient
+                        ) {
+                            currentList = updatedList
+                            onListUpdated?(updatedList)
+                            isShowingEditSheet = false
+                        }
+                    }
+                }
+            }
+        }
         .alert("List", isPresented: .constant(viewModel.errorMessage != nil), actions: {
             Button("OK") {
                 viewModel.errorMessage = nil
@@ -59,7 +99,7 @@ struct ListDetailView: View {
                             Task {
                                 await viewModel.add(
                                     actor: actor,
-                                    to: list,
+                                    to: currentList,
                                     account: account,
                                     appPassword: appPassword,
                                     using: blueskyClient
@@ -101,17 +141,17 @@ struct ListDetailView: View {
                 } else {
                     ForEach(filteredMembers) { member in
                         NavigationLink {
-                            BlueskyProfileView(member: member, list: list)
+                            BlueskyProfileView(member: member, list: currentList)
                         } label: {
                             BlueskyActorRow(actor: member.actor)
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
-                                Task {
-                                    await viewModel.remove(
-                                        member: member,
-                                        account: account,
-                                        appPassword: appPassword,
+                            Task {
+                                await viewModel.remove(
+                                    member: member,
+                                    account: account,
+                                    appPassword: appPassword,
                                         using: blueskyClient
                                     )
                                 }
@@ -127,7 +167,7 @@ struct ListDetailView: View {
         .listStyle(.insetGrouped)
         .task {
             await viewModel.loadMembers(
-                for: list,
+                for: currentList,
                 account: account,
                 appPassword: appPassword,
                 using: blueskyClient
@@ -149,7 +189,7 @@ struct ListDetailView: View {
         }
         .refreshable {
             await viewModel.loadMembers(
-                for: list,
+                for: currentList,
                 account: account,
                 appPassword: appPassword,
                 using: blueskyClient
@@ -176,4 +216,55 @@ struct ListDetailView: View {
     }
     .environmentObject(AccountStore(preview: true))
     .environmentObject(PreviewBlueskyClient())
+}
+
+private struct EditListMetadataSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let list: BlueskyList
+    let isSaving: Bool
+    let saveAction: (_ title: String, _ description: String) -> Void
+
+    @State private var title: String
+    @State private var description: String
+
+    init(
+        list: BlueskyList,
+        isSaving: Bool,
+        saveAction: @escaping (_ title: String, _ description: String) -> Void
+    ) {
+        self.list = list
+        self.isSaving = isSaving
+        self.saveAction = saveAction
+        _title = State(initialValue: list.name)
+        _description = State(initialValue: list.description == list.kind.title ? "" : list.description)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Metadata") {
+                    TextField("Title", text: $title)
+                    TextField("Description", text: $description, axis: .vertical)
+                        .lineLimit(3...6)
+                }
+            }
+            .navigationTitle("Edit List")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveAction(title, description)
+                    }
+                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
+                }
+            }
+        }
+    }
 }

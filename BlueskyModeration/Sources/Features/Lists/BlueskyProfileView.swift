@@ -39,14 +39,7 @@ struct BlueskyProfileView: View {
                 Section {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(spacing: 14) {
-                            Circle()
-                                .fill(Color.skyPrimary.opacity(0.16))
-                                .frame(width: 72, height: 72)
-                                .overlay {
-                                    Text(profile.title.prefix(1).uppercased())
-                                        .font(.title.weight(.bold))
-                                        .foregroundStyle(Color.skyPrimary)
-                                }
+                            profileAvatar(for: profile)
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(profile.title)
@@ -102,6 +95,38 @@ struct BlueskyProfileView: View {
                 using: blueskyClient
             )
         }
+    }
+
+    @ViewBuilder
+    private func profileAvatar(for profile: BlueskyProfile) -> some View {
+        if let avatarURL = profile.avatarURL {
+            AsyncImage(url: avatarURL) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                avatarPlaceholder(for: profile)
+            }
+            .frame(width: 72, height: 72)
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            }
+        } else {
+            avatarPlaceholder(for: profile)
+        }
+    }
+
+    private func avatarPlaceholder(for profile: BlueskyProfile) -> some View {
+        Circle()
+            .fill(Color.skyPrimary.opacity(0.16))
+            .frame(width: 72, height: 72)
+            .overlay {
+                Text(profile.title.prefix(1).uppercased())
+                    .font(.title.weight(.bold))
+                    .foregroundStyle(Color.skyPrimary)
+            }
     }
 
     private func statText(_ value: Int?) -> String {

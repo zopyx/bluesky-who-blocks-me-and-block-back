@@ -121,6 +121,24 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         try await Task.sleep(for: .milliseconds(100))
     }
 
+    override func updateListMetadata(
+        list: BlueskyList,
+        title: String,
+        description: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> BlueskyList {
+        try await Task.sleep(for: .milliseconds(120))
+
+        return BlueskyList(
+            id: list.id,
+            name: title,
+            description: description.isEmpty ? list.kind.title : description,
+            memberCount: list.memberCount,
+            kind: list.kind
+        )
+    }
+
     override func fetchProfile(
         did actorDID: String,
         account: AppAccount,

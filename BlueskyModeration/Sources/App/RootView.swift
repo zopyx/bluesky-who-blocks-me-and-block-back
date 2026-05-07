@@ -5,7 +5,7 @@ struct RootView: View {
         TabView {
             ListsView()
                 .tabItem {
-                    Label("Lists", systemImage: "list.bullet.rectangle")
+                    Label("Moderation", systemImage: "checklist.checked")
                 }
 
             ProfileInspectorView()
