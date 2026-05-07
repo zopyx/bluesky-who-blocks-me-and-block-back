@@ -1,3 +1,31 @@
+//! who-blocks-me-rs
+//!
+//! Rust implementation of the Bluesky "who blocks me" tool.
+//!
+//! # Architecture
+//!
+//! 1. **Resolve handle → DID** via Clearsky anonymous API.
+//! 2. **Resolve DID → PDS** via `plc.directory` or `did:web` well-known document.
+//! 3. **Authenticate** against the PDS (falling back to `bsky.social`).
+//! 4. **Fetch own blocks** via `app.bsky.graph.getBlocks`.
+//! 5. **Fetch blockers** via Clearsky `single-blocklist` endpoint.
+//! 6. **Resolve handles** in batches of 25 via `app.bsky.actor.getProfiles`.
+//! 7. **Compare** and emit two groups: mutual blocks vs. one-way blocks.
+//! 8. **Optionally block back** or add to a curation list.
+//!
+//! # Concurrency
+//!
+//! - Profile resolution fires all batches concurrently (capped by Tokio runtime).
+//! - Block-back creation is capped by `--block-workers` (default 4).
+//! - List additions use `applyWrites` in batches of 200.
+//!
+//! # Caching
+//!
+//! A local `cache.json` stores:
+//! - Handle → DID mappings
+//! - DID → handle mappings
+//! - DID documents (PDS endpoints)
+
 use anyhow::{Context, Result};
 use chrono::Utc;
 use clap::Parser;
@@ -10,6 +38,10 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
 
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
 const CLEARSKY_API: &str = "https://public.api.clearsky.services";
 const BSKY_PUBLIC: &str = "https://public.api.bsky.app";
 const BSKY_SOCIAL: &str = "https://bsky.social";
@@ -18,23 +50,39 @@ const LIST_COLLECTION: &str = "app.bsky.graph.list";
 const LIST_ITEM_COLLECTION: &str = "app.bsky.graph.listitem";
 const CACHE_FILE: &str = "cache.json";
 
+// ---------------------------------------------------------------------------
+// CLI
+// ---------------------------------------------------------------------------
+
 #[derive(Parser)]
 #[command(name = "who-blocks-me")]
 struct Args {
+    /// Your Bluesky handle or DID
     handle: String,
+    /// Your Bluesky app password
     password: String,
+    /// Output JSON file path
     #[arg(short, long, default_value = "blocks.json")]
     output: PathBuf,
+    /// Block all one-way blockers back
     #[arg(long)]
     block_back: bool,
+    /// Max concurrent block requests
     #[arg(long, default_value_t = 4)]
     block_workers: usize,
+    /// Create a curation list with NAME and add all blockers
     #[arg(long)]
     list: Option<String>,
+    /// Increase verbosity (-v, -vv)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
 }
 
+// ---------------------------------------------------------------------------
+// Cache
+// ---------------------------------------------------------------------------
+
+/// Simple JSON-on-disk cache for DID / handle / DID-document lookups.
 #[derive(Default, Serialize, Deserialize)]
 struct Cache {
     dids: HashMap<String, String>,
@@ -43,6 +91,7 @@ struct Cache {
 }
 
 impl Cache {
+    /// Load cache from disk, or return an empty cache if the file does not exist.
     fn load(path: &PathBuf) -> Result<Self> {
         if path.exists() {
             let content = std::fs::read_to_string(path)?;
@@ -52,11 +101,16 @@ impl Cache {
         }
     }
 
+    /// Atomically write cache back to disk as pretty-printed JSON.
     fn save(&self, path: &PathBuf) -> Result<()> {
         std::fs::write(path, serde_json::to_string_pretty(self)?)?;
         Ok(())
     }
 }
+
+// ---------------------------------------------------------------------------
+// Output types
+// ---------------------------------------------------------------------------
 
 #[derive(Debug, Serialize)]
 struct OutputRecord {
@@ -71,10 +125,19 @@ struct Output {
     i_dont_block_them: Vec<OutputRecord>,
 }
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/// Return the current UTC timestamp in ATProto ISO-8601 format.
 fn iso_now() -> String {
     Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string()
 }
 
+/// Low-level Bluesky / XRPC helper.
+///
+/// Automatically injects `Accept`, `User-Agent` and `Authorization` headers.
+/// Returns parsed JSON on success; bails with a truncated body preview on failure.
 async fn bluesky_api(
     client: &Client,
     base: &str,
@@ -114,6 +177,13 @@ async fn bluesky_api(
     }
 }
 
+// ---------------------------------------------------------------------------
+// Identity resolution
+// ---------------------------------------------------------------------------
+
+/// Resolve a Bluesky handle to a DID via Clearsky's anonymous endpoint.
+///
+/// Checks the in-memory cache first.
 async fn resolve_did(client: &Client, cache: &mut Cache, handle: &str) -> Result<String> {
     if let Some(did) = cache.dids.get(handle) {
         return Ok(did.clone());
@@ -135,6 +205,10 @@ async fn resolve_did(client: &Client, cache: &mut Cache, handle: &str) -> Result
     Ok(did)
 }
 
+/// Resolve a DID to its ATProto PDS endpoint.
+///
+/// Supports `did:plc` (via plc.directory) and `did:web` (via `.well-known/did.json`).
+/// Caches DID documents to avoid redundant lookups.
 async fn get_pds(client: &Client, cache: &mut Cache, did: &str) -> Result<String> {
     if let Some(doc) = cache.did_docs.get(did) {
         if let Some(pds) = extract_pds(doc) {
@@ -167,6 +241,7 @@ async fn get_pds(client: &Client, cache: &mut Cache, did: &str) -> Result<String
     extract_pds(&doc).context("No PDS found in DID document")
 }
 
+/// Extract the PDS endpoint from a DID document JSON value.
 fn extract_pds(doc: &Value) -> Option<String> {
     for svc in doc["service"].as_array()? {
         let ep = svc["serviceEndpoint"].as_str()?;
@@ -179,6 +254,9 @@ fn extract_pds(doc: &Value) -> Option<String> {
     None
 }
 
+/// Authenticate and return (accessJwt, did).
+///
+/// Tries the user's own PDS first, then falls back to `bsky.social`.
 async fn login(client: &Client, identifier: &str, password: &str, pds: &str) -> Result<(String, String)> {
     for host in [pds, BSKY_SOCIAL] {
         let body = serde_json::json!({
@@ -197,6 +275,13 @@ async fn login(client: &Client, identifier: &str, password: &str, pds: &str) -> 
     anyhow::bail!("Authentication failed")
 }
 
+// ---------------------------------------------------------------------------
+// Block list fetching
+// ---------------------------------------------------------------------------
+
+/// Return a `HashSet` of DIDs the authenticated user blocks.
+///
+/// Paginated through `app.bsky.graph.getBlocks` (100 records / page).
 async fn fetch_my_blocks(client: &Client, pds: &str, token: &str) -> Result<HashSet<String>> {
     let mut blocked = HashSet::new();
     let mut cursor: Option<String> = None;
@@ -230,6 +315,10 @@ async fn fetch_my_blocks(client: &Client, pds: &str, token: &str) -> Result<Hash
     Ok(blocked)
 }
 
+/// Return every account blocking *identifier* as a Vec of (did, blocked_date).
+///
+/// Iterates Clearsky pages until a partial page (< 100 items) signals the end.
+/// A 250 ms sleep is inserted between pages to be polite to the Clearsky API.
 async fn get_blockers(client: &Client, identifier: &str) -> Result<Vec<(String, String)>> {
     let mut blockers = Vec::new();
     let mut page = 1;
@@ -280,6 +369,15 @@ async fn get_blockers(client: &Client, identifier: &str) -> Result<Vec<(String, 
     Ok(blockers)
 }
 
+// ---------------------------------------------------------------------------
+// Profile / handle resolution
+// ---------------------------------------------------------------------------
+
+/// Batch-resolve DIDs to handles via `app.bsky.actor.getProfiles`.
+///
+/// - Reads from the on-disk cache first.
+/// - Splits missing entries into batches of 25 (API limit).
+/// - Fires all batches concurrently via `tokio::spawn`.
 async fn get_profiles(client: &Client, cache: &mut Cache, dids: &[String]) -> Result<HashMap<String, String>> {
     let mut profiles: HashMap<String, String> = HashMap::new();
     let mut missing: Vec<String> = Vec::new();
@@ -341,6 +439,13 @@ async fn get_profiles(client: &Client, cache: &mut Cache, dids: &[String]) -> Re
     Ok(profiles)
 }
 
+// ---------------------------------------------------------------------------
+// Mutations (block back, lists)
+// ---------------------------------------------------------------------------
+
+/// Create a block record for every DID in *dids*, limited to *max_workers* concurrency.
+///
+/// Returns the number of successfully created blocks.
 async fn block_accounts(
     client: &Client,
     pds: &str,
@@ -401,6 +506,7 @@ async fn block_accounts(
     Ok(count)
 }
 
+/// Create a new curation list and return its AT URI.
 async fn create_list(
     client: &Client,
     pds: &str,
@@ -423,6 +529,10 @@ async fn create_list(
     Ok(uri.to_string())
 }
 
+/// Add DIDs to a list using `applyWrites` in batches of 200.
+///
+/// Falls back to individual `createRecord` calls if a batch fails.
+/// A 250 ms sleep is inserted between batches to be polite to the PDS.
 async fn add_to_list_batch(
     client: &Client,
     pds: &str,
@@ -493,6 +603,10 @@ async fn add_to_list_batch(
     Ok(total_added)
 }
 
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
@@ -501,22 +615,26 @@ async fn main() -> Result<()> {
     let mut cache = Cache::load(&cache_path)?;
     let client = Client::new();
 
+    // 1. Resolve identity
     let ident = if args.handle.starts_with("did:") {
         args.handle.clone()
     } else {
         resolve_did(&client, &mut cache, &args.handle).await?
     };
 
+    // 2. Resolve PDS
     let pds = get_pds(&client, &mut cache, &ident).await?;
     if args.verbose > 0 {
         eprintln!("PDS: {}", pds);
     }
 
+    // 3. Authenticate
     let (token, my_did) = login(&client, &args.handle, &args.password, &pds).await?;
     if args.verbose > 0 {
         eprintln!("Authenticated as {}", my_did);
     }
 
+    // 4. Fetch blockers and own blocks
     let blockers = get_blockers(&client, &ident).await?;
     let my_blocks = fetch_my_blocks(&client, &pds, &token).await?;
 
@@ -531,9 +649,11 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
+    // 5. Resolve handles
     let dids: Vec<String> = blockers.iter().map(|(d, _)| d.clone()).collect();
     let profiles = get_profiles(&client, &mut cache, &dids).await?;
 
+    // 6. Compare
     let mut i_block_them = Vec::new();
     let mut i_dont_block_them = Vec::new();
 
@@ -550,12 +670,14 @@ async fn main() -> Result<()> {
         }
     }
 
+    // 7. Optional block back
     if args.block_back && !i_dont_block_them.is_empty() {
         let to_block: Vec<String> = i_dont_block_them.iter().map(|r| r.did.clone()).collect();
         let blocked_now = block_accounts(&client, &pds, &token, &my_did, &to_block, args.block_workers).await?;
         eprintln!("Blocked back {} account(s).", blocked_now);
     }
 
+    // 8. Optional list creation
     if let Some(list_name) = &args.list {
         if !blockers.is_empty() {
             let list_uri = create_list(&client, &pds, &token, &my_did, list_name).await?;
@@ -566,6 +688,7 @@ async fn main() -> Result<()> {
         }
     }
 
+    // 9. Write output
     let output = Output {
         i_block_them,
         i_dont_block_them,

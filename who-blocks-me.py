@@ -7,9 +7,38 @@
 #     "httpx>=0.27",
 # ]
 # ///
-"""List Bluesky accounts blocking you, split by whether you block them back.
+"""who-blocks-me.py
 
-Optionally block back all one-way blockers in parallel via async HTTP.
+Discover who blocks you on Bluesky, split by whether you block them back.
+
+Optional actions:
+    --block-back    Create block records for all one-way blockers concurrently.
+    --list NAME     Create (or reuse) a curation list and add all blockers to it.
+
+Architecture
+------------
+1. Resolve the user's handle → DID via Clearsky.
+2. Resolve the DID → PDS endpoint (plc.directory or did:web well-known).
+3. Authenticate with the PDS (falling back to bsky.social).
+4. Fetch the user's own block list (paginated, 100/page).
+5. Fetch the Clearsky single-blocklist (paginated, 100/page).
+6. Resolve handles for unknown DIDs in batches of 25 via app.bsky.actor.getProfiles.
+7. Compare and emit two groups: mutual blocks vs. one-way blocks.
+8. Optionally block back or add to a list.
+
+Concurrency
+-----------
+- Profile resolution is capped at 10 concurrent batches.
+- Block-back creation is capped by --block-workers (default 10).
+- List additions use applyWrites in batches of 200.
+
+Caching
+-------
+ diskcache.Cache at ~/.cache/who-blocks-me caches:
+    - Clearsky DID lookups
+    - DID documents (PDS endpoints)
+    - Handle → DID mappings
+    - DID → handle mappings
 """
 
 from __future__ import annotations
@@ -28,6 +57,9 @@ import httpx
 from tqdm import tqdm
 from tqdm.asyncio import tqdm as tqdm_async
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
 CLEARSKY = "https://public.api.clearsky.services"
 BSKY_PUBLIC = "https://public.api.bsky.app"
 BSKY_SOCIAL = "https://bsky.social"
@@ -37,11 +69,25 @@ LIST_ITEM_COLLECTION = "app.bsky.graph.listitem"
 CACHE = diskcache.Cache(str(Path.home() / ".cache" / "who-blocks-me"))
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def iso_now() -> str:
+    """Return the current UTC timestamp in ISO-8601 / ATProto format."""
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 async def fetch(client: httpx.AsyncClient, url: str, ttl: int = 3600) -> dict:
+    """GET *url* with short-term caching via diskcache.
+
+    Args:
+        client: Shared httpx async client.
+        url: Target URL.
+        ttl: Cache expiration in seconds (default 1 h).
+
+    Returns:
+        Parsed JSON response as a dict.
+    """
     if url in CACHE:
         return CACHE[url]
     resp = await client.get(url, headers={"Accept": "application/json"})
@@ -61,6 +107,11 @@ async def bluesky_api(
     body: dict[str, Any] | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
+    """Low-level Bluesky / XRPC helper.
+
+    Automatically injects Accept, User-Agent and Authorization headers.
+    Raises RuntimeError on non-2xx with a truncated body preview.
+    """
     url = f"{base}/xrpc/{nsid}"
     headers = {"Accept": "application/json", "User-Agent": "who-blocks-me/1.0"}
     if token:
@@ -77,12 +128,20 @@ async def bluesky_api(
     return resp.json() if resp.text else {}
 
 
+# ---------------------------------------------------------------------------
+# Identity resolution
+# ---------------------------------------------------------------------------
 async def resolve_did(client: httpx.AsyncClient, handle: str) -> str:
+    """Resolve a Bluesky handle to a DID via Clearsky's anonymous endpoint."""
     data = await fetch(client, f"{CLEARSKY}/api/v1/anon/get-did/{handle}")
     return data["data"]["did_identifier"]
 
 
 async def get_pds(client: httpx.AsyncClient, did: str) -> str:
+    """Resolve a DID to its ATProto PDS endpoint.
+
+    Supports did:plc (via plc.directory) and did:web (via .well-known/did.json).
+    """
     if did.startswith("did:plc:"):
         doc = await fetch(client, f"https://plc.directory/{did}")
     elif did.startswith("did:web:"):
@@ -98,6 +157,10 @@ async def get_pds(client: httpx.AsyncClient, did: str) -> str:
 
 
 async def login(client: httpx.AsyncClient, identifier: str, password: str, pds: str) -> tuple[str, str]:
+    """Authenticate and return (accessJwt, did).
+
+    Tries the user's own PDS first, then falls back to bsky.social.
+    """
     for host in dict.fromkeys([pds, BSKY_SOCIAL]):
         try:
             data = await bluesky_api(
@@ -110,7 +173,14 @@ async def login(client: httpx.AsyncClient, identifier: str, password: str, pds: 
     raise RuntimeError("Authentication failed")
 
 
+# ---------------------------------------------------------------------------
+# Block list fetching
+# ---------------------------------------------------------------------------
 async def fetch_my_blocks(client: httpx.AsyncClient, pds: str, token: str) -> set[str]:
+    """Return a set of DIDs the authenticated user blocks.
+
+    Paginated through app.bsky.graph.getBlocks (100 records / page).
+    """
     blocked: set[str] = set()
     cursor: str | None = None
     pbar = tqdm(desc="Fetching my blocks", unit="page", file=sys.stderr)
@@ -131,6 +201,7 @@ async def fetch_my_blocks(client: httpx.AsyncClient, pds: str, token: str) -> se
 
 
 async def fetch_clearsky_page(client: httpx.AsyncClient, identifier: str, page: int) -> list[dict]:
+    """Fetch a single page of Clearsky's single-blocklist endpoint."""
     url = f"{CLEARSKY}/api/v1/anon/single-blocklist/{identifier}"
     if page > 1:
         url += f"/{page}"
@@ -139,6 +210,10 @@ async def fetch_clearsky_page(client: httpx.AsyncClient, identifier: str, page: 
 
 
 async def get_blockers(client: httpx.AsyncClient, identifier: str) -> list[tuple[str, str]]:
+    """Return [(did, blocked_date), ...] for every account blocking *identifier*.
+
+    Iterates Clearsky pages until a partial page (< 100 items) signals the end.
+    """
     page = 1
     blockers: list[tuple[str, str]] = []
     pbar = tqdm(desc="Fetching blockers", unit="page", file=sys.stderr)
@@ -151,12 +226,20 @@ async def get_blockers(client: httpx.AsyncClient, identifier: str) -> list[tuple
         if len(items) < 100:
             break
         page += 1
-        await asyncio.sleep(0.25)
     pbar.close()
     return blockers
 
 
+# ---------------------------------------------------------------------------
+# Profile / handle resolution
+# ---------------------------------------------------------------------------
 async def get_profiles(client: httpx.AsyncClient, dids: list[str]) -> dict[str, str]:
+    """Batch-resolve DIDs to handles via app.bsky.actor.getProfiles.
+
+    - Reads from diskcache first.
+    - Splits missing entries into batches of 25 (API limit).
+    - Limits concurrency to 10 parallel batches.
+    """
     profiles: dict[str, str] = {}
     missing: list[str] = []
     for did in dids:
@@ -169,20 +252,22 @@ async def get_profiles(client: httpx.AsyncClient, dids: list[str]) -> dict[str, 
         return profiles
 
     batches = [missing[i : i + 25] for i in range(0, len(missing), 25)]
+    semaphore = asyncio.Semaphore(10)
 
     async def fetch_batch(batch: list[str]) -> dict[str, str]:
-        actors = "&".join(f"actors={d}" for d in batch)
-        url = f"{BSKY_PUBLIC}/xrpc/app.bsky.actor.getProfiles?{actors}"
-        try:
-            data = await fetch(client, url, ttl=3600)
-        except RuntimeError as exc:
-            logging.warning("profile batch failed: %s", exc)
-            return {}
-        result: dict[str, str] = {}
-        for p in data.get("profiles", []):
-            result[p["did"]] = p["handle"]
-            CACHE.set(p["did"], p["handle"], expire=3600)
-        return result
+        async with semaphore:
+            actors = "&".join(f"actors={d}" for d in batch)
+            url = f"{BSKY_PUBLIC}/xrpc/app.bsky.actor.getProfiles?{actors}"
+            try:
+                data = await fetch(client, url, ttl=3600)
+            except RuntimeError as exc:
+                logging.warning("profile batch failed: %s", exc)
+                return {}
+            result: dict[str, str] = {}
+            for p in data.get("profiles", []):
+                result[p["did"]] = p["handle"]
+                CACHE.set(p["did"], p["handle"], expire=3600)
+            return result
 
     results = await tqdm_async.gather(
         *[fetch_batch(b) for b in batches],
@@ -195,9 +280,16 @@ async def get_profiles(client: httpx.AsyncClient, dids: list[str]) -> dict[str, 
     return profiles
 
 
+# ---------------------------------------------------------------------------
+# Mutations (block back, lists)
+# ---------------------------------------------------------------------------
 async def block_accounts(
     client: httpx.AsyncClient, pds: str, token: str, my_did: str, dids: list[str], max_workers: int
 ) -> int:
+    """Create a block record for every DID in *dids*, limited to *max_workers* concurrency.
+
+    Returns the number of successfully created blocks.
+    """
     semaphore = asyncio.Semaphore(max_workers)
 
     async def block_one(did: str) -> bool:
@@ -217,7 +309,6 @@ async def block_accounts(
                         },
                     },
                 )
-                await asyncio.sleep(0.1)
                 return True
             except RuntimeError as exc:
                 logging.warning("Failed to block %s: %s", did, exc)
@@ -235,6 +326,7 @@ async def block_accounts(
 async def find_list_by_name(
     client: httpx.AsyncClient, my_did: str, name: str
 ) -> str | None:
+    """Look up an existing curation list by exact name match."""
     data = await bluesky_api(
         client, BSKY_PUBLIC, "app.bsky.graph.getLists",
         params={"actor": my_did, "limit": 100},
@@ -248,6 +340,7 @@ async def find_list_by_name(
 async def create_list(
     client: httpx.AsyncClient, pds: str, token: str, my_did: str, name: str
 ) -> str:
+    """Create a new curation list and return its AT URI."""
     body = {
         "repo": my_did,
         "collection": LIST_COLLECTION,
@@ -268,6 +361,10 @@ async def create_list(
 async def add_to_list_batch(
     client: httpx.AsyncClient, pds: str, token: str, my_did: str, list_uri: str, dids: list[str]
 ) -> int:
+    """Add DIDs to a list using applyWrites in batches of 200.
+
+    Falls back to individual createRecord calls if a batch fails.
+    """
     BATCH_SIZE = 200
     total_added = 0
     batches = [dids[i : i + BATCH_SIZE] for i in range(0, len(dids), BATCH_SIZE)]
@@ -314,11 +411,13 @@ async def add_to_list_batch(
                     pbar.update(1)
                 except RuntimeError as exc2:
                     logging.warning("Failed to add %s to list: %s", did, exc2)
-        await asyncio.sleep(0.25)
     pbar.close()
     return total_added
 
 
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 async def main() -> int:
     parser = argparse.ArgumentParser(
         description="List accounts blocking you, split by whether you block them back. "
@@ -329,7 +428,7 @@ async def main() -> int:
     parser.add_argument("-v", "--verbose", action="count", default=0)
     parser.add_argument("-o", "--output", default="blocks.json", help="output JSON file")
     parser.add_argument("--block-back", action="store_true", help="block all one-way blockers in parallel")
-    parser.add_argument("--block-workers", type=int, default=4, help="max concurrent block requests (default: 4)")
+    parser.add_argument("--block-workers", type=int, default=10, help="max concurrent block requests (default: 10)")
     parser.add_argument("--list", dest="list_name", metavar="NAME", help="create a curation list with NAME and add all one-way blockers")
     args = parser.parse_args()
 

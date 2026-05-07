@@ -7,7 +7,38 @@
 #     "httpx>=0.27",
 # ]
 # ///
-"""List all Bluesky accounts that you block."""
+"""blocks-to-list.py
+
+List every Bluesky account that *you* block and optionally sync them to a
+moderation list (modlist).
+
+Architecture
+------------
+1. Resolve handle → DID and authenticate (same flow as who-blocks-me.py).
+2. Fetch the user's own block list via app.bsky.graph.getBlocks.
+3. Resolve any missing handles in batches of 25.
+4. Write the full list to my-blockings.json.
+5. Optionally create/find a moderation list and add all blocked accounts.
+
+Moderation list mode
+--------------------
+    --moderation-list NAME   Create or locate a modlist by name.
+    --add-to-list            Actually populate the modlist (default is read-only).
+
+The script deduplicates against existing list members before adding.
+
+Concurrency
+-----------
+- Profile batch resolution is capped at 10 concurrent requests.
+- Individual list-item creation (when applyWrites is unavailable) is capped
+  at 10 concurrent requests.
+
+Caching
+-------
+Uses the same diskcache.Cache at ~/.cache/who-blocks-me as who-blocks-me.py.
+The block list itself is cached under the key ``blocks-to-list:<did>`` for
+1 hour unless ``--no-cache`` is passed.
+"""
 
 from __future__ import annotations
 
@@ -25,6 +56,9 @@ import httpx
 from tqdm import tqdm
 from tqdm.asyncio import tqdm as tqdm_async
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
 CLEARSKY = "https://public.api.clearsky.services"
 BSKY_PUBLIC = "https://public.api.bsky.app"
 BSKY_SOCIAL = "https://bsky.social"
@@ -34,7 +68,20 @@ LIST_ITEM_COLLECTION = "app.bsky.graph.listitem"
 CACHE = diskcache.Cache(str(Path.home() / ".cache" / "who-blocks-me"))
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 async def fetch(client: httpx.AsyncClient, url: str, ttl: int = 3600) -> dict:
+    """GET *url* with short-term caching via diskcache.
+
+    Args:
+        client: Shared httpx async client.
+        url: Target URL.
+        ttl: Cache expiration in seconds (default 1 h).
+
+    Returns:
+        Parsed JSON response as a dict.
+    """
     if url in CACHE:
         return CACHE[url]
     resp = await client.get(url, headers={"Accept": "application/json"})
@@ -54,6 +101,11 @@ async def bluesky_api(
     body: dict[str, Any] | None = None,
     token: str | None = None,
 ) -> dict[str, Any]:
+    """Low-level Bluesky / XRPC helper.
+
+    Automatically injects Accept, User-Agent and Authorization headers.
+    Raises RuntimeError on non-2xx with a truncated body preview.
+    """
     url = f"{base}/xrpc/{nsid}"
     headers = {"Accept": "application/json", "User-Agent": "blocks-to-list/1.0"}
     if token:
@@ -70,12 +122,20 @@ async def bluesky_api(
     return resp.json() if resp.text else {}
 
 
+# ---------------------------------------------------------------------------
+# Identity resolution
+# ---------------------------------------------------------------------------
 async def resolve_did(client: httpx.AsyncClient, handle: str) -> str:
+    """Resolve a Bluesky handle to a DID via Clearsky's anonymous endpoint."""
     data = await fetch(client, f"{CLEARSKY}/api/v1/anon/get-did/{handle}")
     return data["data"]["did_identifier"]
 
 
 async def get_pds(client: httpx.AsyncClient, did: str) -> str:
+    """Resolve a DID to its ATProto PDS endpoint.
+
+    Supports did:plc (via plc.directory) and did:web (via .well-known/did.json).
+    """
     if did.startswith("did:plc:"):
         doc = await fetch(client, f"https://plc.directory/{did}")
     elif did.startswith("did:web:"):
@@ -91,6 +151,10 @@ async def get_pds(client: httpx.AsyncClient, did: str) -> str:
 
 
 async def login(client: httpx.AsyncClient, identifier: str, password: str, pds: str) -> tuple[str, str]:
+    """Authenticate and return (accessJwt, did).
+
+    Tries the user's own PDS first, then falls back to bsky.social.
+    """
     for host in dict.fromkeys([pds, BSKY_SOCIAL]):
         try:
             data = await bluesky_api(
@@ -103,7 +167,15 @@ async def login(client: httpx.AsyncClient, identifier: str, password: str, pds: 
     raise RuntimeError("Authentication failed")
 
 
+# ---------------------------------------------------------------------------
+# Data fetching
+# ---------------------------------------------------------------------------
 async def fetch_my_blocks(client: httpx.AsyncClient, pds: str, token: str) -> list[dict]:
+    """Return every account the authenticated user blocks.
+
+    Paginated through app.bsky.graph.getBlocks (100 records / page).
+    Each record contains at minimum ``{"did": ..., "handle": ...}``.
+    """
     blocked: list[dict] = []
     cursor: str | None = None
     pbar = tqdm(desc="Fetching my blocks", unit="page", file=sys.stderr)
@@ -126,6 +198,7 @@ async def fetch_my_blocks(client: httpx.AsyncClient, pds: str, token: str) -> li
 async def find_list_by_name(
     client: httpx.AsyncClient, my_did: str, name: str
 ) -> str | None:
+    """Look up an existing list by exact name match via app.bsky.graph.getLists."""
     data = await bluesky_api(
         client, BSKY_PUBLIC, "app.bsky.graph.getLists",
         params={"actor": my_did, "limit": 100},
@@ -139,6 +212,7 @@ async def find_list_by_name(
 async def create_moderation_list(
     client: httpx.AsyncClient, pds: str, token: str, my_did: str, name: str
 ) -> str:
+    """Create a new *moderation* list (modlist) and return its AT URI."""
     body = {
         "repo": my_did,
         "collection": LIST_COLLECTION,
@@ -157,6 +231,10 @@ async def create_moderation_list(
 
 
 async def fetch_list_members(client: httpx.AsyncClient, list_uri: str) -> list[dict]:
+    """Return every member of a list via app.bsky.graph.getList.
+
+    Each member record has shape ``{"did": ..., "handle": ...}``.
+    """
     members: list[dict] = []
     cursor: str | None = None
     pbar = tqdm(desc="Fetching list members", unit="page", file=sys.stderr)
@@ -180,9 +258,17 @@ async def fetch_list_members(client: httpx.AsyncClient, list_uri: str) -> list[d
     return members
 
 
+# ---------------------------------------------------------------------------
+# List mutations
+# ---------------------------------------------------------------------------
 async def add_to_list_batch(
     client: httpx.AsyncClient, pds: str, token: str, my_did: str, list_uri: str, dids: list[str]
 ) -> int:
+    """Add DIDs to a moderation list using individual createRecord calls.
+
+    Limited to 10 concurrent requests to avoid hammering the PDS.
+    Returns the number of successfully added accounts.
+    """
     semaphore = asyncio.Semaphore(10)
     total_added = 0
     errors: list[str] = []
@@ -252,7 +338,16 @@ async def add_to_list_batch(
     return sum(results)
 
 
+# ---------------------------------------------------------------------------
+# Profile / handle resolution
+# ---------------------------------------------------------------------------
 async def get_profiles(client: httpx.AsyncClient, dids: list[str]) -> dict[str, str]:
+    """Batch-resolve DIDs to handles via app.bsky.actor.getProfiles.
+
+    - Reads from diskcache first.
+    - Splits missing entries into batches of 25 (API limit).
+    - Limits concurrency to 10 parallel batches.
+    """
     profiles: dict[str, str] = {}
     missing: list[str] = []
     for did in dids:
@@ -265,20 +360,22 @@ async def get_profiles(client: httpx.AsyncClient, dids: list[str]) -> dict[str, 
         return profiles
 
     batches = [missing[i : i + 25] for i in range(0, len(missing), 25)]
+    semaphore = asyncio.Semaphore(10)
 
     async def fetch_batch(batch: list[str]) -> dict[str, str]:
-        actors = "&".join(f"actors={d}" for d in batch)
-        url = f"{BSKY_PUBLIC}/xrpc/app.bsky.actor.getProfiles?{actors}"
-        try:
-            data = await fetch(client, url, ttl=3600)
-        except RuntimeError as exc:
-            logging.warning("profile batch failed: %s", exc)
-            return {}
-        result: dict[str, str] = {}
-        for p in data.get("profiles", []):
-            result[p["did"]] = p["handle"]
-            CACHE.set(p["did"], p["handle"], expire=3600)
-        return result
+        async with semaphore:
+            actors = "&".join(f"actors={d}" for d in batch)
+            url = f"{BSKY_PUBLIC}/xrpc/app.bsky.actor.getProfiles?{actors}"
+            try:
+                data = await fetch(client, url, ttl=3600)
+            except RuntimeError as exc:
+                logging.warning("profile batch failed: %s", exc)
+                return {}
+            result: dict[str, str] = {}
+            for p in data.get("profiles", []):
+                result[p["did"]] = p["handle"]
+                CACHE.set(p["did"], p["handle"], expire=3600)
+            return result
 
     results = await tqdm_async.gather(
         *[fetch_batch(b) for b in batches],
@@ -291,6 +388,9 @@ async def get_profiles(client: httpx.AsyncClient, dids: list[str]) -> dict[str, 
     return profiles
 
 
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 async def main() -> int:
     parser = argparse.ArgumentParser(description="List all Bluesky accounts that you block.")
     parser.add_argument("handle", help="Your Bluesky handle or DID")
@@ -299,7 +399,7 @@ async def main() -> int:
     parser.add_argument("-o", "--output", default="my-blockings.json", help="output JSON file")
     parser.add_argument("--no-cache", action="store_true", help="ignore cached block list and fetch fresh data")
     parser.add_argument("--moderation-list", metavar="NAME", help="create/find a moderation list and list its members")
-    parser.add_argument("--add-to-list", action="store_true", help="add blocked accounts to the moderation list in batches of 100")
+    parser.add_argument("--add-to-list", action="store_true", help="add blocked accounts to the moderation list")
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose >= 2 else logging.INFO if args.verbose else logging.WARNING
@@ -377,7 +477,7 @@ async def main() -> int:
             if args.add_to_list:
                 to_add = [r["did"] for r in blocked if r["did"] not in existing_dids and r.get("handle")]
                 if to_add:
-                    logging.debug("Adding %d new accounts to moderation list in batches of 100", len(to_add))
+                    logging.debug("Adding %d new accounts to moderation list", len(to_add))
                     added_now = await add_to_list_batch(client, pds, token, my_did, list_uri, to_add)
                     print(f"Added {added_now} new account(s) to moderation list.", file=sys.stderr)
                 else:
