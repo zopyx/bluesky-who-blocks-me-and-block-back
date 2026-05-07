@@ -3,21 +3,24 @@ import Foundation
 @MainActor
 final class ListsViewModel: ObservableObject {
     @Published private(set) var listsByKind: [BlueskyList.Kind: [BlueskyList]] = [:]
+    @Published private(set) var activeProfile: BlueskyProfile?
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
 
     func load(
         for account: AppAccount?,
         appPassword: String?,
-        using service: BlueskyListServicing
+        using client: LiveBlueskyClient
     ) async {
         guard let account else {
             listsByKind = [:]
+            activeProfile = nil
             return
         }
 
         guard let appPassword, !appPassword.isEmpty else {
             listsByKind = [:]
+            activeProfile = nil
             errorMessage = BlueskyAPIError.missingCredentials.localizedDescription
             return
         }
@@ -26,10 +29,19 @@ final class ListsViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let lists = try await service.fetchLists(for: account, appPassword: appPassword)
+            async let listsTask = client.fetchLists(for: account, appPassword: appPassword)
+            async let profileTask = client.fetchProfile(
+                did: account.did ?? account.handle,
+                account: account,
+                appPassword: appPassword
+            )
+
+            let lists = try await listsTask
             listsByKind = Dictionary(grouping: lists, by: \.kind)
+            activeProfile = try await profileTask
         } catch {
             listsByKind = [:]
+            activeProfile = nil
             errorMessage = error.localizedDescription
         }
 

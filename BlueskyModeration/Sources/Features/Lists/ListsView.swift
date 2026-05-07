@@ -28,7 +28,10 @@ struct ListsView: View {
                     List {
                         if let activeAccount = accountStore.activeAccount {
                             Section {
-                                AccountSummaryCard(account: activeAccount)
+                                AccountSummaryCard(
+                                    account: activeAccount,
+                                    avatarURL: viewModel.activeProfile?.avatarURL
+                                )
                                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                                     .listRowBackground(Color.clear)
                             }

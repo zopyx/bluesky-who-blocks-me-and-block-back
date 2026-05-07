@@ -2,23 +2,11 @@ import SwiftUI
 
 struct AccountSummaryCard: View {
     let account: AppAccount
+    let avatarURL: URL?
 
     var body: some View {
         HStack(spacing: 14) {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [.skyPrimary, .skyAccent],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 52, height: 52)
-                .overlay {
-                    Text(account.displayName.prefix(1).uppercased())
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(.white)
-                }
+            avatarView
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(account.displayName)
@@ -43,8 +31,49 @@ struct AccountSummaryCard: View {
         )
         .padding(.horizontal)
     }
+
+    @ViewBuilder
+    private var avatarView: some View {
+        if let avatarURL {
+            AsyncImage(url: avatarURL) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                avatarPlaceholder
+            }
+            .frame(width: 52, height: 52)
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.24), lineWidth: 1)
+            }
+        } else {
+            avatarPlaceholder
+        }
+    }
+
+    private var avatarPlaceholder: some View {
+        Circle()
+            .fill(
+                LinearGradient(
+                    colors: [.skyPrimary, .skyAccent],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: 52, height: 52)
+            .overlay {
+                Text(account.displayName.prefix(1).uppercased())
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.white)
+            }
+    }
 }
 
 #Preview {
-    AccountSummaryCard(account: AppAccount(handle: "team-alpha.bsky.social", displayName: "Team Alpha"))
+    AccountSummaryCard(
+        account: AppAccount(handle: "team-alpha.bsky.social", displayName: "Team Alpha"),
+        avatarURL: nil
+    )
 }

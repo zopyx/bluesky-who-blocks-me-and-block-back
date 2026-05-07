@@ -14,6 +14,8 @@ struct InfoView: View {
             }
             .background(background)
             .navigationTitle("Info")
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)
         }
     }
 
@@ -156,16 +158,24 @@ struct InfoView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(.caption2.weight(.bold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.62))
             Text(value)
                 .font(.title3.weight(.bold))
+                .foregroundStyle(.white)
             Text(note)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.72))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 
     private func detailCard(
@@ -184,6 +194,7 @@ struct InfoView: View {
 
                 Text(title)
                     .font(.headline)
+                    .foregroundStyle(.white)
             }
 
             VStack(alignment: .leading, spacing: 10) {
@@ -196,7 +207,7 @@ struct InfoView: View {
 
                         Text(line)
                             .font(.subheadline)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.white.opacity(0.84))
                     }
                 }
             }
@@ -204,25 +215,39 @@ struct InfoView: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.82))
+                .fill(Color.white.opacity(0.08))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.55), lineWidth: 1)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
-        .shadow(color: tone.opacity(0.08), radius: 12, y: 8)
+        .shadow(color: .black.opacity(0.24), radius: 16, y: 10)
     }
 
     private var background: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.95, green: 0.98, blue: 1.0),
-                Color(red: 0.91, green: 0.96, blue: 0.99),
-                Color(red: 0.98, green: 0.99, blue: 1.0)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.04, green: 0.06, blue: 0.11),
+                    Color(red: 0.06, green: 0.09, blue: 0.16),
+                    Color(red: 0.04, green: 0.11, blue: 0.19)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(Color.skyPrimary.opacity(0.22))
+                .frame(width: 280, height: 280)
+                .blur(radius: 44)
+                .offset(x: 140, y: -220)
+
+            Circle()
+                .fill(Color.skyAccent.opacity(0.16))
+                .frame(width: 260, height: 260)
+                .blur(radius: 54)
+                .offset(x: -150, y: 240)
+        }
         .ignoresSafeArea()
     }
 }
