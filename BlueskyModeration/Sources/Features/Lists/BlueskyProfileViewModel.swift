@@ -2,9 +2,19 @@ import Foundation
 
 @MainActor
 final class BlueskyProfileViewModel: ObservableObject {
-    @Published private(set) var profile: BlueskyProfile?
+    @Published private(set) var inspection: ProfileInspection?
     @Published private(set) var isLoading = false
+    @Published private(set) var isUpdatingModeration = false
+    @Published var statusMessage: String?
     @Published var errorMessage: String?
+
+    var profile: BlueskyProfile? {
+        inspection?.profile
+    }
+
+    var listMemberships: [ProfileListMembership] {
+        inspection?.listMemberships ?? []
+    }
 
     func load(
         did actorDID: String,
@@ -14,17 +24,144 @@ final class BlueskyProfileViewModel: ObservableObject {
     ) async {
         isLoading = true
         errorMessage = nil
+        statusMessage = nil
 
         do {
-            profile = try await client.fetchProfile(
-                did: actorDID,
+            inspection = try await client.inspectProfile(
+                query: actorDID,
                 account: account,
                 appPassword: appPassword
             )
         } catch {
+            inspection = nil
             errorMessage = error.localizedDescription
         }
 
         isLoading = false
+    }
+
+    func toggleMute(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        guard let profile else { return }
+
+        isUpdatingModeration = true
+        defer { isUpdatingModeration = false }
+
+        do {
+            if profile.viewerState?.muted == true {
+                try await client.unmuteActor(
+                    did: profile.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+                statusMessage = "Account unmuted."
+            } else {
+                try await client.muteActor(
+                    did: profile.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+                statusMessage = "Account muted."
+            }
+
+            await load(
+                did: profile.did,
+                account: account,
+                appPassword: appPassword,
+                using: client
+            )
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func toggleBlock(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        guard let profile else { return }
+
+        isUpdatingModeration = true
+        defer { isUpdatingModeration = false }
+
+        do {
+            if let recordURI = profile.viewerState?.blockingRecordURI,
+               profile.viewerState?.isBlocking == true {
+                try await client.unblockActor(
+                    recordURI: recordURI,
+                    account: account,
+                    appPassword: appPassword
+                )
+                statusMessage = "Account unblocked."
+            } else {
+                try await client.blockActor(
+                    did: profile.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+                statusMessage = "Account blocked."
+            }
+
+            await load(
+                did: profile.did,
+                account: account,
+                appPassword: appPassword,
+                using: client
+            )
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func toggleListMembership(
+        _ membership: ProfileListMembership,
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        guard let profile else { return }
+
+        isUpdatingModeration = true
+        defer { isUpdatingModeration = false }
+
+        do {
+            if membership.isMember, let recordURI = membership.listItemRecordURI {
+                try await client.removeMember(
+                    recordURI: recordURI,
+                    account: account,
+                    appPassword: appPassword
+                )
+                statusMessage = "Removed from \(membership.name)."
+            } else {
+                guard let list = try await client.fetchList(
+                    uri: membership.listURI,
+                    account: account,
+                    appPassword: appPassword
+                ) else {
+                    throw BlueskyAPIError.server("That list could not be loaded.")
+                }
+
+                try await client.addActor(
+                    did: profile.did,
+                    to: list,
+                    account: account,
+                    appPassword: appPassword
+                )
+                statusMessage = "Added to \(membership.name)."
+            }
+
+            await load(
+                did: profile.did,
+                account: account,
+                appPassword: appPassword,
+                using: client
+            )
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileInspectorView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = ProfileInspectorViewModel()
 
     var body: some View {
@@ -63,6 +64,13 @@ struct ProfileInspectorView: View {
                     }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isLoading)
 
+                    Button {
+                        workspaceStore.saveProfileSearch(viewModel.query)
+                    } label: {
+                        Label("Save Search", systemImage: "bookmark")
+                    }
+                    .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
                     if let activeAccount = accountStore.activeAccount {
                         Text("Using \(activeAccount.handle) for authenticated lookup.")
                             .font(.caption)
@@ -71,6 +79,50 @@ struct ProfileInspectorView: View {
                         Text("Add and select an account first.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                if !workspaceStore.savedSearches.isEmpty {
+                    Section("Saved Searches") {
+                        ForEach(workspaceStore.savedSearches) { search in
+                            Button {
+                                viewModel.query = search.query
+                            } label: {
+                                HStack {
+                                    Text(search.query)
+                                    Spacer()
+                                    Image(systemName: "bookmark.fill")
+                                        .foregroundStyle(Color.skyPrimary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    workspaceStore.deleteSavedSearch(search)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if !workspaceStore.recentSearches.isEmpty {
+                    Section("Recent Searches") {
+                        ForEach(workspaceStore.recentSearches) { search in
+                            Button {
+                                viewModel.query = search.query
+                            } label: {
+                                HStack {
+                                    Text(search.query)
+                                    Spacer()
+                                    Text(search.usedAt, style: .time)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
 
@@ -100,6 +152,25 @@ struct ProfileInspectorView: View {
                         LabeledContent("Posts", value: countText(inspection.profile.postsCount))
                         LabeledContent("Lists", value: countText(inspection.profile.listsCount))
                         LabeledContent("Starter Packs", value: countText(inspection.profile.starterPacksCount))
+                    }
+
+                    Section("Moderation Actions") {
+                        NavigationLink {
+                            BlueskyProfileView(
+                                member: BlueskyListMember(
+                                    recordURI: "inspection:\(inspection.profile.did)",
+                                    actor: BlueskyActor(
+                                        did: inspection.profile.did,
+                                        handle: inspection.profile.handle,
+                                        displayName: inspection.profile.displayName,
+                                        avatarURL: inspection.profile.avatarURL
+                                    )
+                                ),
+                                list: nil
+                            )
+                        } label: {
+                            Label("Open Moderation Controls", systemImage: "slider.horizontal.3")
+                        }
                     }
 
                     if !inspection.profile.labels.isEmpty {
@@ -166,6 +237,11 @@ struct ProfileInspectorView: View {
                 }
             }
             .navigationTitle("Profile")
+            .task {
+                if viewModel.query.isEmpty {
+                    viewModel.query = workspaceStore.lastProfileQuery
+                }
+            }
             .task(id: viewModel.query) {
                 do {
                     try await Task.sleep(for: .milliseconds(300))
@@ -178,6 +254,14 @@ struct ProfileInspectorView: View {
                     appPassword: activePassword,
                     using: blueskyClient
                 )
+            }
+            .onChange(of: viewModel.query) { _, newValue in
+                workspaceStore.lastProfileQuery = newValue
+            }
+            .onChange(of: viewModel.inspection) { _, newInspection in
+                if let newInspection {
+                    workspaceStore.noteRecentSearch(newInspection.profile.handle)
+                }
             }
             .alert("Profile", isPresented: .constant(viewModel.errorMessage != nil), actions: {
                 Button("OK") {
@@ -205,4 +289,5 @@ struct ProfileInspectorView: View {
     ProfileInspectorView()
         .environmentObject(AccountStore(preview: true))
         .environmentObject(PreviewBlueskyClient())
+        .environmentObject(ModerationWorkspaceStore(preview: true))
 }

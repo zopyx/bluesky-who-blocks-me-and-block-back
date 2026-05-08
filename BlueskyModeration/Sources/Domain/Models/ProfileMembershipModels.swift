@@ -7,14 +7,23 @@ struct ProfileListMembership: Identifiable, Hashable {
     let kind: BlueskyList.Kind
     let memberCount: Int?
     let isMember: Bool
+    let listItemRecordURI: String?
 
-    init(listURI: String, name: String, kind: BlueskyList.Kind, memberCount: Int?, isMember: Bool) {
+    init(
+        listURI: String,
+        name: String,
+        kind: BlueskyList.Kind,
+        memberCount: Int?,
+        isMember: Bool,
+        listItemRecordURI: String?
+    ) {
         self.id = listURI
         self.listURI = listURI
         self.name = name
         self.kind = kind
         self.memberCount = memberCount
         self.isMember = isMember
+        self.listItemRecordURI = listItemRecordURI
     }
 }
 

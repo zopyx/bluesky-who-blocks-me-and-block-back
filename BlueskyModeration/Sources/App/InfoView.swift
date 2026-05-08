@@ -8,6 +8,7 @@ struct InfoView: View {
                     heroCard
                     metricStrip
                     detailGrid
+                    authorCard
                     footerCard
                 }
                 .padding(16)
@@ -89,35 +90,35 @@ struct InfoView: View {
     private var detailGrid: some View {
         VStack(spacing: 12) {
             detailCard(
-                title: "What It Does",
-                systemImage: "wand.and.stars",
+                title: "Core Workflows",
+                systemImage: "checklist.checked",
                 tone: .skyPrimary,
                 lines: [
-                    "Store multiple Bluesky accounts with app-password login.",
-                    "Browse owned lists and moderation lists with member counts.",
-                    "Search users, add them to lists, and remove current members."
+                    "Add multiple Bluesky accounts, store app passwords in Keychain, and switch the active account quickly.",
+                    "Browse owned curation and moderation lists, inspect members, and edit list metadata.",
+                    "Search for actors, add them to lists, remove current members, and run multi-select bulk actions."
                 ]
             )
 
             detailCard(
-                title: "Why It Feels Fast",
-                systemImage: "bolt.shield",
+                title: "Moderation Tools",
+                systemImage: "hand.raised.square.on.square",
                 tone: .skyAccent,
                 lines: [
-                    "The app is focused on operational moderation flows instead of full social browsing.",
-                    "Account switching and list actions stay close to the surface.",
-                    "The design keeps heavy actions simple and visible."
+                    "Open profile inspection to review labels, account stats, owned-list membership, and direct moderation controls.",
+                    "Mute, unmute, block, unblock, and add or remove an actor from moderation-oriented lists.",
+                    "Compare lists, copy or move selected members, and export member CSV files for outside review."
                 ]
             )
 
             detailCard(
-                title: "What Comes Next",
-                systemImage: "point.3.connected.trianglepath.dotted",
+                title: "Saved Work",
+                systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90",
                 tone: Color(red: 0.96, green: 0.60, blue: 0.18),
                 lines: [
-                    "Session reuse and refresh-token handling.",
-                    "Pagination for large member sets.",
-                    "Deeper profile inspection and moderation diagnostics."
+                    "Save profile searches, reopen recent lookups, and keep the last-used query between launches.",
+                    "Import handles from pasted text or files, then export current membership as CSV.",
+                    "Capture local list snapshots so the app can show what changed between refreshes."
                 ]
             )
         }
@@ -132,9 +133,9 @@ struct InfoView: View {
                 .background(Color.skyPrimary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("App passwords stay in the iOS Keychain.")
+                Text("Account secrets stay in the iOS Keychain.")
                     .font(.subheadline.weight(.semibold))
-                Text("Authenticated requests always use the selected account context.")
+                Text("Every list action, profile lookup, import, export, and moderation request runs against the selected account context.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -143,6 +144,50 @@ struct InfoView: View {
         }
         .padding(16)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var authorCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: "person.crop.square")
+                    .font(.headline)
+                    .foregroundStyle(Color.skyAccent)
+                    .frame(width: 34, height: 34)
+                    .background(Color.skyAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                Text("Author and Legal")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Created by Andreas Jung.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.white.opacity(0.84))
+
+                Link("Website: py-consultant.com", destination: URL(string: "https://www.py-consultant.com/")!)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+
+                Link("Imprint", destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+
+                Link("Privacy Policy", destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.24), radius: 16, y: 10)
     }
 
     private func heroBadge(_ title: String) -> some View {

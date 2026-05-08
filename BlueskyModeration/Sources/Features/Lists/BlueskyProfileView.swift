@@ -7,6 +7,7 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @StateObject private var viewModel = BlueskyProfileViewModel()
+    @State private var isShowingBlockConfirmation = false
 
     var body: some View {
         Group {
@@ -30,6 +31,27 @@ struct BlueskyProfileView: View {
         }, message: {
             Text(viewModel.errorMessage ?? "")
         })
+        .confirmationDialog(
+            blockConfirmationTitle,
+            isPresented: $isShowingBlockConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(blockConfirmationActionTitle, role: .destructive) {
+                if let account = accountStore.activeAccount,
+                   let appPassword = accountStore.appPassword(for: account) {
+                    Task {
+                        await viewModel.toggleBlock(
+                            account: account,
+                            appPassword: appPassword,
+                            using: blueskyClient
+                        )
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(blockConfirmationMessage)
+        }
     }
 
     @ViewBuilder
@@ -62,6 +84,65 @@ struct BlueskyProfileView: View {
                     LabeledContent("Followers", value: statText(profile.followersCount))
                     LabeledContent("Following", value: statText(profile.followsCount))
                     LabeledContent("Posts", value: statText(profile.postsCount))
+                }
+
+                Section("Moderation") {
+                    if let viewerState = profile.viewerState {
+                        statusChip(
+                            title: viewerState.isBlocking ? "Blocked" : "Not blocked",
+                            tint: viewerState.isBlocking ? .red : Color.secondary,
+                            emphasized: viewerState.isBlocking
+                        )
+                        statusChip(
+                            title: viewerState.muted ? "Muted" : "Not muted",
+                            tint: viewerState.muted ? .orange : Color.secondary,
+                            emphasized: viewerState.muted
+                        )
+                    }
+
+                    if let statusMessage = viewModel.statusMessage {
+                        Text(statusMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button(role: profile.viewerState?.isBlocking == true ? .destructive : nil) {
+                        isShowingBlockConfirmation = true
+                    } label: {
+                        Label(
+                            profile.viewerState?.isBlocking == true ? "Unblock Account" : "Block Account",
+                            systemImage: profile.viewerState?.isBlocking == true ? "hand.raised.slash" : "hand.raised.fill"
+                        )
+                    }
+                    .disabled(viewModel.isUpdatingModeration)
+
+                    Button {
+                        Task {
+                            await viewModel.toggleMute(
+                                account: account,
+                                appPassword: appPassword,
+                                using: blueskyClient
+                            )
+                        }
+                    } label: {
+                        Label(
+                            profile.viewerState?.muted == true ? "Unmute Account" : "Mute Account",
+                            systemImage: profile.viewerState?.muted == true ? "speaker.wave.2" : "speaker.slash"
+                        )
+                    }
+                    .disabled(viewModel.isUpdatingModeration)
+                }
+
+                if !moderationMemberships.isEmpty {
+                    Section("Moderation Lists") {
+                        ForEach(moderationMemberships) { membership in
+                            membershipButton(
+                                membership: membership,
+                                account: account,
+                                appPassword: appPassword
+                            )
+                        }
+                    }
                 }
 
                 Section("Actions") {
@@ -135,6 +216,72 @@ struct BlueskyProfileView: View {
         }
 
         return "-"
+    }
+
+    private var moderationMemberships: [ProfileListMembership] {
+        let moderationLists = viewModel.listMemberships.filter { $0.kind == .moderation }
+        if moderationLists.isEmpty {
+            return viewModel.listMemberships
+        }
+        return moderationLists
+    }
+
+    private var blockConfirmationTitle: String {
+        viewModel.profile?.viewerState?.isBlocking == true ? "Unblock this account?" : "Block this account?"
+    }
+
+    private var blockConfirmationActionTitle: String {
+        viewModel.profile?.viewerState?.isBlocking == true ? "Unblock" : "Block"
+    }
+
+    private var blockConfirmationMessage: String {
+        if viewModel.profile?.viewerState?.isBlocking == true {
+            return "This removes your current block relationship for this account."
+        }
+
+        return "Blocking prevents interaction and is treated as a destructive moderation action."
+    }
+
+    private func statusChip(title: String, tint: Color, emphasized: Bool) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(emphasized ? tint : Color.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background((emphasized ? tint : Color.secondary).opacity(0.12), in: Capsule())
+    }
+
+    private func membershipButton(
+        membership: ProfileListMembership,
+        account: AppAccount,
+        appPassword: String
+    ) -> some View {
+        Button {
+            Task {
+                await viewModel.toggleListMembership(
+                    membership,
+                    account: account,
+                    appPassword: appPassword,
+                    using: blueskyClient
+                )
+            }
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(membership.name)
+                    Text(membership.isMember ? "Already included" : "Tap to add")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text(membership.isMember ? "Remove" : "Add")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(membership.isMember ? .red : Color.skyPrimary)
+            }
+        }
+        .disabled(viewModel.isUpdatingModeration)
     }
 }
 

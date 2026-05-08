@@ -2,6 +2,15 @@ import Foundation
 
 @MainActor
 final class PreviewBlueskyClient: LiveBlueskyClient {
+    private let previewActors = [
+        BlueskyActor(did: "did:plc:1", handle: "alice.bsky.social", displayName: "Alice Chen"),
+        BlueskyActor(did: "did:plc:2", handle: "moderator.bsky.social", displayName: "Moderator Desk"),
+        BlueskyActor(did: "did:plc:3", handle: "safetylab.bsky.social", displayName: "Safety Lab"),
+        BlueskyActor(did: "did:plc:4", handle: "bskynews.bsky.social", displayName: "Bluesky News"),
+        BlueskyActor(did: "did:plc:5", handle: "curation.team", displayName: "Curation Team"),
+        BlueskyActor(did: "did:plc:6", handle: "reports.ops", displayName: "Reports Ops")
+    ]
+
     override func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
         BlueskySession(
             did: "did:plc:previewaccount",
@@ -63,22 +72,41 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         account: AppAccount,
         appPassword: String
     ) async throws -> [BlueskyListMember] {
+        var cursor: String?
+        var allMembers: [BlueskyListMember] = []
+
+        repeat {
+            let page = try await fetchListMembersPage(
+                list: list,
+                cursor: cursor,
+                account: account,
+                appPassword: appPassword
+            )
+            allMembers.append(contentsOf: page.members)
+            cursor = page.cursor
+        } while cursor != nil
+
+        return allMembers
+    }
+
+    override func fetchListMembersPage(
+        list: BlueskyList,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> PagedListMembers {
         try await Task.sleep(for: .milliseconds(120))
 
-        return [
-            BlueskyListMember(
-                recordURI: "at://did:plc:preview/app.bsky.graph.listitem/1",
-                actor: BlueskyActor(did: "did:plc:1", handle: "alice.bsky.social", displayName: "Alice Chen")
-            ),
-            BlueskyListMember(
-                recordURI: "at://did:plc:preview/app.bsky.graph.listitem/2",
-                actor: BlueskyActor(did: "did:plc:2", handle: "moderator.bsky.social", displayName: "Moderator Desk")
-            ),
-            BlueskyListMember(
-                recordURI: "at://did:plc:preview/app.bsky.graph.listitem/3",
-                actor: BlueskyActor(did: "did:plc:3", handle: "safetylab.bsky.social", displayName: "Safety Lab")
-            )
-        ]
+        let members = previewMembers(for: list)
+        let pageSize = 3
+        let startIndex = Int(cursor ?? "0") ?? 0
+        let endIndex = min(startIndex + pageSize, members.count)
+        let nextCursor = endIndex < members.count ? String(endIndex) : nil
+
+        return PagedListMembers(
+            members: Array(members[startIndex..<endIndex]),
+            cursor: nextCursor
+        )
     }
 
     override func searchActors(
@@ -86,23 +114,41 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         account: AppAccount,
         appPassword: String
     ) async throws -> [BlueskyActor] {
+        let page = try await searchActorsPage(
+            query: query,
+            cursor: nil,
+            account: account,
+            appPassword: appPassword
+        )
+        return page.actors
+    }
+
+    override func searchActorsPage(
+        query: String,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> PagedActorSearch {
         try await Task.sleep(for: .milliseconds(120))
 
-        let all = [
-            BlueskyActor(did: "did:plc:1", handle: "alice.bsky.social", displayName: "Alice Chen"),
-            BlueskyActor(did: "did:plc:2", handle: "moderator.bsky.social", displayName: "Moderator Desk"),
-            BlueskyActor(did: "did:plc:3", handle: "safetylab.bsky.social", displayName: "Safety Lab"),
-            BlueskyActor(did: "did:plc:4", handle: "bskynews.bsky.social", displayName: "Bluesky News"),
-            BlueskyActor(did: "did:plc:5", handle: "curation.team", displayName: "Curation Team")
-        ]
-
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !trimmed.isEmpty else { return [] }
+        guard !trimmed.isEmpty else {
+            return PagedActorSearch(actors: [], cursor: nil)
+        }
 
-        return all.filter {
+        let matches = previewActors.filter {
             $0.handle.lowercased().contains(trimmed) ||
             ($0.displayName?.lowercased().contains(trimmed) ?? false)
         }
+        let pageSize = 3
+        let startIndex = Int(cursor ?? "0") ?? 0
+        let endIndex = min(startIndex + pageSize, matches.count)
+        let nextCursor = endIndex < matches.count ? String(endIndex) : nil
+
+        return PagedActorSearch(
+            actors: Array(matches[startIndex..<endIndex]),
+            cursor: nextCursor
+        )
     }
 
     override func addActor(
@@ -167,6 +213,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                 muted: false,
                 blockedBy: false,
                 isBlocking: false,
+                blockingRecordURI: nil,
                 isFollowing: true,
                 followsYou: false,
                 mutedByListName: nil,
@@ -203,6 +250,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                     muted: false,
                     blockedBy: false,
                     isBlocking: true,
+                    blockingRecordURI: "at://did:plc:preview/app.bsky.graph.block/1",
                     isFollowing: true,
                     followsYou: false,
                     mutedByListName: nil,
@@ -215,14 +263,16 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                     name: "Reply Filters",
                     kind: .moderation,
                     memberCount: 42,
-                    isMember: true
+                    isMember: true,
+                    listItemRecordURI: "at://did:plc:preview/app.bsky.graph.listitem/42"
                 ),
                 ProfileListMembership(
                     listURI: "at://did:plc:preview/app.bsky.graph.list/2",
                     name: "Trusted Sources",
                     kind: .regular,
                     memberCount: 67,
-                    isMember: false
+                    isMember: false,
+                    listItemRecordURI: nil
                 )
             ],
             starterPackMemberships: [
@@ -235,5 +285,54 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                 )
             ]
         )
+    }
+
+    override func fetchList(
+        uri: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> BlueskyList? {
+        try await fetchLists(for: account, appPassword: appPassword).first { $0.id == uri }
+    }
+
+    override func blockActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        try await Task.sleep(for: .milliseconds(120))
+    }
+
+    override func unblockActor(
+        recordURI: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        try await Task.sleep(for: .milliseconds(120))
+    }
+
+    override func muteActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        try await Task.sleep(for: .milliseconds(120))
+    }
+
+    override func unmuteActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        try await Task.sleep(for: .milliseconds(120))
+    }
+
+    private func previewMembers(for list: BlueskyList) -> [BlueskyListMember] {
+        previewActors.enumerated().map { index, actor in
+            BlueskyListMember(
+                recordURI: "at://did:plc:preview/\(list.id)/app.bsky.graph.listitem/\(index + 1)",
+                actor: actor
+            )
+        }
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct ListsView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = ListsViewModel()
     @State private var isShowingAccountPicker = false
 
@@ -42,6 +43,8 @@ struct ListsView: View {
                                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                                 .listRowBackground(Color.clear)
                             }
+
+                            dashboardSection
                         }
 
                         ForEach(BlueskyList.Kind.allCases, id: \.self) { kind in
@@ -112,6 +115,154 @@ struct ListsView: View {
 
     private var groupedLists: [BlueskyList.Kind: [BlueskyList]] {
         viewModel.listsByKind
+    }
+
+    private var allLists: [BlueskyList] {
+        groupedLists.values
+            .flatMap { $0 }
+            .sorted { ($0.memberCount ?? 0) > ($1.memberCount ?? 0) }
+    }
+
+    private var largestLists: [BlueskyList] {
+        Array(allLists.prefix(3))
+    }
+
+    private var dashboardSection: some View {
+        Section("Dashboard") {
+            if !recentListChanges.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Recent List Changes")
+                        .font(.subheadline.weight(.semibold))
+
+                    ForEach(recentListChanges, id: \.snapshotID) { summary in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(summary.listName)
+                            Text(changeSummary(for: summary))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            if !largestLists.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Largest Lists")
+                        .font(.subheadline.weight(.semibold))
+
+                    ForEach(largestLists) { list in
+                        NavigationLink {
+                            ListDetailView(list: list) { updatedList in
+                                viewModel.updateList(updatedList)
+                            }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(list.name)
+                                    Text(list.kind.title)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text("\(list.memberCount ?? 0)")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            if !workspaceStore.recentSearches.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Recent Profile Lookups")
+                        .font(.subheadline.weight(.semibold))
+
+                    ForEach(workspaceStore.recentSearches.prefix(3)) { search in
+                        Button {
+                            workspaceStore.lastProfileQuery = search.query
+                            workspaceStore.selectedTab = .profile
+                        } label: {
+                            HStack {
+                                Text(search.query)
+                                Spacer()
+                                Image(systemName: "arrow.right.circle")
+                                    .foregroundStyle(Color.skyPrimary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            if !workspaceStore.operationLog.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Recent Bulk Actions")
+                        .font(.subheadline.weight(.semibold))
+
+                    ForEach(workspaceStore.operationLog.prefix(3)) { entry in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(entry.title)
+                            Text(entry.summary)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            if let primaryList = largestLists.first {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Quick Start")
+                        .font(.subheadline.weight(.semibold))
+
+                    NavigationLink {
+                        ListDetailView(list: primaryList) { updatedList in
+                            viewModel.updateList(updatedList)
+                        }
+                    } label: {
+                        Label("Open Import and Compare Tools", systemImage: "wand.and.stars")
+                    }
+
+                    Button {
+                        workspaceStore.selectedTab = .profile
+                    } label: {
+                        Label("Open Profile Inspector", systemImage: "person.text.rectangle")
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.vertical, 4)
+            }
+        }
+    }
+
+    private var recentListChanges: [ListMembershipSnapshotSummary] {
+        allLists.compactMap { list in
+            let history = workspaceStore.snapshotHistory(for: list.id)
+            guard history.count >= 2,
+                  let newer = history.first,
+                  let older = history.dropFirst().first else {
+                return nil
+            }
+
+            return workspaceStore.compareSnapshots(
+                listID: list.id,
+                newerSnapshotID: newer.id,
+                olderSnapshotID: older.id
+            )
+        }
+        .filter(\.hasChanges)
+        .sorted { $0.currentCaptureDate > $1.currentCaptureDate }
+        .prefix(3)
+        .map { $0 }
+    }
+
+    private func changeSummary(for summary: ListMembershipSnapshotSummary) -> String {
+        "\(summary.addedMembers.count) added, \(summary.removedMembers.count) removed at \(summary.currentCaptureDate.formatted(date: .omitted, time: .shortened))"
     }
 
     private func reload() async {

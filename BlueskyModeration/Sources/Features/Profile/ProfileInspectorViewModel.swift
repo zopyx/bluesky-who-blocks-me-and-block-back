@@ -51,8 +51,8 @@ final class ProfileInspectorViewModel: ObservableObject {
         appPassword: String?,
         using client: LiveBlueskyClient
     ) async {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count >= 2 else {
+        let requestQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard requestQuery.count >= 2 else {
             searchResults = []
             isSearching = false
             return
@@ -72,18 +72,28 @@ final class ProfileInspectorViewModel: ObservableObject {
 
         do {
             let actors = try await client.searchActors(
-                query: trimmed,
+                query: requestQuery,
                 account: account,
                 appPassword: appPassword
             )
 
-            let lowered = trimmed.lowercased()
+            guard requestQuery == query.trimmingCharacters(in: .whitespacesAndNewlines) else {
+                isSearching = false
+                return
+            }
+
+            let lowered = requestQuery.lowercased()
             searchResults = actors.filter {
                 $0.handle.lowercased().contains(lowered) ||
                 ($0.displayName?.lowercased().contains(lowered) ?? false) ||
                 $0.did.lowercased().contains(lowered)
             }
         } catch {
+            if isIgnorableCancellation(error) {
+                isSearching = false
+                return
+            }
+
             errorMessage = error.localizedDescription
             searchResults = []
         }
@@ -127,10 +137,28 @@ final class ProfileInspectorViewModel: ObservableObject {
                 appPassword: appPassword
             )
         } catch {
+            if isIgnorableCancellation(error) {
+                isLoading = false
+                return
+            }
+
             inspection = nil
             errorMessage = error.localizedDescription
         }
 
         isLoading = false
+    }
+
+    private func isIgnorableCancellation(_ error: Error) -> Bool {
+        if error is CancellationError {
+            return true
+        }
+
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+            return true
+        }
+
+        return nsError.localizedDescription.localizedCaseInsensitiveContains("cancelled")
     }
 }

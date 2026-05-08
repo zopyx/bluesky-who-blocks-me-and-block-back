@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0512C626C2B7E63DA47027D6 /* BlueskyListServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */; };
+		08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */; };
 		13BF687163F3A2FC9A88AA04 /* AccountSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */; };
 		178D70F028B5C4268AA7124E /* ProfileMembershipModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79ABBA6F2ED069100538D3 /* ProfileMembershipModels.swift */; };
 		189FA455C5241B0C5451208C /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0343E7705C27F52D7BD3B03 /* AccountStore.swift */; };
@@ -62,6 +63,7 @@
 		7D7DE549B3D37C1D71F6E56E /* Color+BlueskyModeration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+BlueskyModeration.swift"; sourceTree = "<group>"; };
 		7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListServicing.swift; sourceTree = "<group>"; };
 		8024A6F4F98C08C9D5523C72 /* BlueskyList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyList.swift; sourceTree = "<group>"; };
+		8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationWorkspaceStore.swift; sourceTree = "<group>"; };
 		90F621A53763D04B73DCF960 /* BlueskyProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileView.swift; sourceTree = "<group>"; };
 		955786A2EEC90205E3714E5F /* BlueskyActorRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyActorRow.swift; sourceTree = "<group>"; };
 		9B75DDE6EF1B1F01473C8449 /* AppAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAccount.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */,
 				BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */,
 				71F1147B361CE2AA95C77F9A /* LiveBlueskyClient.swift */,
+				8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */,
 				D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */,
 			);
 			path = Services;
@@ -327,6 +330,7 @@
 				486CF862075A6505E5BBF479 /* ListsView.swift in Sources */,
 				ABFCB705F3EF28B376E27AE3 /* ListsViewModel.swift in Sources */,
 				4D4A0E7CA1EB679CB9C783C3 /* LiveBlueskyClient.swift in Sources */,
+				08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */,
 				57463BDF5FE8746553C8DF37 /* PreviewBlueskyClient.swift in Sources */,
 				818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */,
 				5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */,

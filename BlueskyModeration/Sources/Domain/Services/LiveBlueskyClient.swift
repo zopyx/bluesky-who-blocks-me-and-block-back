@@ -8,6 +8,16 @@ struct BlueskySession: Codable, Sendable {
     let pdsURL: URL
 }
 
+struct PagedListMembers {
+    let members: [BlueskyListMember]
+    let cursor: String?
+}
+
+struct PagedActorSearch {
+    let actors: [BlueskyActor]
+    let cursor: String?
+}
+
 enum BlueskyAPIError: LocalizedError {
     case invalidURL
     case invalidResponse
@@ -134,38 +144,78 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    func fetchList(
+        uri: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> BlueskyList? {
+        let lists = try await fetchLists(for: account, appPassword: appPassword)
+        return lists.first { $0.id == uri }
+    }
+
     func fetchListMembers(
         list: BlueskyList,
         account: AppAccount,
         appPassword: String
     ) async throws -> [BlueskyListMember] {
+        var allMembers: [BlueskyListMember] = []
+        var cursor: String?
+
+        repeat {
+            let page = try await fetchListMembersPage(
+                list: list,
+                cursor: cursor,
+                account: account,
+                appPassword: appPassword
+            )
+            allMembers.append(contentsOf: page.members)
+            cursor = page.cursor
+        } while cursor != nil
+
+        return allMembers
+    }
+
+    func fetchListMembersPage(
+        list: BlueskyList,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> PagedListMembers {
         let response: GetListResponse = try await performAuthenticatedRequest(
             account: account,
             appPassword: appPassword
         ) { authSession in
-            try await send(
+            var queryItems = [
+                URLQueryItem(name: "list", value: list.id),
+                URLQueryItem(name: "limit", value: "100")
+            ]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+
+            return try await send(
                 path: "app.bsky.graph.getList",
                 method: "GET",
-                queryItems: [
-                    URLQueryItem(name: "list", value: list.id),
-                    URLQueryItem(name: "limit", value: "100")
-                ],
+                queryItems: queryItems,
                 accessToken: authSession.accessJWT,
                 hostURL: authSession.pdsURL
             )
         }
 
-        return response.items.map {
-            BlueskyListMember(
-                recordURI: $0.uri,
-                actor: BlueskyActor(
-                    did: $0.subject.did,
-                    handle: $0.subject.handle,
-                    displayName: $0.subject.displayName,
-                    avatarURL: URL(string: $0.subject.avatar ?? "")
+        return PagedListMembers(
+            members: response.items.map {
+                BlueskyListMember(
+                    recordURI: $0.uri,
+                    actor: BlueskyActor(
+                        did: $0.subject.did,
+                        handle: $0.subject.handle,
+                        displayName: $0.subject.displayName,
+                        avatarURL: URL(string: $0.subject.avatar ?? "")
+                    )
                 )
-            )
-        }
+            },
+            cursor: response.cursor
+        )
     }
 
     func searchActors(
@@ -173,35 +223,58 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String
     ) async throws -> [BlueskyActor] {
+        let page = try await searchActorsPage(
+            query: query,
+            cursor: nil,
+            account: account,
+            appPassword: appPassword
+        )
+        return page.actors
+    }
+
+    func searchActorsPage(
+        query: String,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String
+    ) async throws -> PagedActorSearch {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
-            return []
+            return PagedActorSearch(actors: [], cursor: nil)
         }
 
         let response: SearchActorsResponse = try await performAuthenticatedRequest(
             account: account,
             appPassword: appPassword
         ) { authSession in
-            try await send(
+            var queryItems = [
+                URLQueryItem(name: "q", value: trimmedQuery),
+                URLQueryItem(name: "limit", value: "25")
+            ]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+
+            return try await send(
                 path: "app.bsky.actor.searchActorsTypeahead",
                 method: "GET",
-                queryItems: [
-                    URLQueryItem(name: "q", value: trimmedQuery),
-                    URLQueryItem(name: "limit", value: "12")
-                ],
+                queryItems: queryItems,
                 accessToken: authSession.accessJWT,
                 hostURL: authSession.pdsURL
             )
         }
 
-        return response.actors.map {
-            BlueskyActor(
-                did: $0.did,
-                handle: $0.handle,
-                displayName: $0.displayName,
-                avatarURL: URL(string: $0.avatar ?? "")
-            )
-        }
+        return PagedActorSearch(
+            actors: response.actors.map {
+                BlueskyActor(
+                    did: $0.did,
+                    handle: $0.handle,
+                    displayName: $0.displayName,
+                    avatarURL: URL(string: $0.avatar ?? "")
+                )
+            },
+            cursor: response.cursor
+        )
     }
 
     func addActor(
@@ -303,6 +376,85 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             memberCount: list.memberCount,
             kind: list.kind
         )
+    }
+
+    func blockActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        let _: EmptyResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.graph.block",
+                record: SubjectRecord(type: "app.bsky.graph.block", subject: actorDID)
+            )
+
+            let _: CreateRecordResponse = try await send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+
+            return EmptyResponse()
+        }
+    }
+
+    func unblockActor(
+        recordURI: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        try await removeMember(
+            recordURI: recordURI,
+            account: account,
+            appPassword: appPassword
+        )
+    }
+
+    func muteActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        let _: EmptyResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = ActorReferenceRequest(actor: actorDID)
+            return try await send(
+                path: "app.bsky.graph.muteActor",
+                method: "POST",
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func unmuteActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String
+    ) async throws {
+        let _: EmptyResponse = try await performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = ActorReferenceRequest(actor: actorDID)
+            return try await send(
+                path: "app.bsky.graph.unmuteActor",
+                method: "POST",
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
     }
 
     func fetchProfile(
@@ -419,7 +571,8 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                     name: $0.list.name,
                     kind: $0.list.purpose.kind,
                     memberCount: $0.list.listItemCount,
-                    isMember: $0.listItem != nil
+                    isMember: $0.listItem != nil,
+                    listItemRecordURI: $0.listItem?.uri
                 )
             },
             starterPackMemberships: starterPacks.starterPacksWithMembership.map {
@@ -769,6 +922,7 @@ private struct StarterPacksWithMembershipResponse: Decodable {
 }
 
 private struct GetListResponse: Decodable {
+    let cursor: String?
     let items: [ListItemView]
 }
 
@@ -817,6 +971,7 @@ private struct ActorView: Decodable {
 }
 
 private struct SearchActorsResponse: Decodable {
+    let cursor: String?
     let actors: [ActorView]
 }
 
@@ -824,6 +979,12 @@ private struct CreateRecordRequest: Encodable {
     let repo: String
     let collection: String
     let record: ListItemRecord
+}
+
+private struct CreateGenericRecordRequest<Record: Encodable>: Encodable {
+    let repo: String
+    let collection: String
+    let record: Record
 }
 
 private struct PutRecordRequest: Encodable {
@@ -859,6 +1020,28 @@ private struct ListRecord: Encodable {
         case description
         case createdAt
     }
+}
+
+private struct SubjectRecord: Encodable {
+    let type: String
+    let subject: String
+    let createdAt: String
+
+    init(type: String, subject: String, createdAt: String = ISO8601DateFormatter().string(from: .now)) {
+        self.type = type
+        self.subject = subject
+        self.createdAt = createdAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case subject
+        case createdAt
+    }
+}
+
+private struct ActorReferenceRequest: Encodable {
+    let actor: String
 }
 
 private struct CreateRecordResponse: Decodable {
@@ -946,6 +1129,7 @@ private func mapViewerState(_ viewer: ProfileViewerState?) -> BlueskyViewerState
         muted: viewer.muted ?? false,
         blockedBy: viewer.blockedBy ?? false,
         isBlocking: viewer.blocking != nil,
+        blockingRecordURI: viewer.blocking,
         isFollowing: viewer.following != nil,
         followsYou: viewer.followedBy != nil,
         mutedByListName: viewer.mutedByList?.name,
