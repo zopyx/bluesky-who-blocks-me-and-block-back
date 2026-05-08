@@ -2,18 +2,18 @@ import SwiftUI
 
 @main
 struct BlueskyModerationApp: App {
-    @StateObject private var accountStore = AccountStore()
-    @StateObject private var blueskyClient = LiveBlueskyClient()
-    @StateObject private var workspaceStore = ModerationWorkspaceStore()
+    @StateObject private var deps = AppDependencies()
 
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environmentObject(accountStore)
-                .environmentObject(blueskyClient)
-                .environmentObject(workspaceStore)
+                .environmentObject(deps.accountStore)
+                .environmentObject(deps.listService)
+                .environmentObject(deps.profileService)
+                .environmentObject(deps.workspaceStore)
+                .environmentObject(deps.blueskyClient)
                 .task {
-                    await blueskyClient.restoreSessions(for: accountStore.accounts)
+                    await deps.blueskyClient.restoreSessions(for: deps.accountStore.accounts)
                 }
         }
     }

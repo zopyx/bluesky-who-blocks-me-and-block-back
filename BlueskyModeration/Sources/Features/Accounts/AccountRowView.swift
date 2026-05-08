@@ -3,6 +3,7 @@ import SwiftUI
 struct AccountRowView: View {
     let account: AppAccount
     let isActive: Bool
+    @ScaledMetric private var avatarSize = 40.0
 
     var body: some View {
         HStack(spacing: 12) {
@@ -40,7 +41,7 @@ struct AccountRowView: View {
             } placeholder: {
                 avatarPlaceholder
             }
-            .frame(width: 40, height: 40)
+            .frame(width: avatarSize, height: avatarSize)
             .clipShape(Circle())
             .overlay {
                 Circle()
@@ -54,7 +55,7 @@ struct AccountRowView: View {
     private var avatarPlaceholder: some View {
         Circle()
             .fill(isActive ? Color.skyPrimary : Color.gray.opacity(0.25))
-            .frame(width: 40, height: 40)
+            .frame(width: avatarSize, height: avatarSize)
             .overlay {
                 Text(account.displayName.prefix(1).uppercased())
                     .font(.headline)

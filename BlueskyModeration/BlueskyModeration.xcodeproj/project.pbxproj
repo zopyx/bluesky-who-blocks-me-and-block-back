@@ -8,45 +8,80 @@
 
 /* Begin PBXBuildFile section */
 		0512C626C2B7E63DA47027D6 /* BlueskyListServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */; };
+		06F7D806B2C3522A82D3A99A /* LoadableState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69EC0405E28F2993D2F08CD9 /* LoadableState.swift */; };
 		08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */; };
+		121BF1E5DD44EEE41545C343 /* BlueskyListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A66DCBAD6A830220641347 /* BlueskyListService.swift */; };
 		13BF687163F3A2FC9A88AA04 /* AccountSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */; };
+		1451E14BA474137BB905A6A6 /* URL+Bluesky.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04D96EE5014E7DB9DA13C19 /* URL+Bluesky.swift */; };
 		178D70F028B5C4268AA7124E /* ProfileMembershipModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79ABBA6F2ED069100538D3 /* ProfileMembershipModels.swift */; };
 		189FA455C5241B0C5451208C /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0343E7705C27F52D7BD3B03 /* AccountStore.swift */; };
 		1B362E45A02E3DF1A7EF962C /* BlueskyProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90F621A53763D04B73DCF960 /* BlueskyProfileView.swift */; };
+		21F961EE9D4E554A91E4AC70 /* BlueskySessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03561C1580449FBB58D3E623 /* BlueskySessionService.swift */; };
+		2A361832265E870EAA9D4997 /* WorkspacePreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F299400BF2699443484B /* WorkspacePreferencesStore.swift */; };
 		2A5C54BEF7D9B3596765D3B7 /* ListRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5726B67E2FB6C49AD66393D0 /* ListRowView.swift */; };
 		2CB92A8E77AA4D6B6D6AE3A9 /* ListDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 126E29C1EE615694DF95553D /* ListDetailView.swift */; };
 		2DD6A7326E46DFC9DFBFE88D /* BlueskyModerationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC391D2CC0B10AF7D5785121 /* BlueskyModerationApp.swift */; };
 		34464420AD723967E1569B62 /* ListDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE960440B30CBC64A390168 /* ListDetailViewModel.swift */; };
+		370BAE15512660E3169D0BD3 /* ListDetailSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504E97996E88A5FB4E5747DA /* ListDetailSheets.swift */; };
+		38C75234FE676706D9257CFF /* BlueskyProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CDD4AC481D588629B31A73 /* BlueskyProfileService.swift */; };
+		47004735F9E5C065D7CE10E2 /* ListDetailSnapshotSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390E45D6B465D6470D878D0D /* ListDetailSnapshotSection.swift */; };
 		486CF862075A6505E5BBF479 /* ListsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF724B3AC46DD8943DA15180 /* ListsView.swift */; };
 		4BE36982C76EB339751B3733 /* AddAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D64A8EDD5653B03C85BD04D /* AddAccountView.swift */; };
 		4D4A0E7CA1EB679CB9C783C3 /* LiveBlueskyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F1147B361CE2AA95C77F9A /* LiveBlueskyClient.swift */; };
 		4DD5A9A61D05C01F947D6B26 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */; };
+		4E1D963D5E4BDB9BEE41DF5A /* String+CSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A46736FC0C1C5021AF660D /* String+CSV.swift */; };
 		54C2EF8D797B10C173440B6D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E74C74F6834686D4C613D35 /* RootView.swift */; };
 		57463BDF5FE8746553C8DF37 /* PreviewBlueskyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */; };
 		5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B8DD93DE77C5A5C4DA5283 /* ProfileInspectorViewModel.swift */; };
 		60B49F6F117771AD08C7BBC3 /* BlueskyProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D493CE6BEC23FAEDADC7AED /* BlueskyProfileViewModel.swift */; };
+		668F2BDCA14645A65832BEF9 /* ListDetailModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63773A69DCC33A8E4CF380A /* ListDetailModels.swift */; };
+		71078C5514EE9940C0B02C63 /* BlueskyAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */; };
 		717340FD0D8E509C8A2A946D /* BlueskyListMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E071265425B642977F4F283 /* BlueskyListMember.swift */; };
 		769FD129FB4226B167ABC9A8 /* BlueskyActorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955786A2EEC90205E3714E5F /* BlueskyActorRow.swift */; };
+		78FB60ACB6D4E62D9A06E700 /* ListDetailMembersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7930ABCB9DDA0325197A398A /* ListDetailMembersSection.swift */; };
 		808F386501A09A708A6FA847 /* ProfileInspectorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC53589A50B1C167E514A800 /* ProfileInspectorViewModelTests.swift */; };
 		818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 440FEDDE082EAEE9C03C608F /* ProfileInspectorView.swift */; };
 		82CBAF902B663768E4D611DC /* AccountChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62D1726B87CDC5F70DF05EB /* AccountChip.swift */; };
+		82DFC595354A428ABCBC5BDB /* BlueskyRequestExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B01267CADAE8DD6E824E38 /* BlueskyRequestExecutor.swift */; };
+		84BB828A96C5EF3BD0DFFC3C /* ListDetailViewModel+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BA605E31B60F1A71763C15 /* ListDetailViewModel+Search.swift */; };
+		880CC4BE7AAA1787AA97A307 /* ListDetailViewModel+Bulk.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8121B7C0C147CA5085B44 /* ListDetailViewModel+Bulk.swift */; };
+		8D51374098DD19897AD47672 /* BlueskyAPIDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */; };
+		99CBFED5BCD536122863CE17 /* ListDetailView+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */; };
 		9DDC086668CD4E5B2A2D0963 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A910BA174672E7A0D03AFED /* SettingsView.swift */; };
+		A3F338CFC071F3A35D6EA3BF /* ListImportControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 089E40E6F7B67B05A08AD96E /* ListImportControllerTests.swift */; };
 		A9DFAF09C7006932F7F4EEF2 /* AccountRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500B2D05B92EA8C76FB83EFD /* AccountRowView.swift */; };
 		AA40D44DFBE3BE3807034AE4 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BBAF9ED6126620E1729E736 /* AppLogger.swift */; };
+		ABBCDDBB713AD546DADE2858 /* ListDetailComparisonSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F5E39018B0F8FEF488527C /* ListDetailComparisonSection.swift */; };
 		ABFCB705F3EF28B376E27AE3 /* ListsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B209B0F15D6518DF3A8F996 /* ListsViewModel.swift */; };
 		B3326FFFD84B1C034E066A64 /* AccountSwitcherSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7FBB1661AB736F578D68EA /* AccountSwitcherSheet.swift */; };
 		B90585D2016E034BC9D25A68 /* ModerationWorkspaceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD663120FE1E51A2441DBD9 /* ModerationWorkspaceStoreTests.swift */; };
 		BB85B48F5FB424C42266DEDB /* BlueskyProfileInspecting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B1E02BE44CA22084439787 /* BlueskyProfileInspecting.swift */; };
+		BBB052AA616857501F99262D /* BlueskyRequestExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97BA9E2B32FEB4A158D05D65 /* BlueskyRequestExecutorTests.swift */; };
 		BCB345A8FC2C437F7F8D790D /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0F3BEAA37A7079BA3DE52B /* InfoView.swift */; };
 		BDF8395A7521312660E32084 /* BlueskyActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28FAFCF58F647BD69091D56 /* BlueskyActor.swift */; };
 		BE687452B0CF1076EFB538B2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53649A49B5C112C35534FB0D /* Assets.xcassets */; };
+		C4A09AF0287AFF8D082510A1 /* MockBlueskyListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */; };
 		C83A3BE167467FF43C0ABAEF /* BlueskyProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B80E5E2025B8AA5882C4DF2 /* BlueskyProfile.swift */; };
+		CB2A496A7D7678C0B77FD2EF /* ListMembersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2280BC45F8BE5A6E1B43CE9D /* ListMembersController.swift */; };
+		CCC4DAC3D5FB15D0CD9C50A5 /* MockBlueskyProfileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A302F1C081E6B67399ABD05 /* MockBlueskyProfileService.swift */; };
+		D018A537FFAA6F6B993EF30D /* SearchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD5EDFE8B1DAAE5AB4D0656 /* SearchToken.swift */; };
+		D1A943CFC4E34A0720ADF9DD /* ListBatchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D071F1CF3D62971E99E7446 /* ListBatchController.swift */; };
+		D4D656780E36F0E54596E78F /* ListImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF69C498C96A3D2D3FC09B29 /* ListImportController.swift */; };
+		D4F4D67D084C967A7456D693 /* BlueskyModerationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA9F08989BAD1CDC445CF51 /* BlueskyModerationUITests.swift */; };
+		D5061270BE9B85619B7F29CF /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951E1B87D26A48B6F1A6226D /* AppDependencies.swift */; };
 		D61EDB1289462368B28C579D /* BlueskyList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8024A6F4F98C08C9D5523C72 /* BlueskyList.swift */; };
+		D79F94DEA3D67017CC610E87 /* ListDiffController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8944A8F7D5BF2C5458D50A /* ListDiffController.swift */; };
 		D8C2721E53E07E05A76EDF71 /* ActorSearchResultRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8CB9DF2B9A1EF17F60EBFAB /* ActorSearchResultRow.swift */; };
 		DDD604A9F008B2000E73FCC0 /* Color+BlueskyModeration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D7DE549B3D37C1D71F6E56E /* Color+BlueskyModeration.swift */; };
+		E0F5CDD5D20CFC6D02B6CE33 /* ListDetailViewModel+Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */; };
 		E14D5EE07F4C332E0713DE3C /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 818C1FF1BC72D8596CCBB0F0 /* AppError.swift */; };
+		E4CBFC8AF053A725DC813B3E /* ListDiffControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97AE8BA236C2AA6B8E8EEACC /* ListDiffControllerTests.swift */; };
 		E4FED0E311A32EE25C4835BD /* AppAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B75DDE6EF1B1F01473C8449 /* AppAccount.swift */; };
+		EBABB53D67C08509335CB44B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */; };
 		EEBB7813658D23C8A1D4FA20 /* AccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AF223F570DF09EE7169CC2B /* AccountsView.swift */; };
+		FA4E45A6CCB838DD52136561 /* StatePanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */; };
+		FD5A0A546B8B9B5F59AA9E19 /* ModerationAuditStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */; };
+		FE52C2E1A916BE536488FF38 /* ListDetailSearchSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55575E25BE062386D5FC79B /* ListDetailSearchSection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,51 +92,94 @@
 			remoteGlobalIDString = 0608BB4380516450DC5105DF;
 			remoteInfo = BlueskyModeration;
 		};
+		BB0E803DE9BB1C4D11A397D6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A3FD4F02C5D5F10C6DFE927 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0608BB4380516450DC5105DF;
+			remoteInfo = BlueskyModeration;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		03561C1580449FBB58D3E623 /* BlueskySessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskySessionService.swift; sourceTree = "<group>"; };
+		089E40E6F7B67B05A08AD96E /* ListImportControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListImportControllerTests.swift; sourceTree = "<group>"; };
+		08CDD4AC481D588629B31A73 /* BlueskyProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileService.swift; sourceTree = "<group>"; };
+		0CD5EDFE8B1DAAE5AB4D0656 /* SearchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchToken.swift; sourceTree = "<group>"; };
+		0FA3F299400BF2699443484B /* WorkspacePreferencesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspacePreferencesStore.swift; sourceTree = "<group>"; };
 		126E29C1EE615694DF95553D /* ListDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailView.swift; sourceTree = "<group>"; };
+		19BA605E31B60F1A71763C15 /* ListDetailViewModel+Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Search.swift"; sourceTree = "<group>"; };
 		1A910BA174672E7A0D03AFED /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1D071F1CF3D62971E99E7446 /* ListBatchController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBatchController.swift; sourceTree = "<group>"; };
+		2280BC45F8BE5A6E1B43CE9D /* ListMembersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListMembersController.swift; sourceTree = "<group>"; };
 		24B8DD93DE77C5A5C4DA5283 /* ProfileInspectorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInspectorViewModel.swift; sourceTree = "<group>"; };
+		24F5E39018B0F8FEF488527C /* ListDetailComparisonSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailComparisonSection.swift; sourceTree = "<group>"; };
 		2BBAF9ED6126620E1729E736 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		2F0F3BEAA37A7079BA3DE52B /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
+		390E45D6B465D6470D878D0D /* ListDetailSnapshotSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailSnapshotSection.swift; sourceTree = "<group>"; };
+		39B01267CADAE8DD6E824E38 /* BlueskyRequestExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyRequestExecutor.swift; sourceTree = "<group>"; };
 		3E071265425B642977F4F283 /* BlueskyListMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListMember.swift; sourceTree = "<group>"; };
 		440FEDDE082EAEE9C03C608F /* ProfileInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInspectorView.swift; sourceTree = "<group>"; };
+		4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIDTOs.swift; sourceTree = "<group>"; };
 		500B2D05B92EA8C76FB83EFD /* AccountRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRowView.swift; sourceTree = "<group>"; };
+		504E97996E88A5FB4E5747DA /* ListDetailSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailSheets.swift; sourceTree = "<group>"; };
 		53649A49B5C112C35534FB0D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		54B1E02BE44CA22084439787 /* BlueskyProfileInspecting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileInspecting.swift; sourceTree = "<group>"; };
 		5726B67E2FB6C49AD66393D0 /* ListRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListRowView.swift; sourceTree = "<group>"; };
 		5B209B0F15D6518DF3A8F996 /* ListsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewModel.swift; sourceTree = "<group>"; };
 		5D64A8EDD5653B03C85BD04D /* AddAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAccountView.swift; sourceTree = "<group>"; };
+		69EC0405E28F2993D2F08CD9 /* LoadableState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadableState.swift; sourceTree = "<group>"; };
 		6B80E5E2025B8AA5882C4DF2 /* BlueskyProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfile.swift; sourceTree = "<group>"; };
 		6E74C74F6834686D4C613D35 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		71F1147B361CE2AA95C77F9A /* LiveBlueskyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveBlueskyClient.swift; sourceTree = "<group>"; };
+		73A46736FC0C1C5021AF660D /* String+CSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+CSV.swift"; sourceTree = "<group>"; };
+		7930ABCB9DDA0325197A398A /* ListDetailMembersSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailMembersSection.swift; sourceTree = "<group>"; };
 		7AF223F570DF09EE7169CC2B /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
 		7D7DE549B3D37C1D71F6E56E /* Color+BlueskyModeration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+BlueskyModeration.swift"; sourceTree = "<group>"; };
 		7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListServicing.swift; sourceTree = "<group>"; };
 		8024A6F4F98C08C9D5523C72 /* BlueskyList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyList.swift; sourceTree = "<group>"; };
 		818C1FF1BC72D8596CCBB0F0 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationWorkspaceStore.swift; sourceTree = "<group>"; };
+		8A302F1C081E6B67399ABD05 /* MockBlueskyProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyProfileService.swift; sourceTree = "<group>"; };
+		8C8944A8F7D5BF2C5458D50A /* ListDiffController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDiffController.swift; sourceTree = "<group>"; };
 		90F621A53763D04B73DCF960 /* BlueskyProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileView.swift; sourceTree = "<group>"; };
+		951E1B87D26A48B6F1A6226D /* AppDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
 		955786A2EEC90205E3714E5F /* BlueskyActorRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyActorRow.swift; sourceTree = "<group>"; };
+		97AE8BA236C2AA6B8E8EEACC /* ListDiffControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDiffControllerTests.swift; sourceTree = "<group>"; };
+		97BA9E2B32FEB4A158D05D65 /* BlueskyRequestExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyRequestExecutorTests.swift; sourceTree = "<group>"; };
 		9B75DDE6EF1B1F01473C8449 /* AppAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAccount.swift; sourceTree = "<group>"; };
 		9D493CE6BEC23FAEDADC7AED /* BlueskyProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileViewModel.swift; sourceTree = "<group>"; };
 		A28FAFCF58F647BD69091D56 /* BlueskyActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyActor.swift; sourceTree = "<group>"; };
+		A5A66DCBAD6A830220641347 /* BlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListService.swift; sourceTree = "<group>"; };
+		A63773A69DCC33A8E4CF380A /* ListDetailModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailModels.swift; sourceTree = "<group>"; };
+		A75D4B96CCBDE80859B84D44 /* BlueskyModerationUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BlueskyModerationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA8D879CEE0CCABEBCC5C909 /* BlueskyModerationTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BlueskyModerationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB79ABBA6F2ED069100538D3 /* ProfileMembershipModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMembershipModels.swift; sourceTree = "<group>"; };
 		AC53589A50B1C167E514A800 /* ProfileInspectorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInspectorViewModelTests.swift; sourceTree = "<group>"; };
+		AF69C498C96A3D2D3FC09B29 /* ListImportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListImportController.swift; sourceTree = "<group>"; };
+		B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailView+Helpers.swift"; sourceTree = "<group>"; };
+		B55575E25BE062386D5FC79B /* ListDetailSearchSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailSearchSection.swift; sourceTree = "<group>"; };
+		B5A8121B7C0C147CA5085B44 /* ListDetailViewModel+Bulk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Bulk.swift"; sourceTree = "<group>"; };
 		BC391D2CC0B10AF7D5785121 /* BlueskyModerationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyModerationApp.swift; sourceTree = "<group>"; };
+		BCA9F08989BAD1CDC445CF51 /* BlueskyModerationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyModerationUITests.swift; sourceTree = "<group>"; };
 		BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIError.swift; sourceTree = "<group>"; };
+		C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Data.swift"; sourceTree = "<group>"; };
 		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		D0343E7705C27F52D7BD3B03 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
+		D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationAuditStore.swift; sourceTree = "<group>"; };
 		D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewBlueskyClient.swift; sourceTree = "<group>"; };
 		D8CB9DF2B9A1EF17F60EBFAB /* ActorSearchResultRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorSearchResultRow.swift; sourceTree = "<group>"; };
+		DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePanels.swift; sourceTree = "<group>"; };
 		DF724B3AC46DD8943DA15180 /* ListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsView.swift; sourceTree = "<group>"; };
+		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSummaryCard.swift; sourceTree = "<group>"; };
 		E62D1726B87CDC5F70DF05EB /* AccountChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountChip.swift; sourceTree = "<group>"; };
 		EA7FBB1661AB736F578D68EA /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSwitcherSheet.swift; sourceTree = "<group>"; };
 		EAD663120FE1E51A2441DBD9 /* ModerationWorkspaceStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationWorkspaceStoreTests.swift; sourceTree = "<group>"; };
 		EBE960440B30CBC64A390168 /* ListDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailViewModel.swift; sourceTree = "<group>"; };
+		F04D96EE5014E7DB9DA13C19 /* URL+Bluesky.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Bluesky.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -123,11 +201,20 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
+		1D65783AB0F7DA3F704BF9AD /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				408E5176C8CA77D7AEA11924 /* BlueskyModerationUITests */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		2C66AC571494875A467CE391 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */,
 				AA8D879CEE0CCABEBCC5C909 /* BlueskyModerationTests.xctest */,
+				A75D4B96CCBDE80859B84D44 /* BlueskyModerationUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -142,11 +229,21 @@
 			path = Accounts;
 			sourceTree = "<group>";
 		};
+		408E5176C8CA77D7AEA11924 /* BlueskyModerationUITests */ = {
+			isa = PBXGroup;
+			children = (
+				BCA9F08989BAD1CDC445CF51 /* BlueskyModerationUITests.swift */,
+			);
+			path = BlueskyModerationUITests;
+			sourceTree = "<group>";
+		};
 		621698A9FC68F77DFAFDC6CA /* App */ = {
 			isa = PBXGroup;
 			children = (
+				951E1B87D26A48B6F1A6226D /* AppDependencies.swift */,
 				BC391D2CC0B10AF7D5785121 /* BlueskyModerationApp.swift */,
 				2F0F3BEAA37A7079BA3DE52B /* InfoView.swift */,
+				DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */,
 				6E74C74F6834686D4C613D35 /* RootView.swift */,
 				1A910BA174672E7A0D03AFED /* SettingsView.swift */,
 			);
@@ -156,6 +253,9 @@
 		6ED80CBED49F9449459FB96D /* BlueskyModerationTests */ = {
 			isa = PBXGroup;
 			children = (
+				97BA9E2B32FEB4A158D05D65 /* BlueskyRequestExecutorTests.swift */,
+				97AE8BA236C2AA6B8E8EEACC /* ListDiffControllerTests.swift */,
+				089E40E6F7B67B05A08AD96E /* ListImportControllerTests.swift */,
 				EAD663120FE1E51A2441DBD9 /* ModerationWorkspaceStoreTests.swift */,
 				AC53589A50B1C167E514A800 /* ProfileInspectorViewModelTests.swift */,
 			);
@@ -175,8 +275,22 @@
 			children = (
 				90F621A53763D04B73DCF960 /* BlueskyProfileView.swift */,
 				9D493CE6BEC23FAEDADC7AED /* BlueskyProfileViewModel.swift */,
+				1D071F1CF3D62971E99E7446 /* ListBatchController.swift */,
+				24F5E39018B0F8FEF488527C /* ListDetailComparisonSection.swift */,
+				7930ABCB9DDA0325197A398A /* ListDetailMembersSection.swift */,
+				A63773A69DCC33A8E4CF380A /* ListDetailModels.swift */,
+				B55575E25BE062386D5FC79B /* ListDetailSearchSection.swift */,
+				504E97996E88A5FB4E5747DA /* ListDetailSheets.swift */,
+				390E45D6B465D6470D878D0D /* ListDetailSnapshotSection.swift */,
 				126E29C1EE615694DF95553D /* ListDetailView.swift */,
+				B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */,
 				EBE960440B30CBC64A390168 /* ListDetailViewModel.swift */,
+				B5A8121B7C0C147CA5085B44 /* ListDetailViewModel+Bulk.swift */,
+				C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */,
+				19BA605E31B60F1A71763C15 /* ListDetailViewModel+Search.swift */,
+				8C8944A8F7D5BF2C5458D50A /* ListDiffController.swift */,
+				AF69C498C96A3D2D3FC09B29 /* ListImportController.swift */,
+				2280BC45F8BE5A6E1B43CE9D /* ListMembersController.swift */,
 				5726B67E2FB6C49AD66393D0 /* ListRowView.swift */,
 				DF724B3AC46DD8943DA15180 /* ListsView.swift */,
 				5B209B0F15D6518DF3A8F996 /* ListsViewModel.swift */,
@@ -200,6 +314,10 @@
 			children = (
 				818C1FF1BC72D8596CCBB0F0 /* AppError.swift */,
 				2BBAF9ED6126620E1729E736 /* AppLogger.swift */,
+				69EC0405E28F2993D2F08CD9 /* LoadableState.swift */,
+				0CD5EDFE8B1DAAE5AB4D0656 /* SearchToken.swift */,
+				73A46736FC0C1C5021AF660D /* String+CSV.swift */,
+				F04D96EE5014E7DB9DA13C19 /* URL+Bluesky.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -208,12 +326,21 @@
 			isa = PBXGroup;
 			children = (
 				D0343E7705C27F52D7BD3B03 /* AccountStore.swift */,
+				4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */,
+				C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */,
+				A5A66DCBAD6A830220641347 /* BlueskyListService.swift */,
 				7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */,
 				54B1E02BE44CA22084439787 /* BlueskyProfileInspecting.swift */,
+				08CDD4AC481D588629B31A73 /* BlueskyProfileService.swift */,
+				39B01267CADAE8DD6E824E38 /* BlueskyRequestExecutor.swift */,
+				03561C1580449FBB58D3E623 /* BlueskySessionService.swift */,
 				BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */,
 				71F1147B361CE2AA95C77F9A /* LiveBlueskyClient.swift */,
+				D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */,
 				8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */,
 				D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */,
+				0FA3F299400BF2699443484B /* WorkspacePreferencesStore.swift */,
+				D90DF5CF27BCD1C048971A79 /* Preview */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -241,6 +368,15 @@
 			path = Features;
 			sourceTree = "<group>";
 		};
+		D90DF5CF27BCD1C048971A79 /* Preview */ = {
+			isa = PBXGroup;
+			children = (
+				CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */,
+				8A302F1C081E6B67399ABD05 /* MockBlueskyProfileService.swift */,
+			);
+			path = Preview;
+			sourceTree = "<group>";
+		};
 		DEE35FCD50996D2AF59F8C5C /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -249,6 +385,7 @@
 				EA7FBB1661AB736F578D68EA /* AccountSwitcherSheet.swift */,
 				D8CB9DF2B9A1EF17F60EBFAB /* ActorSearchResultRow.swift */,
 				955786A2EEC90205E3714E5F /* BlueskyActorRow.swift */,
+				DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -285,6 +422,7 @@
 				E3E5A87160FC7A7A96A2CAA2 /* Assets */,
 				8E32C1353A6200DF268DB011 /* Sources */,
 				7866046630E2B2FB9CD3F858 /* Tests */,
+				1D65783AB0F7DA3F704BF9AD /* UITests */,
 				2C66AC571494875A467CE391 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -309,6 +447,24 @@
 			productName = BlueskyModeration;
 			productReference = C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */;
 			productType = "com.apple.product-type.application";
+		};
+		28FA462115B88F07A4C1D7CE /* BlueskyModerationUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE5A5352A344485CF76BEBB9 /* Build configuration list for PBXNativeTarget "BlueskyModerationUITests" */;
+			buildPhases = (
+				2AEBEC0524270C27A03A64D4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6CF701D310CFF889E3DF70E5 /* PBXTargetDependency */,
+			);
+			name = BlueskyModerationUITests;
+			packageProductDependencies = (
+			);
+			productName = BlueskyModerationUITests;
+			productReference = A75D4B96CCBDE80859B84D44 /* BlueskyModerationUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		BB78A64869C0B0E9C7DFE2F2 /* BlueskyModerationTests */ = {
 			isa = PBXNativeTarget;
@@ -337,6 +493,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					28FA462115B88F07A4C1D7CE = {
+						DevelopmentTeam = "";
+						TestTargetID = 0608BB4380516450DC5105DF;
+					};
 					BB78A64869C0B0E9C7DFE2F2 = {
 						DevelopmentTeam = "";
 					};
@@ -358,6 +518,7 @@
 			targets = (
 				0608BB4380516450DC5105DF /* BlueskyModeration */,
 				BB78A64869C0B0E9C7DFE2F2 /* BlueskyModerationTests */,
+				28FA462115B88F07A4C1D7CE /* BlueskyModerationUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -368,16 +529,28 @@
 			buildActionMask = 2147483647;
 			files = (
 				BE687452B0CF1076EFB538B2 /* Assets.xcassets in Resources */,
+				EBABB53D67C08509335CB44B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2AEBEC0524270C27A03A64D4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4F4D67D084C967A7456D693 /* BlueskyModerationUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		44AC9DAFE418E7257BAAC4FC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BBB052AA616857501F99262D /* BlueskyRequestExecutorTests.swift in Sources */,
+				E4CBFC8AF053A725DC813B3E /* ListDiffControllerTests.swift in Sources */,
+				A3F338CFC071F3A35D6EA3BF /* ListImportControllerTests.swift in Sources */,
 				B90585D2016E034BC9D25A68 /* ModerationWorkspaceStoreTests.swift in Sources */,
 				808F386501A09A708A6FA847 /* ProfileInspectorViewModelTests.swift in Sources */,
 			);
@@ -396,34 +569,64 @@
 				D8C2721E53E07E05A76EDF71 /* ActorSearchResultRow.swift in Sources */,
 				4BE36982C76EB339751B3733 /* AddAccountView.swift in Sources */,
 				E4FED0E311A32EE25C4835BD /* AppAccount.swift in Sources */,
+				D5061270BE9B85619B7F29CF /* AppDependencies.swift in Sources */,
 				E14D5EE07F4C332E0713DE3C /* AppError.swift in Sources */,
 				AA40D44DFBE3BE3807034AE4 /* AppLogger.swift in Sources */,
+				8D51374098DD19897AD47672 /* BlueskyAPIDTOs.swift in Sources */,
+				71078C5514EE9940C0B02C63 /* BlueskyAPIError.swift in Sources */,
 				BDF8395A7521312660E32084 /* BlueskyActor.swift in Sources */,
 				769FD129FB4226B167ABC9A8 /* BlueskyActorRow.swift in Sources */,
 				D61EDB1289462368B28C579D /* BlueskyList.swift in Sources */,
 				717340FD0D8E509C8A2A946D /* BlueskyListMember.swift in Sources */,
+				121BF1E5DD44EEE41545C343 /* BlueskyListService.swift in Sources */,
 				0512C626C2B7E63DA47027D6 /* BlueskyListServicing.swift in Sources */,
 				2DD6A7326E46DFC9DFBFE88D /* BlueskyModerationApp.swift in Sources */,
 				C83A3BE167467FF43C0ABAEF /* BlueskyProfile.swift in Sources */,
 				BB85B48F5FB424C42266DEDB /* BlueskyProfileInspecting.swift in Sources */,
+				38C75234FE676706D9257CFF /* BlueskyProfileService.swift in Sources */,
 				1B362E45A02E3DF1A7EF962C /* BlueskyProfileView.swift in Sources */,
 				60B49F6F117771AD08C7BBC3 /* BlueskyProfileViewModel.swift in Sources */,
+				82DFC595354A428ABCBC5BDB /* BlueskyRequestExecutor.swift in Sources */,
+				21F961EE9D4E554A91E4AC70 /* BlueskySessionService.swift in Sources */,
 				DDD604A9F008B2000E73FCC0 /* Color+BlueskyModeration.swift in Sources */,
 				BCB345A8FC2C437F7F8D790D /* InfoView.swift in Sources */,
 				4DD5A9A61D05C01F947D6B26 /* KeychainService.swift in Sources */,
+				D1A943CFC4E34A0720ADF9DD /* ListBatchController.swift in Sources */,
+				ABBCDDBB713AD546DADE2858 /* ListDetailComparisonSection.swift in Sources */,
+				78FB60ACB6D4E62D9A06E700 /* ListDetailMembersSection.swift in Sources */,
+				668F2BDCA14645A65832BEF9 /* ListDetailModels.swift in Sources */,
+				FE52C2E1A916BE536488FF38 /* ListDetailSearchSection.swift in Sources */,
+				370BAE15512660E3169D0BD3 /* ListDetailSheets.swift in Sources */,
+				47004735F9E5C065D7CE10E2 /* ListDetailSnapshotSection.swift in Sources */,
+				99CBFED5BCD536122863CE17 /* ListDetailView+Helpers.swift in Sources */,
 				2CB92A8E77AA4D6B6D6AE3A9 /* ListDetailView.swift in Sources */,
+				880CC4BE7AAA1787AA97A307 /* ListDetailViewModel+Bulk.swift in Sources */,
+				E0F5CDD5D20CFC6D02B6CE33 /* ListDetailViewModel+Data.swift in Sources */,
+				84BB828A96C5EF3BD0DFFC3C /* ListDetailViewModel+Search.swift in Sources */,
 				34464420AD723967E1569B62 /* ListDetailViewModel.swift in Sources */,
+				D79F94DEA3D67017CC610E87 /* ListDiffController.swift in Sources */,
+				D4D656780E36F0E54596E78F /* ListImportController.swift in Sources */,
+				CB2A496A7D7678C0B77FD2EF /* ListMembersController.swift in Sources */,
 				2A5C54BEF7D9B3596765D3B7 /* ListRowView.swift in Sources */,
 				486CF862075A6505E5BBF479 /* ListsView.swift in Sources */,
 				ABFCB705F3EF28B376E27AE3 /* ListsViewModel.swift in Sources */,
 				4D4A0E7CA1EB679CB9C783C3 /* LiveBlueskyClient.swift in Sources */,
+				06F7D806B2C3522A82D3A99A /* LoadableState.swift in Sources */,
+				C4A09AF0287AFF8D082510A1 /* MockBlueskyListService.swift in Sources */,
+				CCC4DAC3D5FB15D0CD9C50A5 /* MockBlueskyProfileService.swift in Sources */,
+				FD5A0A546B8B9B5F59AA9E19 /* ModerationAuditStore.swift in Sources */,
 				08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */,
 				57463BDF5FE8746553C8DF37 /* PreviewBlueskyClient.swift in Sources */,
 				818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */,
 				5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */,
 				178D70F028B5C4268AA7124E /* ProfileMembershipModels.swift in Sources */,
 				54C2EF8D797B10C173440B6D /* RootView.swift in Sources */,
+				D018A537FFAA6F6B993EF30D /* SearchToken.swift in Sources */,
 				9DDC086668CD4E5B2A2D0963 /* SettingsView.swift in Sources */,
+				FA4E45A6CCB838DD52136561 /* StatePanels.swift in Sources */,
+				4E1D963D5E4BDB9BEE41DF5A /* String+CSV.swift in Sources */,
+				1451E14BA474137BB905A6A6 /* URL+Bluesky.swift in Sources */,
+				2A361832265E870EAA9D4997 /* WorkspacePreferencesStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -434,6 +637,11 @@
 			isa = PBXTargetDependency;
 			target = 0608BB4380516450DC5105DF /* BlueskyModeration */;
 			targetProxy = 98E5ECD67FA05F33E5C002FC /* PBXContainerItemProxy */;
+		};
+		6CF701D310CFF889E3DF70E5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0608BB4380516450DC5105DF /* BlueskyModeration */;
+			targetProxy = BB0E803DE9BB1C4D11A397D6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -595,6 +803,24 @@
 			};
 			name = Release;
 		};
+		8BA98F74DC17AF33627EA09D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ajung.BlueskyModerationUITests;
+				PRODUCT_NAME = BlueskyModerationUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BlueskyModeration;
+			};
+			name = Debug;
+		};
 		A316FA01CB1D79E717089034 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -613,6 +839,24 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.ajung.BlueskyModeration;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		C6680359D3A717227CC3C4DC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ajung.BlueskyModerationUITests;
+				PRODUCT_NAME = BlueskyModerationUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BlueskyModeration;
 			};
 			name = Release;
 		};
@@ -663,6 +907,15 @@
 			buildConfigurations = (
 				F0C9BC833B8770239AAD981B /* Debug */,
 				A316FA01CB1D79E717089034 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE5A5352A344485CF76BEBB9 /* Build configuration list for PBXNativeTarget "BlueskyModerationUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BA98F74DC17AF33627EA09D /* Debug */,
+				C6680359D3A717227CC3C4DC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

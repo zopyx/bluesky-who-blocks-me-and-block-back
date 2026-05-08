@@ -2,13 +2,14 @@ import SwiftUI
 
 struct ListRowView: View {
     let list: BlueskyList
+    @ScaledMetric private var iconSize = 30.0
 
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: list.kind.symbolName)
                 .font(.headline)
                 .foregroundStyle(list.kind == .moderation ? .orange : .skyPrimary)
-                .frame(width: 30)
+                .frame(width: iconSize)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(list.name)

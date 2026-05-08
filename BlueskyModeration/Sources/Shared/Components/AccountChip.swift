@@ -3,6 +3,7 @@ import SwiftUI
 struct AccountChip: View {
     let account: AppAccount
     let avatarURL: URL?
+    @ScaledMetric private var avatarSize = 22.0
 
     var body: some View {
         HStack(spacing: 8) {
@@ -31,7 +32,7 @@ struct AccountChip: View {
             } placeholder: {
                 avatarPlaceholder
             }
-            .frame(width: 22, height: 22)
+            .frame(width: avatarSize, height: avatarSize)
             .clipShape(Circle())
         } else {
             avatarPlaceholder
@@ -41,7 +42,7 @@ struct AccountChip: View {
     private var avatarPlaceholder: some View {
         Circle()
             .fill(Color.skyPrimary)
-            .frame(width: 22, height: 22)
+            .frame(width: avatarSize, height: avatarSize)
             .overlay {
                 Text(account.displayName.prefix(1).uppercased())
                     .font(.caption.weight(.bold))

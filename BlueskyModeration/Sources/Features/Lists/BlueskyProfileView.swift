@@ -24,13 +24,7 @@ struct BlueskyProfileView: View {
         }
         .navigationTitle(member.actor.title)
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Profile", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-            Button("OK") {
-                viewModel.errorMessage = nil
-            }
-        }, message: {
-            Text(viewModel.errorMessage ?? "")
-        })
+
         .confirmationDialog(
             blockConfirmationTitle,
             isPresented: $isShowingBlockConfirmation,
@@ -115,6 +109,7 @@ struct BlueskyProfileView: View {
                         )
                     }
                     .disabled(viewModel.isUpdatingModeration)
+                    .accessibilityHint("This action cannot be undone.")
 
                     Button {
                         Task {
@@ -163,6 +158,20 @@ struct BlueskyProfileView: View {
                         ProgressView()
                         Text("Loading profile")
                             .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            if let errorMessage = viewModel.errorMessage {
+                ErrorRetryBanner(message: errorMessage) {
+                    viewModel.errorMessage = nil
+                    Task {
+                        await viewModel.load(
+                            did: member.actor.did,
+                            account: account,
+                            appPassword: appPassword,
+                            using: blueskyClient
+                        )
                     }
                 }
             }

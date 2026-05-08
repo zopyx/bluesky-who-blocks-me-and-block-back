@@ -15,6 +15,7 @@ targets:
     sources:
       - Sources
       - Assets/Assets.xcassets
+      - Sources/App/PrivacyInfo.xcprivacy
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
@@ -28,6 +29,7 @@ targets:
     scheme:
       testTargets:
         - BlueskyModerationTests
+        - BlueskyModerationUITests
   BlueskyModerationTests:
     type: bundle.unit-test
     platform: iOS
@@ -39,4 +41,16 @@ targets:
       base:
         PRODUCT_NAME: BlueskyModerationTests
         PRODUCT_BUNDLE_IDENTIFIER: com.ajung.BlueskyModerationTests
+        GENERATE_INFOPLIST_FILE: YES
+  BlueskyModerationUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - UITests
+    dependencies:
+      - target: BlueskyModeration
+    settings:
+      base:
+        PRODUCT_NAME: BlueskyModerationUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.ajung.BlueskyModerationUITests
         GENERATE_INFOPLIST_FILE: YES

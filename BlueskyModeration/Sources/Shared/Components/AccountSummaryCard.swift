@@ -3,6 +3,7 @@ import SwiftUI
 struct AccountSummaryCard: View {
     let account: AppAccount
     let avatarURL: URL?
+    @ScaledMetric private var avatarSize = 52.0
 
     var body: some View {
         HStack(spacing: 14) {
@@ -42,7 +43,7 @@ struct AccountSummaryCard: View {
             } placeholder: {
                 avatarPlaceholder
             }
-            .frame(width: 52, height: 52)
+            .frame(width: avatarSize, height: avatarSize)
             .clipShape(Circle())
             .overlay {
                 Circle()
@@ -62,7 +63,7 @@ struct AccountSummaryCard: View {
                     endPoint: .bottomTrailing
                 )
             )
-            .frame(width: 52, height: 52)
+            .frame(width: avatarSize, height: avatarSize)
             .overlay {
                 Text(account.displayName.prefix(1).uppercased())
                     .font(.title3.weight(.bold))

@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlueskyListMember: Identifiable, Hashable {
+struct BlueskyListMember: Identifiable, Hashable, Sendable {
     let id: String
     let recordURI: String
     let actor: BlueskyActor

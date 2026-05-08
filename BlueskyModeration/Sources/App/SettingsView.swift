@@ -17,7 +17,7 @@ struct SettingsView: View {
                 }
 
                 Section("Status") {
-                    LabeledContent("Build Stage", value: "Prototype")
+                    LabeledContent("Build Stage", value: "Release Candidate")
                     LabeledContent("Data Source", value: "Live Bluesky API")
                 }
 
@@ -35,9 +35,10 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("Next") {
-                    Text("Profile inspection, list workflows, and moderation tooling.")
-                        .foregroundStyle(.secondary)
+                Section("Data Classification") {
+                    LabeledContent("Account Data", value: "Stored Locally")
+                    LabeledContent("Bluesky API", value: "Live Read/Write")
+                    LabeledContent("Audit History", value: "Local Only")
                 }
             }
             .navigationTitle("Settings")

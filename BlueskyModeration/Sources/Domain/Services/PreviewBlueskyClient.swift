@@ -156,8 +156,9 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         to list: BlueskyList,
         account: AppAccount,
         appPassword: String
-    ) async throws {
+    ) async throws -> String {
         try await Task.sleep(for: .milliseconds(100))
+        return "at://\(actorDID)/app.bsky.graph.listitem/\(UUID().uuidString)"
     }
 
     override func removeMember(

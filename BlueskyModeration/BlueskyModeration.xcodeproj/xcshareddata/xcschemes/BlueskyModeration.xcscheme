@@ -50,6 +50,17 @@
                ReferencedContainer = "container:BlueskyModeration.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "28FA462115B88F07A4C1D7CE"
+               BuildableName = "BlueskyModerationUITests.xctest"
+               BlueprintName = "BlueskyModerationUITests"
+               ReferencedContainer = "container:BlueskyModeration.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

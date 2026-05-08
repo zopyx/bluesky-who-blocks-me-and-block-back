@@ -34,7 +34,7 @@ final class BlueskyProfileViewModel: ObservableObject {
             )
         } catch {
             inspection = nil
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
         }
 
         isLoading = false
@@ -74,7 +74,7 @@ final class BlueskyProfileViewModel: ObservableObject {
                 using: client
             )
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
         }
     }
 
@@ -113,7 +113,7 @@ final class BlueskyProfileViewModel: ObservableObject {
                 using: client
             )
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
         }
     }
 
@@ -145,7 +145,7 @@ final class BlueskyProfileViewModel: ObservableObject {
                     throw BlueskyAPIError.server("That list could not be loaded.")
                 }
 
-                try await client.addActor(
+                _ = try await client.addActor(
                     did: profile.did,
                     to: list,
                     account: account,
@@ -161,7 +161,7 @@ final class BlueskyProfileViewModel: ObservableObject {
                 using: client
             )
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
         }
     }
 }

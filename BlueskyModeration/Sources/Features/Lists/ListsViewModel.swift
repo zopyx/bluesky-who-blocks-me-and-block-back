@@ -21,7 +21,7 @@ final class ListsViewModel: ObservableObject {
         guard let appPassword, !appPassword.isEmpty else {
             listsByKind = [:]
             activeProfile = nil
-            errorMessage = BlueskyAPIError.missingCredentials.localizedDescription
+            errorMessage = AppError.userMessage(from: BlueskyAPIError.missingCredentials)
             return
         }
 
@@ -42,7 +42,7 @@ final class ListsViewModel: ObservableObject {
         } catch {
             listsByKind = [:]
             activeProfile = nil
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
         }
 
         isLoading = false

@@ -27,6 +27,7 @@ struct AccountsView: View {
                                 } label: {
                                     Label("Remove", systemImage: "trash")
                                 }
+                                .accessibilityHint("This action cannot be undone.")
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                 Button {

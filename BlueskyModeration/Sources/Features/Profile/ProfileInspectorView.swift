@@ -13,6 +13,7 @@ struct ProfileInspectorView: View {
                     TextField("Handle or DID", text: $viewModel.query)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .accessibilityLabel("Search Bluesky by handle or DID")
 
                     if viewModel.isSearching {
                         HStack {
@@ -63,6 +64,7 @@ struct ProfileInspectorView: View {
                         }
                     }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isLoading)
+                    .accessibilityLabel("Inspect Bluesky profile")
 
                     Button {
                         workspaceStore.saveProfileSearch(viewModel.query)
@@ -70,6 +72,7 @@ struct ProfileInspectorView: View {
                         Label("Save Search", systemImage: "bookmark")
                     }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel("Save current search query")
 
                     if let activeAccount = accountStore.activeAccount {
                         Text("Using \(activeAccount.handle) for authenticated lookup.")
@@ -79,6 +82,19 @@ struct ProfileInspectorView: View {
                         Text("Add and select an account first.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                if let errorMessage = viewModel.errorMessage {
+                    ErrorRetryBanner(message: errorMessage) {
+                        viewModel.errorMessage = nil
+                        Task {
+                            await viewModel.search(
+                                account: accountStore.activeAccount,
+                                appPassword: activePassword,
+                                using: blueskyClient
+                            )
+                        }
                     }
                 }
 
@@ -95,6 +111,7 @@ struct ProfileInspectorView: View {
                                         .foregroundStyle(Color.skyPrimary)
                                 }
                             }
+                            .accessibilityLabel("Load saved search for \(search.query)")
                             .buttonStyle(.plain)
                             .swipeActions {
                                 Button(role: .destructive) {
@@ -121,6 +138,7 @@ struct ProfileInspectorView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            .accessibilityLabel("Load saved search for \(search.query)")
                             .buttonStyle(.plain)
                         }
                     }
@@ -171,6 +189,7 @@ struct ProfileInspectorView: View {
                         } label: {
                             Label("Open Moderation Controls", systemImage: "slider.horizontal.3")
                         }
+                        .accessibilityLabel("Open moderation controls for this profile")
                     }
 
                     if !inspection.profile.labels.isEmpty {
@@ -232,10 +251,12 @@ struct ProfileInspectorView: View {
                             Link(destination: profileURL) {
                                 Label("Open in Bluesky", systemImage: "arrow.up.right.square")
                             }
+                            .accessibilityLabel("Open profile in Bluesky app or website")
                         }
                     }
                 }
             }
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .navigationTitle("Profile")
             .task {
                 if viewModel.query.isEmpty {
@@ -263,13 +284,7 @@ struct ProfileInspectorView: View {
                     workspaceStore.noteRecentSearch(newInspection.profile.handle)
                 }
             }
-            .alert("Profile", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-                Button("OK") {
-                    viewModel.errorMessage = nil
-                }
-            }, message: {
-                Text(viewModel.errorMessage ?? "")
-            })
+
         }
     }
 

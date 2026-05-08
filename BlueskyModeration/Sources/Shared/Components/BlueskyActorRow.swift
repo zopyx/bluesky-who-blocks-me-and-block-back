@@ -3,6 +3,8 @@ import SwiftUI
 struct BlueskyActorRow: View {
     let actor: BlueskyActor
 
+    @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 40
+
     var body: some View {
         HStack(spacing: 12) {
             avatarView
@@ -18,6 +20,7 @@ struct BlueskyActorRow: View {
             Spacer()
         }
         .padding(.vertical, 4)
+        .accessibilityLabel("\(actor.title), \(actor.handle)")
     }
 
     @ViewBuilder
@@ -30,7 +33,7 @@ struct BlueskyActorRow: View {
             } placeholder: {
                 avatarPlaceholder
             }
-            .frame(width: 40, height: 40)
+            .frame(width: avatarSize, height: avatarSize)
             .clipShape(Circle())
             .overlay {
                 Circle()
@@ -44,7 +47,7 @@ struct BlueskyActorRow: View {
     private var avatarPlaceholder: some View {
         Circle()
             .fill(Color.skyPrimary.opacity(0.16))
-            .frame(width: 40, height: 40)
+            .frame(width: avatarSize, height: avatarSize)
             .overlay {
                 Text(actor.title.prefix(1).uppercased())
                     .font(.headline)

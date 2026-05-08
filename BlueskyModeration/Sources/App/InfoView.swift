@@ -12,7 +12,9 @@ struct InfoView: View {
                     footerCard
                 }
                 .padding(16)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             }
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .background(background)
             .navigationTitle("Info")
             .toolbarBackground(.visible, for: .navigationBar)

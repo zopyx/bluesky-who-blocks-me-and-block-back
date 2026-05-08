@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlueskyList: Identifiable, Hashable {
+struct BlueskyList: Identifiable, Hashable, Sendable {
     enum Kind: String, CaseIterable, Hashable {
         case moderation
         case regular

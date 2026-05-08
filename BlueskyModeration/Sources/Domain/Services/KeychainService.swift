@@ -25,6 +25,7 @@ final class KeychainService: KeychainServicing {
 
         var attributes = query
         attributes[kSecValueData as String] = data
+        attributes[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
 
         let status = SecItemAdd(attributes as CFDictionary, nil)
         guard status == errSecSuccess else {
@@ -38,7 +39,8 @@ final class KeychainService: KeychainServicing {
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
 
         var item: CFTypeRef?
@@ -60,7 +62,8 @@ final class KeychainService: KeychainServicing {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account
+            kSecAttrAccount as String: account,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
 
         let status = SecItemDelete(query as CFDictionary)

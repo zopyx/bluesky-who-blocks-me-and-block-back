@@ -40,7 +40,7 @@ final class AccountStore: ObservableObject {
     func addAccount(
         handle: String,
         appPassword: String,
-        client: LiveBlueskyClient
+        client: BlueskyAuthenticating
     ) async -> Bool {
         let trimmedHandle = handle.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedPassword = appPassword.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -66,7 +66,6 @@ final class AccountStore: ObservableObject {
                 did: session.did,
                 pdsURL: session.pdsURL
             )
-            try keychain.save(trimmedPassword, service: passwordService, account: account.id.uuidString)
             try await client.persistSession(session, for: account)
             accounts.insert(account, at: 0)
             activeAccountID = account.id
@@ -74,12 +73,12 @@ final class AccountStore: ObservableObject {
             errorMessage = nil
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
             return false
         }
     }
 
-    func removeAccount(_ account: AppAccount, client: LiveBlueskyClient? = nil) {
+    func removeAccount(_ account: AppAccount, client: BlueskyAuthenticating? = nil) {
         do {
             try keychain.delete(service: passwordService, account: account.id.uuidString)
         } catch {
@@ -113,7 +112,7 @@ final class AccountStore: ObservableObject {
         try? keychain.read(service: passwordService, account: account.id.uuidString)
     }
 
-    func refreshAccountProfiles(using client: LiveBlueskyClient) async {
+    func refreshAccountProfiles(using client: BlueskyProfileInspecting) async {
         guard !accounts.isEmpty else { return }
 
         var updatedAccounts = accounts
@@ -146,6 +145,7 @@ final class AccountStore: ObservableObject {
                     didChange = true
                 }
             } catch {
+                AppLogger.moderation.error("Failed to refresh profile for \(account.handle, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 continue
             }
         }

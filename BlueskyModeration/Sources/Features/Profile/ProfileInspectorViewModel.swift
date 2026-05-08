@@ -9,6 +9,8 @@ final class ProfileInspectorViewModel: ObservableObject {
     @Published private(set) var isSearching = false
     @Published var errorMessage: String?
 
+    private var searchToken: SearchToken?
+
     func inspect(
         account: AppAccount?,
         appPassword: String?,
@@ -68,6 +70,9 @@ final class ProfileInspectorViewModel: ObservableObject {
             return
         }
 
+        let token = SearchToken()
+        searchToken = token
+
         isSearching = true
         errorMessage = nil
         AppLogger.search.debug("Starting profile search for query '\(requestQuery, privacy: .public)'.")
@@ -79,7 +84,7 @@ final class ProfileInspectorViewModel: ObservableObject {
                 appPassword: appPassword
             )
 
-            guard requestQuery == query.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            guard searchToken?.matches(token) == true else {
                 isSearching = false
                 return
             }
@@ -98,13 +103,20 @@ final class ProfileInspectorViewModel: ObservableObject {
                 return
             }
 
+            guard searchToken?.matches(token) == true else {
+                isSearching = false
+                return
+            }
+
             let appError = AppError.from(error)
             AppLogger.search.error("Profile search for '\(requestQuery, privacy: .public)' failed: \(appError.message, privacy: .public)")
             errorMessage = appError.message
             searchResults = []
         }
 
-        isSearching = false
+        if searchToken?.matches(token) == true {
+            isSearching = false
+        }
     }
 
     func inspect(

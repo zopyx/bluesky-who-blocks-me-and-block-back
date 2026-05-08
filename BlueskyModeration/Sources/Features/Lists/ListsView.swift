@@ -57,12 +57,23 @@ struct ListsView: View {
                                             }
                                         } label: {
                                             ListRowView(list: list)
+                                                .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
                                         }
                                     }
                                 }
                             }
                         }
+
+                        if let errorMessage = viewModel.errorMessage {
+                            ErrorRetryBanner(message: errorMessage) {
+                                viewModel.errorMessage = nil
+                                Task {
+                                    await reload()
+                                }
+                            }
+                        }
                     }
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                     .listStyle(.insetGrouped)
                     .refreshable {
                         await reload()
@@ -82,6 +93,7 @@ struct ListsView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Switch active account")
                     }
                 }
 
@@ -93,6 +105,7 @@ struct ListsView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityLabel("Refresh lists")
                     .disabled(accountStore.activeAccount == nil)
                 }
             }
@@ -103,13 +116,7 @@ struct ListsView: View {
             .task(id: accountStore.activeAccountID) {
                 await reload()
             }
-            .alert("Lists", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-                Button("OK") {
-                    viewModel.errorMessage = nil
-                }
-            }, message: {
-                Text(viewModel.errorMessage ?? "")
-            })
+
         }
     }
 
@@ -170,6 +177,7 @@ struct ListsView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .accessibilityLabel("Open list \(list.name)")
                     }
                 }
                 .padding(.vertical, 4)
