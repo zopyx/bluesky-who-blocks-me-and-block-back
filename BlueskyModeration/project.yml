@@ -26,4 +26,17 @@ targets:
         TARGETED_DEVICE_FAMILY: 1
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     scheme:
-      testTargets: []
+      testTargets:
+        - BlueskyModerationTests
+  BlueskyModerationTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests
+    dependencies:
+      - target: BlueskyModeration
+    settings:
+      base:
+        PRODUCT_NAME: BlueskyModerationTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.ajung.BlueskyModerationTests
+        GENERATE_INFOPLIST_FILE: YES

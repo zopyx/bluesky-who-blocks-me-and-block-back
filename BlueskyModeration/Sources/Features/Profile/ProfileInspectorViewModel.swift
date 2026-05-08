@@ -12,7 +12,7 @@ final class ProfileInspectorViewModel: ObservableObject {
     func inspect(
         account: AppAccount?,
         appPassword: String?,
-        using client: LiveBlueskyClient
+        using client: BlueskyProfileInspecting
     ) async {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -49,7 +49,7 @@ final class ProfileInspectorViewModel: ObservableObject {
     func search(
         account: AppAccount?,
         appPassword: String?,
-        using client: LiveBlueskyClient
+        using client: BlueskyProfileInspecting
     ) async {
         let requestQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard requestQuery.count >= 2 else {
@@ -69,6 +69,8 @@ final class ProfileInspectorViewModel: ObservableObject {
         }
 
         isSearching = true
+        errorMessage = nil
+        AppLogger.search.debug("Starting profile search for query '\(requestQuery, privacy: .public)'.")
 
         do {
             let actors = try await client.searchActors(
@@ -88,13 +90,17 @@ final class ProfileInspectorViewModel: ObservableObject {
                 ($0.displayName?.lowercased().contains(lowered) ?? false) ||
                 $0.did.lowercased().contains(lowered)
             }
+            AppLogger.search.debug("Profile search for '\(requestQuery, privacy: .public)' returned \(self.searchResults.count) filtered results.")
         } catch {
-            if isIgnorableCancellation(error) {
+            if AppError.isCancellation(error) {
+                AppLogger.search.debug("Profile search for '\(requestQuery, privacy: .public)' was cancelled.")
                 isSearching = false
                 return
             }
 
-            errorMessage = error.localizedDescription
+            let appError = AppError.from(error)
+            AppLogger.search.error("Profile search for '\(requestQuery, privacy: .public)' failed: \(appError.message, privacy: .public)")
+            errorMessage = appError.message
             searchResults = []
         }
 
@@ -105,7 +111,7 @@ final class ProfileInspectorViewModel: ObservableObject {
         actor: BlueskyActor,
         account: AppAccount?,
         appPassword: String?,
-        using client: LiveBlueskyClient
+        using client: BlueskyProfileInspecting
     ) async {
         query = actor.handle
         await inspect(query: actor.did, account: account, appPassword: appPassword, using: client)
@@ -115,7 +121,7 @@ final class ProfileInspectorViewModel: ObservableObject {
         query: String,
         account: AppAccount?,
         appPassword: String?,
-        using client: LiveBlueskyClient
+        using client: BlueskyProfileInspecting
     ) async {
         guard let account else {
             errorMessage = "Select an active account first."
@@ -137,28 +143,15 @@ final class ProfileInspectorViewModel: ObservableObject {
                 appPassword: appPassword
             )
         } catch {
-            if isIgnorableCancellation(error) {
+            if AppError.isCancellation(error) {
                 isLoading = false
                 return
             }
 
             inspection = nil
-            errorMessage = error.localizedDescription
+            errorMessage = AppError.userMessage(from: error)
         }
 
         isLoading = false
-    }
-
-    private func isIgnorableCancellation(_ error: Error) -> Bool {
-        if error is CancellationError {
-            return true
-        }
-
-        let nsError = error as NSError
-        if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
-            return true
-        }
-
-        return nsError.localizedDescription.localizedCaseInsensitiveContains("cancelled")
     }
 }

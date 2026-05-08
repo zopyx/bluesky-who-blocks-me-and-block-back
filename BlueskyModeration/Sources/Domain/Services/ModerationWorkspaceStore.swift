@@ -194,6 +194,7 @@ final class ModerationWorkspaceStore: ObservableObject {
     func recordOperation(_ result: ModerationOperationLogEntry) {
         operationLog.insert(result, at: 0)
         operationLog = Array(operationLog.prefix(operationLogLimit))
+        AppLogger.persistence.debug("Recorded moderation operation '\(result.title, privacy: .public)' with \(result.succeededHandles.count) successes and \(result.failedHandles.count) failures.")
         persistOperationLog()
     }
 
@@ -224,6 +225,7 @@ final class ModerationWorkspaceStore: ObservableObject {
 
         if let previousSnapshot,
            previousSnapshot.members == currentMembers {
+            AppLogger.persistence.debug("Skipped snapshot write for list '\(list.name, privacy: .public)' because membership was unchanged.")
             return ListMembershipSnapshotSummary(
                 listID: list.id,
                 listName: list.name,
@@ -245,6 +247,7 @@ final class ModerationWorkspaceStore: ObservableObject {
         history.insert(snapshot, at: 0)
         history = Array(history.prefix(snapshotHistoryLimit))
         snapshotsByListID[list.id] = history
+        AppLogger.persistence.debug("Captured snapshot for list '\(list.name, privacy: .public)' with \(currentMembers.count) members.")
         persistSnapshots()
 
         return ListMembershipSnapshotSummary(

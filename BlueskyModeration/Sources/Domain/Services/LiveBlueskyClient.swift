@@ -47,7 +47,7 @@ protocol BlueskyAuthenticating {
 }
 
 @MainActor
-class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListServicing {
+class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListServicing, BlueskyProfileInspecting {
     private let entrywayURL: URL
     private let session: URLSession
     private let keychain: KeychainServicing
