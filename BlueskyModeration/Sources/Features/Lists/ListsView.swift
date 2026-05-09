@@ -21,7 +21,7 @@ struct ListsView: View {
                         systemImage: "person.crop.circle.badge.plus",
                         description: Text("Add a Bluesky account in the Accounts tab to load lists.")
                     )
-                } else if viewModel.isLoading && groupedLists.isEmpty {
+                } else if viewModel.isLoading {
                     VStack(spacing: 20) {
                         Image(systemName: "checklist.checked")
                             .font(.system(size: 48))
@@ -36,21 +36,6 @@ struct ListsView: View {
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if groupedLists.isEmpty {
-                    if let errorMessage = viewModel.errorMessage {
-                        ErrorRetryBanner(message: errorMessage) {
-                            viewModel.errorMessage = nil
-                            Task {
-                                await reload()
-                            }
-                        }
-                    } else {
-                        ContentUnavailableView(
-                            "No Lists Found",
-                            systemImage: "tray",
-                            description: Text("This account has no lists or the data source returned nothing.")
-                        )
-                    }
                 } else {
                     List {
                         if let activeAccount = accountStore.activeAccount {
@@ -101,8 +86,8 @@ struct ListsView: View {
                                 .environmentObject(blueskyClient)
                         }
 
-                        Section {
-                            if let lists = groupedLists[.moderation], !lists.isEmpty {
+                        if let lists = groupedLists[.moderation], !lists.isEmpty {
+                            Section {
                                 ForEach(lists) { list in
                                     NavigationLink {
                                         ListDetailView(list: list) { updatedList in
@@ -113,22 +98,22 @@ struct ListsView: View {
                                             .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
                                     }
                                 }
-                            }
-                        } header: {
-                            HStack {
-                                Text("Moderation Lists")
-                                Spacer()
-                                Button {
-                                    createListKind = .moderation
-                                    isShowingCreateList = true
-                                } label: {
-                                    Image(systemName: "plus")
+                            } header: {
+                                HStack {
+                                    Text("Moderation Lists")
+                                    Spacer()
+                                    Button {
+                                        createListKind = .moderation
+                                        isShowingCreateList = true
+                                    } label: {
+                                        Image(systemName: "plus")
+                                    }
                                 }
                             }
                         }
 
-                        Section {
-                            if let lists = groupedLists[.regular], !lists.isEmpty {
+                        if let lists = groupedLists[.regular], !lists.isEmpty {
+                            Section {
                                 ForEach(lists) { list in
                                     NavigationLink {
                                         ListDetailView(list: list) { updatedList in
@@ -139,16 +124,16 @@ struct ListsView: View {
                                             .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
                                     }
                                 }
-                            }
-                        } header: {
-                            HStack {
-                                Text("Lists")
-                                Spacer()
-                                Button {
-                                    createListKind = .regular
-                                    isShowingCreateList = true
-                                } label: {
-                                    Image(systemName: "plus")
+                            } header: {
+                                HStack {
+                                    Text("Lists")
+                                    Spacer()
+                                    Button {
+                                        createListKind = .regular
+                                        isShowingCreateList = true
+                                    } label: {
+                                        Image(systemName: "plus")
+                                    }
                                 }
                             }
                         }
