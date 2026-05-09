@@ -139,7 +139,7 @@ struct RelationshipsView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle(isLoading && initialCount != nil ? mode.titled(initialCount!) : mode.titled(actors.count))
+        .navigationTitle(mode.titled(initialCount ?? actors.count))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if isLoading && actors.isEmpty {
