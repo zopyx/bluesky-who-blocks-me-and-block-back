@@ -157,19 +157,14 @@ struct BlueskyProfileView: View {
                     }
                 }
 
-                Section {
-                    DisclosureGroup {
-                        LabeledContent("Handle", value: profile.handle)
-                        LabeledContent("DID", value: profile.did)
-                        if let createdAt = profile.createdAt {
-                            LabeledContent("Joined", value: createdAt.formatted(date: .abbreviated, time: .omitted))
-                        }
-                        if !profile.labels.isEmpty {
-                            LabeledContent("Labels", value: profile.labels.joined(separator: ", "))
-                        }
-                    } label: {
-                        Text("Account Info")
-                            .font(.subheadline.weight(.semibold))
+                Section("Account Info") {
+                    LabeledContent("Handle", value: profile.handle)
+                    LabeledContent("DID", value: profile.did)
+                    if let createdAt = profile.createdAt {
+                        LabeledContent("Joined", value: createdAt.formatted(date: .abbreviated, time: .omitted))
+                    }
+                    if !profile.labels.isEmpty {
+                        LabeledContent("Labels", value: profile.labels.joined(separator: ", "))
                     }
                 }
 

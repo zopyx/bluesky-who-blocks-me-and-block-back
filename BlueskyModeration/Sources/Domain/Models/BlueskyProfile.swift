@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlueskyProfile: Identifiable, Hashable {
+struct BlueskyProfile: Identifiable, Hashable, Codable {
     let id: String
     let did: String
     let handle: String
@@ -31,7 +31,7 @@ struct BlueskyProfile: Identifiable, Hashable {
     }
 }
 
-struct BlueskyViewerState: Hashable {
+struct BlueskyViewerState: Hashable, Codable {
     let muted: Bool
     let blockedBy: Bool
     let isBlocking: Bool

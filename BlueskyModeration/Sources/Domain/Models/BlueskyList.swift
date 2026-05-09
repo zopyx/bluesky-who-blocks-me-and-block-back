@@ -1,7 +1,7 @@
 import Foundation
 
-struct BlueskyList: Identifiable, Hashable, Sendable {
-    enum Kind: String, CaseIterable, Hashable {
+struct BlueskyList: Identifiable, Hashable, Sendable, Codable {
+    enum Kind: String, CaseIterable, Hashable, Codable {
         case moderation
         case regular
 
@@ -38,4 +38,8 @@ struct BlueskyList: Identifiable, Hashable, Sendable {
     var description: String
     let memberCount: Int?
     let kind: Kind
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, memberCount, kind
+    }
 }

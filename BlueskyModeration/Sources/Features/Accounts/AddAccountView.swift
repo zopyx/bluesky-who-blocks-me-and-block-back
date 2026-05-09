@@ -1,5 +1,21 @@
 import SwiftUI
 
+enum ProviderOption: String, CaseIterable, Identifiable {
+    case bluesky = "Bluesky"
+    case eurosky = "Eurosky"
+    case other = "Other"
+
+    var id: String { rawValue }
+
+    var entrywayURL: URL {
+        switch self {
+        case .bluesky: return URL(string: "https://bsky.social")!
+        case .eurosky: return URL(string: "https://eurosky.social")!
+        case .other: return URL(string: "https://bsky.social")!
+        }
+    }
+}
+
 struct AddAccountView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var accountStore: AccountStore
@@ -7,21 +23,27 @@ struct AddAccountView: View {
 
     @State private var handle = ""
     @State private var appPassword = ""
-    @State private var showAdvanced = false
+    @State private var selectedProvider: ProviderOption = .bluesky
     @State private var customPDS = ""
-
-    private var detectedPDS: String? {
-        guard !handle.isEmpty else { return nil }
-        let parts = handle.split(separator: "@").last?.split(separator: ".")
-        guard let parts, parts.count >= 2 else { return nil }
-        let domain = parts.suffix(2).joined(separator: ".")
-        guard domain != "bsky.social" else { return nil }
-        return "https://\(domain)"
-    }
 
     var body: some View {
         NavigationStack {
             Form {
+                Section("Provider") {
+                    Picker("Provider", selection: $selectedProvider) {
+                        ForEach(ProviderOption.allCases) { option in
+                            Text(option.rawValue).tag(option)
+                        }
+                    }
+
+                    if selectedProvider == .other {
+                        TextField("Custom PDS URL", text: $customPDS)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.URL)
+                    }
+                }
+
                 Section("Credentials") {
                     TextField("Handle", text: $handle)
                         .textInputAutocapitalization(.never)
@@ -30,24 +52,6 @@ struct AddAccountView: View {
                     SecureField("App Password", text: $appPassword)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                }
-
-                if let detectedPDS {
-                    Section {
-                        LabeledContent("Detected PDS", value: detectedPDS)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                DisclosureGroup("Advanced", isExpanded: $showAdvanced) {
-                    TextField("PDS Entryway (optional)", text: $customPDS)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                        .placeholder(when: customPDS.isEmpty) {
-                            Text("e.g. https://eurosky.social")
-                                .foregroundStyle(.tertiary)
-                        }
                 }
 
                 Section("Why app password?") {
@@ -67,8 +71,12 @@ struct AddAccountView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         Task {
-                            let entrywayURL = URL(string: customPDS.trimmingCharacters(in: .whitespacesAndNewlines))
-                                ?? (detectedPDS.flatMap(URL.init))
+                            let entrywayURL: URL?
+                            if selectedProvider == .other && !customPDS.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                entrywayURL = URL(string: customPDS.trimmingCharacters(in: .whitespacesAndNewlines))
+                            } else {
+                                entrywayURL = selectedProvider.entrywayURL
+                            }
                             let added = await accountStore.addAccount(
                                 handle: handle,
                                 appPassword: appPassword,
@@ -97,14 +105,6 @@ struct AddAccountView: View {
                     }
                 }
             }
-        }
-    }
-}
-
-extension View {
-    func placeholder(when shouldShow: Bool, alignment: Alignment = .leading, @ViewBuilder placeholder: () -> some View) -> some View {
-        overlay(alignment: alignment) {
-            if shouldShow { placeholder().allowsHitTesting(false) }
         }
     }
 }

@@ -10,6 +10,8 @@ final class ListsViewModelTests: XCTestCase {
         super.setUp()
         viewModel = ListsViewModel()
         client = MockListsClient()
+        DashboardCache.clear(forKey: "did:plc:test")
+        DashboardCache.clear(forKey: "test.bsky.social")
     }
 
     func testLoadWithNilAccountClearsState() async {

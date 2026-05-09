@@ -6,6 +6,7 @@ final class ListsViewModel: ObservableObject {
     @Published private(set) var activeProfile: BlueskyProfile?
     @Published private(set) var blockingCount = 0
     @Published private(set) var isLoading = false
+    @Published private(set) var isFromCache = false
     @Published var errorMessage: String?
 
     func load(
@@ -21,6 +22,12 @@ final class ListsViewModel: ObservableObject {
             return
         }
 
+        let cacheKey = account.did ?? account.handle
+        if let cached = DashboardCache.load(forKey: cacheKey) {
+            applyCached(cached)
+            isFromCache = true
+        }
+
         isLoading = true
         errorMessage = nil
 
@@ -28,8 +35,10 @@ final class ListsViewModel: ObservableObject {
             let lists = try await client.fetchLists(for: account, appPassword: appPassword)
             listsByKind = Dictionary(grouping: lists, by: \.kind)
         } catch {
-            listsByKind = [:]
-            errorMessage = AppError.userMessage(from: error)
+            if listsByKind.isEmpty {
+                listsByKind = [:]
+                errorMessage = AppError.userMessage(from: error)
+            }
         }
 
         do {
@@ -49,7 +58,24 @@ final class ListsViewModel: ObservableObject {
             AppLogger.moderation.debug("Failed to fetch blocked actors: \(error.localizedDescription, privacy: .public)")
         }
 
+        persistCache(forKey: cacheKey)
+        isFromCache = false
         isLoading = false
+    }
+
+    private func applyCached(_ cached: DashboardCacheData) {
+        listsByKind = Dictionary(grouping: cached.lists, by: \.kind)
+        activeProfile = cached.profile
+        blockingCount = cached.blockingCount
+    }
+
+    private func persistCache(forKey key: String) {
+        let data = DashboardCacheData(
+            lists: Array(listsByKind.values.flatMap { $0 }),
+            profile: activeProfile,
+            blockingCount: blockingCount
+        )
+        DashboardCache.save(data, forKey: key)
     }
 
     func addList(_ list: BlueskyList) {
@@ -57,6 +83,7 @@ final class ListsViewModel: ObservableObject {
         updated[list.kind, default: []].append(list)
         updated[list.kind]?.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         listsByKind = updated
+        persistCache(forKey: didCacheKey ?? "")
     }
 
     func updateList(_ updatedList: BlueskyList) {
@@ -69,5 +96,10 @@ final class ListsViewModel: ObservableObject {
         lists[index] = updatedList
         updated[updatedList.kind] = lists
         listsByKind = updated
+        persistCache(forKey: didCacheKey ?? "")
+    }
+
+    private var didCacheKey: String? {
+        activeProfile?.did ?? activeProfile?.handle
     }
 }
