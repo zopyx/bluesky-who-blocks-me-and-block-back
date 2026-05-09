@@ -59,6 +59,7 @@ struct ActorView: Decodable {
     let handle: String
     let displayName: String?
     let avatar: String?
+    let createdAt: String?
 }
 
 struct GetFollowersResponse: Decodable {

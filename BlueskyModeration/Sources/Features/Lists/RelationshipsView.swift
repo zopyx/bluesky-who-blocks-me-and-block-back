@@ -77,6 +77,15 @@ struct RelationshipsView: View {
 
                                     Spacer()
 
+                                    if actor.isNew {
+                                        Text("New")
+                                            .font(.caption2.weight(.semibold))
+                                            .foregroundStyle(.orange)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.orange.opacity(0.12), in: Capsule())
+                                    }
+
                                     Text("\(index + 1)")
                                         .font(.caption)
                                         .foregroundStyle(.tertiary)

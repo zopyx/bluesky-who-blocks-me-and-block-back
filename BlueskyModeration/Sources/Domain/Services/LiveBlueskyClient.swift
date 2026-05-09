@@ -485,6 +485,47 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    func fetchProfile(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> BlueskyProfile {
+        let response: ProfileViewDetailed = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            try await requestExecutor.send(
+                path: "app.bsky.actor.getProfile",
+                method: "GET",
+                queryItems: [
+                    URLQueryItem(name: "actor", value: actorDID)
+                ],
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+
+        return BlueskyProfile(
+            id: response.did,
+            did: response.did,
+            handle: response.handle,
+            displayName: response.displayName,
+            description: response.description,
+            websiteURL: URL(string: response.website ?? ""),
+            avatarURL: URL(string: response.avatar ?? ""),
+            bannerURL: URL(string: response.banner ?? ""),
+            followersCount: response.followersCount,
+            followsCount: response.followsCount,
+            postsCount: response.postsCount
+            ,
+            listsCount: response.associated?.lists,
+            starterPacksCount: response.associated?.starterPacks,
+            createdAt: parseDate(response.createdAt),
+            labels: response.labels?.map(\.val) ?? [],
+            viewerState: mapViewerState(response.viewer)
+        )
+    }
+
     func fetchFollowers(
         actor actorDID: String,
         account: AppAccount,
@@ -535,51 +576,11 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                     did: $0.did,
                     handle: $0.handle,
                     displayName: $0.displayName,
-                    avatarURL: URL(string: $0.avatar ?? "")
+                    avatarURL: URL(string: $0.avatar ?? ""),
+                    createdAt: parseDate($0.createdAt)
                 )
             },
             cursor: response.cursor
-        )
-    }
-
-    func fetchProfile(
-        did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
-    ) async throws -> BlueskyProfile {
-        let response: ProfileViewDetailed = try await sessionService.performAuthenticatedRequest(
-            account: account,
-            appPassword: appPassword
-        ) { authSession in
-            try await requestExecutor.send(
-                path: "app.bsky.actor.getProfile",
-                method: "GET",
-                queryItems: [
-                    URLQueryItem(name: "actor", value: actorDID)
-                ],
-                accessToken: authSession.accessJWT,
-                hostURL: authSession.pdsURL
-            )
-        }
-
-        return BlueskyProfile(
-            id: response.did,
-            did: response.did,
-            handle: response.handle,
-            displayName: response.displayName,
-            description: response.description,
-            websiteURL: URL(string: response.website ?? ""),
-            avatarURL: URL(string: response.avatar ?? ""),
-            bannerURL: URL(string: response.banner ?? ""),
-            followersCount: response.followersCount,
-            followsCount: response.followsCount,
-            postsCount: response.postsCount
-            ,
-            listsCount: response.associated?.lists,
-            starterPacksCount: response.associated?.starterPacks,
-            createdAt: parseDate(response.createdAt),
-            labels: response.labels?.map(\.val) ?? [],
-            viewerState: mapViewerState(response.viewer)
         )
     }
 
@@ -629,7 +630,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
         return PagedActorSearch(
             actors: response.follows.map {
-                BlueskyActor(did: $0.did, handle: $0.handle, displayName: $0.displayName, avatarURL: URL(string: $0.avatar ?? ""))
+                BlueskyActor(did: $0.did, handle: $0.handle, displayName: $0.displayName, avatarURL: URL(string: $0.avatar ?? ""), createdAt: parseDate($0.createdAt))
             },
             cursor: response.cursor
         )
