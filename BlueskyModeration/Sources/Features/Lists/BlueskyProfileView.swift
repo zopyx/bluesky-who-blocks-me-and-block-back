@@ -79,6 +79,9 @@ struct BlueskyProfileView: View {
                     LabeledContent("Followers", value: statText(profile.followersCount))
                     LabeledContent("Following", value: statText(profile.followsCount))
                     LabeledContent("Posts", value: statText(profile.postsCount))
+                    if let createdAt = profile.createdAt {
+                        LabeledContent("Joined", value: createdAt.formatted(date: .abbreviated, time: .omitted))
+                    }
                 }
 
                 if !isOwnProfile {
@@ -145,12 +148,6 @@ struct BlueskyProfileView: View {
 
                 if !isOwnProfile {
                     Section("Actions") {
-                    if let profileURL = profile.profileURL {
-                        Link(destination: profileURL) {
-                            Label("Open in Bluesky", systemImage: "arrow.up.right.square")
-                        }
-                    }
-
                     if viewModel.isBlockingFollowers {
                         if let progress = viewModel.blockFollowersProgress {
                             BatchProgressCard(
@@ -181,6 +178,14 @@ struct BlueskyProfileView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                }
+
+                if let profileURL = profile.profileURL {
+                    Section {
+                        Link(destination: profileURL) {
+                            Label("Open in Bluesky", systemImage: "arrow.up.right.square")
+                        }
+                    }
                 }
             } else if viewModel.isLoading {
                 Section {
