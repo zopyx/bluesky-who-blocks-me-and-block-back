@@ -148,6 +148,14 @@ struct RelationshipsView: View {
         .navigationTitle(mode.titled(isLoading ? (initialCount ?? actors.count) : actors.count))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                if !actors.isEmpty {
+                    ShareLink(item: csvContent, subject: Text("\(mode.title) Export"), message: Text("Bluesky \(mode.title.lowercased()) list")) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
                 if isLoading && actors.isEmpty {
                     ProgressView()
                 } else if isRefreshing {
@@ -233,6 +241,19 @@ struct RelationshipsView: View {
                     .font(.headline)
                     .foregroundStyle(Color.skyPrimary)
             }
+    }
+
+    private var csvContent: String {
+        let header = "handle,did,display_name,created_at"
+        let rows = actors.map { actor in
+            [
+                actor.handle.csvField,
+                actor.did.csvField,
+                (actor.displayName ?? "").csvField,
+                (actor.createdAt?.ISO8601Format() ?? "").csvField
+            ].joined(separator: ",")
+        }
+        return ([header] + rows).joined(separator: "\n")
     }
 
     private var cacheKey: String? {

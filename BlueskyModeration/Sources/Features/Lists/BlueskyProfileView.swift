@@ -7,7 +7,9 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
+    @EnvironmentObject private var notesStore: ProfileNotesStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
+    @State private var isShowingNote = false
 
     var body: some View {
         Group {
@@ -146,6 +148,12 @@ struct BlueskyProfileView: View {
                         Label("Member of \(list.name)", systemImage: "person.2.badge.gearshape")
                             .foregroundStyle(.secondary)
                     }
+
+                    Button {
+                        isShowingNote = true
+                    } label: {
+                        Label(notesStore.note(for: profile.did).isEmpty ? "Add Note" : "Edit Note", systemImage: "note.text")
+                    }
                 }
                 }
 
@@ -222,6 +230,11 @@ struct BlueskyProfileView: View {
                 appPassword: appPassword,
                 using: blueskyClient
             )
+        }
+        .sheet(isPresented: $isShowingNote) {
+            if let profile = viewModel.profile {
+                NoteSheet(profile: profile, notesStore: notesStore)
+            }
         }
     }
 
