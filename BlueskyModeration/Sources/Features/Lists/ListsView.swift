@@ -64,7 +64,7 @@ struct ListsView: View {
                             }
                         }
 
-                        Section("Followers") {
+                        Section("Followers (\(viewModel.activeProfile?.followersCount ?? 0))") {
                             NavigationLink {
                                 RelationshipsView(mode: .followers)
                                     .environmentObject(accountStore)
@@ -74,7 +74,7 @@ struct ListsView: View {
                             }
                         }
 
-                        Section("Following") {
+                        Section("Following (\(viewModel.activeProfile?.followsCount ?? 0))") {
                             NavigationLink {
                                 RelationshipsView(mode: .following)
                                     .environmentObject(accountStore)
