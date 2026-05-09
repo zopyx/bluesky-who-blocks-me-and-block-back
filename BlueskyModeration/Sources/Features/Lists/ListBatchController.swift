@@ -41,6 +41,10 @@ final class ListBatchController {
                     currentHandle: actor.handle
                 )
             )
+
+            if index < actors.count - 1 {
+                try? await Task.sleep(for: .milliseconds(300))
+            }
         }
 
         return ListBulkActionResult(

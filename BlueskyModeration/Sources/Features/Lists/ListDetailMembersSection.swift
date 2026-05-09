@@ -68,64 +68,62 @@ extension ListDetailView {
                         message: "No existing members match the current filter."
                     )
                 } else {
-                    LazyVStack {
-                        ForEach(viewModel.filteredMembers) { member in
-                            HStack(spacing: 12) {
-                                Button {
-                                    viewModel.toggleMemberSelection(for: member)
-                                } label: {
-                                    Image(systemName: viewModel.isSelectedForBulkRemoval(member) ? "checkmark.circle.fill" : "circle")
-                                        .font(.title3)
-                                        .foregroundStyle(viewModel.isSelectedForBulkRemoval(member) ? Color.skyPrimary : Color.secondary.opacity(0.45))
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel(viewModel.isSelectedForBulkRemoval(member) ? "Deselect \(member.actor.handle)" : "Select \(member.actor.handle)")
+                    ForEach(viewModel.filteredMembers) { member in
+                        HStack(spacing: 12) {
+                            Button {
+                                viewModel.toggleMemberSelection(for: member)
+                            } label: {
+                                Image(systemName: viewModel.isSelectedForBulkRemoval(member) ? "checkmark.circle.fill" : "circle")
+                                    .font(.title3)
+                                    .foregroundStyle(viewModel.isSelectedForBulkRemoval(member) ? Color.skyPrimary : Color.secondary.opacity(0.45))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(viewModel.isSelectedForBulkRemoval(member) ? "Deselect \(member.actor.handle)" : "Select \(member.actor.handle)")
 
-                                NavigationLink {
-                                    BlueskyProfileView(member: member, list: currentList)
-                                } label: {
-                                    BlueskyActorRow(actor: member.actor)
-                                }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        Task {
-                                            await viewModel.remove(
-                                                member: member,
-                                                account: account,
-                                                appPassword: appPassword,
-                                                using: blueskyClient
-                                            )
-                                            syncSnapshot()
-                                        }
-                                    } label: {
-                                        Label("Remove", systemImage: "person.crop.circle.badge.minus")
+                            NavigationLink {
+                                BlueskyProfileView(member: member, list: currentList)
+                            } label: {
+                                BlueskyActorRow(actor: member.actor)
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.remove(
+                                            member: member,
+                                            account: account,
+                                            appPassword: appPassword,
+                                            using: blueskyClient
+                                        )
+                                        syncSnapshot()
                                     }
-                                    .disabled(viewModel.isRemoving(member) || viewModel.isPerformingBulkAction)
-                                    .accessibilityHint("This action cannot be undone.")
+                                } label: {
+                                    Label("Remove", systemImage: "person.crop.circle.badge.minus")
                                 }
+                                .disabled(viewModel.isRemoving(member) || viewModel.isPerformingBulkAction)
+                                .accessibilityHint("This action cannot be undone.")
                             }
                         }
+                    }
 
-                        if viewModel.isLoadingMoreMembers {
-                            HStack {
-                                ProgressView()
-                                Text("Loading more members")
-                                    .foregroundStyle(.secondary)
-                            }
-                        } else if viewModel.hasMoreMembers {
-                            Button("Load More Members") {
-                                Task {
-                                    await viewModel.loadMoreMembersIfNeeded(
-                                        currentMember: viewModel.filteredMembers.last,
-                                        list: currentList,
-                                        account: account,
-                                        appPassword: appPassword,
-                                        using: blueskyClient
-                                    )
-                                }
-                            }
-                            .accessibilityLabel("Load more list members")
+                    if viewModel.isLoadingMoreMembers {
+                        HStack {
+                            ProgressView()
+                            Text("Loading more members")
+                                .foregroundStyle(.secondary)
                         }
+                    } else if viewModel.hasMoreMembers {
+                        Button("Load More Members") {
+                            Task {
+                                await viewModel.loadMoreMembersIfNeeded(
+                                    currentMember: viewModel.filteredMembers.last,
+                                    list: currentList,
+                                    account: account,
+                                    appPassword: appPassword,
+                                    using: blueskyClient
+                                )
+                            }
+                        }
+                        .accessibilityLabel("Load more list members")
                     }
                 }
             }

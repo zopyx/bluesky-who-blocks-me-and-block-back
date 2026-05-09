@@ -76,10 +76,14 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     ) async throws -> [BlueskyActor] {
         var all: [BlueskyActor] = []
         var cursor: String?
+        var pageCount = 0
+        let maxPages = 50
         repeat {
             let page = try await fetchFollowersPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
             all.append(contentsOf: page.actors)
             cursor = page.cursor
+            pageCount += 1
+            if pageCount >= maxPages { break }
         } while cursor != nil
         return all
     }
