@@ -5,6 +5,13 @@ struct AccountRowView: View {
     let isActive: Bool
     @ScaledMetric private var avatarSize = 40.0
 
+    private var entrywayLabel: String? {
+        guard let entryway = account.entrywayURL else { return nil }
+        let host = entryway.host ?? ""
+        guard host != "bsky.social" else { return nil }
+        return host
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             avatarView
@@ -12,9 +19,19 @@ struct AccountRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(account.displayName)
                     .font(.headline)
-                Text(account.handle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Text(account.handle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    if let label = entrywayLabel {
+                        Text(label)
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.tertiary)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(Color.secondary.opacity(0.1), in: Capsule())
+                    }
+                }
             }
 
             Spacer()

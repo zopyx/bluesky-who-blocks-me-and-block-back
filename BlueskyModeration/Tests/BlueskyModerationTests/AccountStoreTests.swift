@@ -65,7 +65,7 @@ private final class MockKeychainService: KeychainServicing {
 
 @MainActor
 private final class MockAuthenticatingClient: BlueskyAuthenticating {
-    func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
         BlueskySession(
             did: "did:plc:test",
             handle: handle,

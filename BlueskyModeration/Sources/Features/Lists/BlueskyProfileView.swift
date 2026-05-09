@@ -62,14 +62,9 @@ struct BlueskyProfileView: View {
                 if !isOwnProfile {
                     Section("Moderation") {
                     if let viewerState = profile.viewerState {
-                        HStack {
-                            statusChip(
-                                title: viewerState.isBlocking ? "Blocked" : "Not blocked",
-                                tint: viewerState.isBlocking ? .red : Color.secondary,
-                                emphasized: viewerState.isBlocking
-                            )
-                            Spacer()
-                            Button(viewerState.isBlocking ? "Unblock" : "Block") {
+                        Toggle(isOn: Binding(
+                            get: { viewerState.isBlocking },
+                            set: { _ in
                                 Task {
                                     await viewModel.toggleBlock(
                                         account: account,
@@ -78,18 +73,14 @@ struct BlueskyProfileView: View {
                                     )
                                 }
                             }
-                            .disabled(viewModel.isUpdatingModeration)
-                            .accessibilityHint("This action cannot be undone.")
+                        )) {
+                            Label("Block", systemImage: "hand.raised")
                         }
+                        .disabled(viewModel.isUpdatingModeration)
 
-                        HStack {
-                            statusChip(
-                                title: viewerState.muted ? "Muted" : "Not muted",
-                                tint: viewerState.muted ? .orange : Color.secondary,
-                                emphasized: viewerState.muted
-                            )
-                            Spacer()
-                            Button(viewerState.muted ? "Unmute" : "Mute") {
+                        Toggle(isOn: Binding(
+                            get: { viewerState.muted },
+                            set: { _ in
                                 Task {
                                     await viewModel.toggleMute(
                                         account: account,
@@ -98,8 +89,10 @@ struct BlueskyProfileView: View {
                                     )
                                 }
                             }
-                            .disabled(viewModel.isUpdatingModeration)
+                        )) {
+                            Label("Mute", systemImage: "speaker.slash")
                         }
+                        .disabled(viewModel.isUpdatingModeration)
                     }
 
                     if let statusMessage = viewModel.statusMessage {

@@ -20,7 +20,7 @@ struct PagedActorSearch {
 
 @MainActor
 protocol BlueskyAuthenticating {
-    func authenticate(handle: String, appPassword: String) async throws -> BlueskySession
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL?) async throws -> BlueskySession
     func persistSession(_ session: BlueskySession, for account: AppAccount) async throws
     func deletePersistedSession(for account: AppAccount) throws
 }
@@ -54,8 +54,8 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         sessionService.clearSessionCache()
     }
 
-    func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
-        try await sessionService.authenticate(handle: handle, appPassword: appPassword)
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
+        try await sessionService.authenticate(handle: handle, appPassword: appPassword, entrywayURL: entrywayURL)
     }
 
     func persistSession(_ authSession: BlueskySession, for account: AppAccount) async throws {

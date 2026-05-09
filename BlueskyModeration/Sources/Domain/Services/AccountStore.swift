@@ -40,6 +40,7 @@ final class AccountStore: ObservableObject {
     func addAccount(
         handle: String,
         appPassword: String,
+        entrywayURL: URL? = nil,
         client: BlueskyAuthenticating
     ) async -> Bool {
         let trimmedHandle = handle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -59,12 +60,17 @@ final class AccountStore: ObservableObject {
         defer { isAddingAccount = false }
 
         do {
-            let session = try await client.authenticate(handle: trimmedHandle, appPassword: trimmedPassword)
+            let session = try await client.authenticate(
+                handle: trimmedHandle,
+                appPassword: trimmedPassword,
+                entrywayURL: entrywayURL
+            )
             let account = AppAccount(
                 handle: session.handle,
                 displayName: session.handle,
                 did: session.did,
-                pdsURL: session.pdsURL
+                pdsURL: session.pdsURL,
+                entrywayURL: entrywayURL
             )
             try keychain.save(trimmedPassword, service: passwordService, account: account.id.uuidString)
             try await client.persistSession(session, for: account)

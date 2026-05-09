@@ -7,6 +7,7 @@ struct AppAccount: Identifiable, Codable, Hashable {
     var did: String?
     var avatarURL: URL?
     var pdsURL: URL?
+    var entrywayURL: URL?
     var createdAt: Date
     var lastUsedAt: Date
 
@@ -17,6 +18,7 @@ struct AppAccount: Identifiable, Codable, Hashable {
         did: String? = nil,
         avatarURL: URL? = nil,
         pdsURL: URL? = nil,
+        entrywayURL: URL? = nil,
         createdAt: Date = .now,
         lastUsedAt: Date = .now
     ) {
@@ -26,6 +28,7 @@ struct AppAccount: Identifiable, Codable, Hashable {
         self.did = did
         self.avatarURL = avatarURL
         self.pdsURL = pdsURL
+        self.entrywayURL = entrywayURL
         self.createdAt = createdAt
         self.lastUsedAt = lastUsedAt
     }

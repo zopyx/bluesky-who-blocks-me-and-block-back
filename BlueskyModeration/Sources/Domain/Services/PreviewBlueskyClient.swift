@@ -11,7 +11,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         BlueskyActor(did: "did:plc:6", handle: "reports.ops", displayName: "Reports Ops")
     ]
 
-    override func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
+    override func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
         BlueskySession(
             did: "did:plc:previewaccount",
             handle: handle,

@@ -2,7 +2,7 @@ import Foundation
 
 @MainActor
 protocol BlueskySessionServicing {
-    func authenticate(handle: String, appPassword: String) async throws -> BlueskySession
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL?) async throws -> BlueskySession
     func persistSession(_ session: BlueskySession, for account: AppAccount) async throws
     func deletePersistedSession(for account: AppAccount) throws
     func restoreSessions(for accounts: [AppAccount]) async
@@ -32,9 +32,14 @@ final class BlueskySessionService: BlueskySessionServicing {
         self.keychain = keychain
     }
 
-    func authenticate(handle: String, appPassword: String) async throws -> BlueskySession {
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
         let requestBody = CreateSessionRequest(identifier: handle, password: appPassword)
-        let authURL = try await authenticationURL(forHandle: handle)
+        let authURL: URL
+        if let entrywayURL {
+            authURL = entrywayURL
+        } else {
+            authURL = try await authenticationURL(forHandle: handle)
+        }
         let response: CreateSessionResponse = try await requestExecutor.send(
             path: "com.atproto.server.createSession",
             method: "POST",
@@ -220,6 +225,14 @@ final class BlueskySessionService: BlueskySessionServicing {
             return entrywayURL
         }
 
+        if let domainEntryway = entrywayFromDomain(for: handle) {
+            if let did = try? await resolveHandle(handle, hostURL: domainEntryway),
+               let pdsURL = try? await resolvePDSURL(forDID: did) {
+                return pdsURL
+            }
+            return domainEntryway
+        }
+
         if let did = try? await resolveHandle(handle),
            let pdsURL = try? await resolvePDSURL(forDID: did) {
             return pdsURL
@@ -228,13 +241,21 @@ final class BlueskySessionService: BlueskySessionServicing {
         return entrywayURL
     }
 
-    private func resolveHandle(_ handle: String) async throws -> String {
+    private func entrywayFromDomain(for handle: String) -> URL? {
+        let components = handle.split(separator: "@").last?.split(separator: ".")
+        guard let components, components.count >= 2 else { return nil }
+        let domain = components.suffix(2).joined(separator: ".")
+        guard domain != "bsky.social" else { return nil }
+        return URL(string: "https://\(domain)")
+    }
+
+    private func resolveHandle(_ handle: String, hostURL: URL? = nil) async throws -> String {
         let response: ResolveHandleResponse = try await requestExecutor.send(
             path: "com.atproto.identity.resolveHandle",
             method: "GET",
             queryItems: [URLQueryItem(name: "handle", value: handle)],
             accessToken: nil,
-            hostURL: entrywayURL
+            hostURL: hostURL ?? entrywayURL
         )
         return response.did
     }
