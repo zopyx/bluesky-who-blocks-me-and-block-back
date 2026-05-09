@@ -54,40 +54,36 @@ struct RelationshipsView: View {
                         )
                     } else {
                         ForEach(filteredActors) { actor in
-                            HStack(spacing: 12) {
+                            NavigationLink {
+                                BlueskyProfileView(
+                                    member: BlueskyListMember(recordURI: "rel:\(actor.did)", actor: actor),
+                                    list: nil
+                                )
+                            } label: {
                                 BlueskyActorRow(actor: actor)
-
-                                Spacer()
-
-                                Menu {
-                                    Button {
-                                        actorToBlock = actor
-                                        isShowingBlockConfirm = true
-                                    } label: {
-                                        Label("Block", systemImage: "hand.raised.fill")
-                                    }
-
-                                    Button {
-                                        selectedActorForList = actor
-                                        isShowingListPicker = true
-                                    } label: {
-                                        Label("Add to List", systemImage: "list.bullet")
-                                    }
-
-                                    NavigationLink {
-                                        BlueskyProfileView(
-                                            member: BlueskyListMember(recordURI: "rel:\(actor.did)", actor: actor),
-                                            list: nil
-                                        )
-                                    } label: {
-                                        Label("Open Profile", systemImage: "person.circle")
-                                    }
+                            }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    actorToBlock = actor
+                                    isShowingBlockConfirm = true
                                 } label: {
-                                    Image(systemName: "ellipsis.circle")
-                                        .font(.title3)
-                                        .foregroundStyle(.secondary)
+                                    Label("Block", systemImage: "hand.raised.fill")
                                 }
-                                .buttonStyle(.plain)
+
+                                Button {
+                                    selectedActorForList = actor
+                                    isShowingListPicker = true
+                                } label: {
+                                    Label("Add to List", systemImage: "list.bullet")
+                                }
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    actorToBlock = actor
+                                    isShowingBlockConfirm = true
+                                } label: {
+                                    Label("Block", systemImage: "hand.raised.fill")
+                                }
                             }
                         }
                         .onDelete { indexSet in
