@@ -212,7 +212,7 @@
 		BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIError.swift; sourceTree = "<group>"; };
 		C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Data.swift"; sourceTree = "<group>"; };
-		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		D0343E7705C27F52D7BD3B03 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
 		D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationAuditStore.swift; sourceTree = "<group>"; };
@@ -220,7 +220,7 @@
 		D8CB9DF2B9A1EF17F60EBFAB /* ActorSearchResultRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorSearchResultRow.swift; sourceTree = "<group>"; };
 		DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePanels.swift; sourceTree = "<group>"; };
 		DF724B3AC46DD8943DA15180 /* ListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsView.swift; sourceTree = "<group>"; };
-		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSummaryCard.swift; sourceTree = "<group>"; };
 		E62D1726B87CDC5F70DF05EB /* AccountChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountChip.swift; sourceTree = "<group>"; };
 		EA7FBB1661AB736F578D68EA /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSwitcherSheet.swift; sourceTree = "<group>"; };
@@ -565,9 +565,6 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					0608BB4380516450DC5105DF = {
-						DevelopmentTeam = "";
-					};
 					28FA462115B88F07A4C1D7CE = {
 						DevelopmentTeam = "";
 						TestTargetID = 0608BB4380516450DC5105DF;
@@ -925,6 +922,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Rulyx;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -964,6 +962,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Rulyx;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
