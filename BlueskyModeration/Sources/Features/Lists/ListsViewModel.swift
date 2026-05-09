@@ -29,20 +29,21 @@ final class ListsViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            async let listsTask = client.fetchLists(for: account, appPassword: appPassword)
-            async let profileTask = client.fetchProfile(
+            let lists = try await client.fetchLists(for: account, appPassword: appPassword)
+            listsByKind = Dictionary(grouping: lists, by: \.kind)
+        } catch {
+            listsByKind = [:]
+            errorMessage = AppError.userMessage(from: error)
+        }
+
+        do {
+            activeProfile = try await client.fetchProfile(
                 did: account.did ?? account.handle,
                 account: account,
                 appPassword: appPassword
             )
-
-            let lists = try await listsTask
-            listsByKind = Dictionary(grouping: lists, by: \.kind)
-            activeProfile = try await profileTask
         } catch {
-            listsByKind = [:]
-            activeProfile = nil
-            errorMessage = AppError.userMessage(from: error)
+            AppLogger.moderation.debug("Failed to fetch account profile: \(error.localizedDescription, privacy: .public)")
         }
 
         isLoading = false
