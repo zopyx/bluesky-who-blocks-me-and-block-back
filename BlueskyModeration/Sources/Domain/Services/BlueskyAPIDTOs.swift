@@ -221,7 +221,11 @@ func parseATURI(_ uri: String) throws -> ATURIComponents {
 
 func parseDate(_ value: String?) -> Date? {
     guard let value else { return nil }
-    return ISO8601DateFormatter().date(from: value)
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let date = formatter.date(from: value) { return date }
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter.date(from: value)
 }
 
 func mapViewerState(_ viewer: ProfileViewerState?) -> BlueskyViewerState? {
