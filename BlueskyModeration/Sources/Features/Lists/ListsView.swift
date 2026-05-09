@@ -202,23 +202,18 @@ struct ListsView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button {
-                            isShowingBulkLookup = true
-                        } label: {
+                        Button { isShowingBulkLookup = true } label: {
                             Label("Bulk Lookup", systemImage: "magnifyingglass.circle")
                         }
 
                         NavigationLink {
-                            DashboardView()
-                                .environmentObject(accountStore)
-                                .environmentObject(workspaceStore)
+                            DashboardView().environmentObject(accountStore).environmentObject(workspaceStore)
                         } label: {
                             Label("Dashboard", systemImage: "chart.bar")
                         }
 
                         NavigationLink {
-                            ActivityLogView()
-                                .environmentObject(workspaceStore)
+                            ActivityLogView().environmentObject(workspaceStore)
                         } label: {
                             Label("Activity Log", systemImage: "clock.arrow.circlepath")
                         }
@@ -227,6 +222,36 @@ struct ListsView: View {
                             ActionPresetsView()
                         } label: {
                             Label("Action Presets", systemImage: "square.2.layers.3d")
+                        }
+
+                        NavigationLink {
+                            ModerationRulesView()
+                        } label: {
+                            Label("Rules Engine", systemImage: "wand.and.rays")
+                        }
+
+                        NavigationLink {
+                            FollowerDiffView()
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
+                        } label: {
+                            Label("Follower Diff", systemImage: "person.2.badge.plusminus")
+                        }
+
+                        NavigationLink {
+                            TrendDetectionView()
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
+                        } label: {
+                            Label("Trend Detection", systemImage: "chart.xyaxis.line")
+                        }
+
+                        NavigationLink {
+                            ReportGeneratorView()
+                                .environmentObject(accountStore)
+                                .environmentObject(workspaceStore)
+                        } label: {
+                            Label("Generate Report", systemImage: "doc.text")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
