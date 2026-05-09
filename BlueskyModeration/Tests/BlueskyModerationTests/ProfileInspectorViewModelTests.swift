@@ -198,4 +198,8 @@ private struct MockLiveBlueskyClient: BlueskyProfileInspecting {
     func fetchFollowersPage(actor actorDID: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
         PagedActorSearch(actors: [], cursor: nil)
     }
+    func fetchFollowing(actor actorDID: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] { [] }
+    func fetchFollowingPage(actor actorDID: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
+        PagedActorSearch(actors: [], cursor: nil)
+    }
 }

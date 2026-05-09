@@ -65,6 +65,16 @@ final class MockBlueskyListService: BlueskyListServicing {
         try await Task.sleep(for: .milliseconds(100))
     }
 
+    func createList(name: String, description: String, kind: BlueskyList.Kind, account: AppAccount, appPassword: String?) async throws -> BlueskyList {
+        try await Task.sleep(for: .milliseconds(100))
+        let id = "at://did:plc:preview/app.bsky.graph.list/\(UUID().uuidString)"
+        return BlueskyList(id: id, name: name, description: description, memberCount: 0, kind: kind)
+    }
+
+    func deleteList(list: BlueskyList, account: AppAccount, appPassword: String?) async throws {
+        try await Task.sleep(for: .milliseconds(100))
+    }
+
     func updateListMetadata(list: BlueskyList, title: String, description: String, account: AppAccount, appPassword: String?) async throws -> BlueskyList {
         try await Task.sleep(for: .milliseconds(120))
         return BlueskyList(id: list.id, name: title, description: description.isEmpty ? list.kind.title : description, memberCount: list.memberCount, kind: list.kind)

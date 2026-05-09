@@ -173,6 +173,73 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         }
     }
 
+    func createList(
+        name: String,
+        description: String,
+        kind: BlueskyList.Kind,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> BlueskyList {
+        let response: CreateRecordResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.graph.list",
+                record: ListRecord(
+                    type: "app.bsky.graph.list",
+                    purpose: kind.purposeIdentifier,
+                    name: name,
+                    description: description.isEmpty ? nil : description,
+                    createdAt: ISO8601DateFormatter().string(from: .now)
+                )
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+
+        return BlueskyList(
+            id: response.uri,
+            name: name,
+            description: description.isEmpty ? kind.title : description,
+            memberCount: 0,
+            kind: kind
+        )
+    }
+
+    func deleteList(
+        list: BlueskyList,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws {
+        let record = try parseATURI(list.id)
+        let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = DeleteRecordRequest(
+                repo: authSession.did,
+                collection: record.collection,
+                rkey: record.rkey
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.deleteRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
     func updateListMetadata(
         list: BlueskyList,
         title: String,

@@ -43,6 +43,13 @@ final class ListsViewModel: ObservableObject {
         isLoading = false
     }
 
+    func addList(_ list: BlueskyList) {
+        var updated = listsByKind
+        updated[list.kind, default: []].append(list)
+        updated[list.kind]?.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        listsByKind = updated
+    }
+
     func updateList(_ updatedList: BlueskyList) {
         var updated = listsByKind
         guard var lists = updated[updatedList.kind],

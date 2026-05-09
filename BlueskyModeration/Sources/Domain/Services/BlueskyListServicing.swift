@@ -9,4 +9,6 @@ protocol BlueskyListServicing {
     func addActor(did actorDID: String, to list: BlueskyList, account: AppAccount, appPassword: String?) async throws -> String
     func removeMember(recordURI: String, account: AppAccount, appPassword: String?) async throws
     func updateListMetadata(list: BlueskyList, title: String, description: String, account: AppAccount, appPassword: String?) async throws -> BlueskyList
+    func createList(name: String, description: String, kind: BlueskyList.Kind, account: AppAccount, appPassword: String?) async throws -> BlueskyList
+    func deleteList(list: BlueskyList, account: AppAccount, appPassword: String?) async throws
 }

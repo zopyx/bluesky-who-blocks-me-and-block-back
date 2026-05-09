@@ -7,6 +7,7 @@ struct ListsView: View {
     @StateObject private var viewModel = ListsViewModel()
     @State private var isShowingAccountPicker = false
     @State private var isShowingPendingActions = false
+    @State private var isShowingCreateList = false
 
     var body: some View {
         NavigationStack {
@@ -81,7 +82,7 @@ struct ListsView: View {
                     }
                 }
             }
-            .navigationTitle("Lists")
+            .navigationTitle("Rulyx")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if let activeAccount = accountStore.activeAccount {
@@ -96,6 +97,15 @@ struct ListsView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel("Switch active account")
                     }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingCreateList = true
+                    } label: {
+                        Label("Create List", systemImage: "plus")
+                    }
+                    .disabled(accountStore.activeAccount == nil)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -126,6 +136,29 @@ struct ListsView: View {
             .sheet(isPresented: $isShowingPendingActions) {
                 PendingActionsSheet(isPresented: $isShowingPendingActions)
                     .environmentObject(workspaceStore)
+            }
+            .sheet(isPresented: $isShowingCreateList) {
+                CreateListSheet { name, description, kind in
+                    if let account = accountStore.activeAccount,
+                       let appPassword = accountStore.appPassword(for: account) {
+                        Task {
+                            do {
+                                let newList = try await blueskyClient.createList(
+                                    name: name,
+                                    description: description,
+                                    kind: kind,
+                                    account: account,
+                                    appPassword: appPassword
+                                )
+                                viewModel.addList(newList)
+                            } catch {
+                                viewModel.errorMessage = AppError.userMessage(from: error)
+                            }
+                        }
+                    }
+                }
+                .environmentObject(accountStore)
+                .environmentObject(blueskyClient)
             }
             .task(id: accountStore.activeAccountID) {
                 await reload()
@@ -256,6 +289,22 @@ struct ListsView: View {
                         Label("Open Profile Inspector", systemImage: "person.text.rectangle")
                     }
                     .buttonStyle(.plain)
+
+                    NavigationLink {
+                        RelationshipsView(mode: .followers)
+                            .environmentObject(accountStore)
+                            .environmentObject(blueskyClient)
+                    } label: {
+                        Label("Followers", systemImage: "person.3")
+                    }
+
+                    NavigationLink {
+                        RelationshipsView(mode: .following)
+                            .environmentObject(accountStore)
+                            .environmentObject(blueskyClient)
+                    } label: {
+                        Label("Following", systemImage: "person.3.fill")
+                    }
                 }
                 .padding(.vertical, 4)
             }

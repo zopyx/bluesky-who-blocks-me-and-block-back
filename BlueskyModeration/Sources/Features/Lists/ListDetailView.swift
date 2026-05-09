@@ -21,6 +21,8 @@ struct ListDetailView: View {
     @State var selectedOlderSnapshotID: UUID?
     @State var cachedExportFileURL: URL?
     @State var cachedDiffExportFileURL: URL?
+    @State private var isShowingDeleteConfirmation = false
+    @Environment(\.dismiss) private var dismiss
 
     init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
         self.onListUpdated = onListUpdated
@@ -102,6 +104,33 @@ struct ListDetailView: View {
             } message: {
                 Text("This removes \(viewModel.selectedMemberIDs.count) selected member\(viewModel.selectedMemberIDs.count == 1 ? "" : "s") from the list.")
             }
+            .confirmationDialog(
+                "Delete this list?",
+                isPresented: $isShowingDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    if let account = accountStore.activeAccount,
+                       let appPassword = accountStore.appPassword(for: account) {
+                        Task {
+                            do {
+                                try await blueskyClient.deleteList(
+                                    list: currentList,
+                                    account: account,
+                                    appPassword: appPassword
+                                )
+                                onListUpdated?(currentList)
+                                dismiss()
+                            } catch {
+                                viewModel.errorMessage = AppError.userMessage(from: error)
+                            }
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This permanently deletes \"\(currentList.name)\" and all its members. This cannot be undone.")
+            }
             .onChange(of: viewModel.bulkActionResult) { _, newResult in
                 guard let newResult else { return }
                 let entry = ModerationOperationLogEntry(
@@ -145,6 +174,14 @@ struct ListDetailView: View {
                 isShowingEditSheet = true
             } label: {
                 Label("Edit", systemImage: "pencil")
+            }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(role: .destructive) {
+                isShowingDeleteConfirmation = true
+            } label: {
+                Label("Delete", systemImage: "trash")
             }
         }
     }

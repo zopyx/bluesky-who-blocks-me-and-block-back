@@ -216,7 +216,8 @@
 			children = (
 				408E5176C8CA77D7AEA11924 /* BlueskyModerationUITests */,
 			);
-			path = UITests;
+			name = UITests;
+			path = ../UITests;
 			sourceTree = "<group>";
 		};
 		2C66AC571494875A467CE391 /* Products */ = {
@@ -278,7 +279,8 @@
 			children = (
 				6ED80CBED49F9449459FB96D /* BlueskyModerationTests */,
 			);
-			path = Tests;
+			name = Tests;
+			path = ../Tests;
 			sourceTree = "<group>";
 		};
 		8C8C4BAB839295B448E5CB46 /* Lists */ = {
@@ -320,7 +322,8 @@
 				C68EEE8366B56A96BEA99017 /* Features */,
 				0E8E7C36D902FC6A66A08A95 /* Shared */,
 			);
-			path = Sources;
+			name = Sources;
+			path = ../Sources;
 			sourceTree = "<group>";
 		};
 		9B701020A828B1CC125C3D35 /* Support */ = {
@@ -410,7 +413,8 @@
 			children = (
 				53649A49B5C112C35534FB0D /* Assets.xcassets */,
 			);
-			path = Assets;
+			name = Assets;
+			path = ../Assets;
 			sourceTree = "<group>";
 		};
 		E7780489900E2AAA732149C9 /* Profile */ = {

@@ -169,6 +169,16 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         try await Task.sleep(for: .milliseconds(100))
     }
 
+    override func createList(name: String, description: String, kind: BlueskyList.Kind, account: AppAccount, appPassword: String?) async throws -> BlueskyList {
+        try await Task.sleep(for: .milliseconds(100))
+        let id = "at://did:plc:preview/app.bsky.graph.list/\(UUID().uuidString)"
+        return BlueskyList(id: id, name: name, description: description, memberCount: 0, kind: kind)
+    }
+
+    override func deleteList(list: BlueskyList, account: AppAccount, appPassword: String?) async throws {
+        try await Task.sleep(for: .milliseconds(100))
+    }
+
     override func updateListMetadata(
         list: BlueskyList,
         title: String,
@@ -197,6 +207,32 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     }
 
     override func fetchFollowersPage(
+        actor actorDID: String,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> PagedActorSearch {
+        try await Task.sleep(for: .milliseconds(120))
+        let pageSize = 3
+        let startIndex = Int(cursor ?? "0") ?? 0
+        let endIndex = min(startIndex + pageSize, previewActors.count)
+        let nextCursor = endIndex < previewActors.count ? String(endIndex) : nil
+        return PagedActorSearch(
+            actors: Array(previewActors[startIndex..<endIndex]),
+            cursor: nextCursor
+        )
+    }
+
+    override func fetchFollowing(
+        actor actorDID: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        try await Task.sleep(for: .milliseconds(200))
+        return previewActors
+    }
+
+    override func fetchFollowingPage(
         actor actorDID: String,
         cursor: String?,
         account: AppAccount,

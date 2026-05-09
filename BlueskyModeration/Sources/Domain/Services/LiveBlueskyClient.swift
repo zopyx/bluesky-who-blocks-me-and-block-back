@@ -292,6 +292,73 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    func createList(
+        name: String,
+        description: String,
+        kind: BlueskyList.Kind,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> BlueskyList {
+        let response: CreateRecordResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.graph.list",
+                record: ListRecord(
+                    type: "app.bsky.graph.list",
+                    purpose: kind.purposeIdentifier,
+                    name: name,
+                    description: description.isEmpty ? nil : description,
+                    createdAt: ISO8601DateFormatter().string(from: .now)
+                )
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+
+        return BlueskyList(
+            id: response.uri,
+            name: name,
+            description: description.isEmpty ? kind.title : description,
+            memberCount: 0,
+            kind: kind
+        )
+    }
+
+    func deleteList(
+        list: BlueskyList,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws {
+        let record = try parseATURI(list.id)
+        let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = DeleteRecordRequest(
+                repo: authSession.did,
+                collection: record.collection,
+                rkey: record.rkey
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.deleteRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
     func updateListMetadata(
         list: BlueskyList,
         title: String,
@@ -513,6 +580,58 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             createdAt: parseDate(response.createdAt),
             labels: response.labels?.map(\.val) ?? [],
             viewerState: mapViewerState(response.viewer)
+        )
+    }
+
+    func fetchFollowing(
+        actor actorDID: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        var all: [BlueskyActor] = []
+        var cursor: String?
+        var pageCount = 0
+        let maxPages = 50
+        repeat {
+            let page = try await fetchFollowingPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
+            all.append(contentsOf: page.actors)
+            cursor = page.cursor
+            pageCount += 1
+            if pageCount >= maxPages { break }
+        } while cursor != nil
+        return all
+    }
+
+    func fetchFollowingPage(
+        actor actorDID: String,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> PagedActorSearch {
+        let response: GetFollowsResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            var queryItems = [
+                URLQueryItem(name: "actor", value: actorDID),
+                URLQueryItem(name: "limit", value: "100")
+            ]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.graph.getFollows",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+        return PagedActorSearch(
+            actors: response.follows.map {
+                BlueskyActor(did: $0.did, handle: $0.handle, displayName: $0.displayName, avatarURL: URL(string: $0.avatar ?? ""))
+            },
+            cursor: response.cursor
         )
     }
 
