@@ -195,18 +195,23 @@ struct RelationshipsView: View {
             return
         }
 
-        isLoading = true
         errorMessage = nil
 
+        let cached: [BlueskyActor]
         if let key = cacheKey {
-            actors = RelationshipCache.load(forKey: key)
+            cached = RelationshipCache.load(forKey: key)
+        } else {
+            cached = []
+        }
+
+        if !cached.isEmpty {
+            actors = cached
+            isLoading = false
+        } else {
+            isLoading = true
         }
 
         await fetchFromAPI(account: account, appPassword: appPassword)
-
-        if isLoading {
-            isLoading = false
-        }
     }
 
     private func refresh() async {
@@ -235,6 +240,7 @@ struct RelationshipsView: View {
         } catch {
             if actors.isEmpty {
                 errorMessage = AppError.userMessage(from: error)
+                isLoading = false
             }
         }
     }
