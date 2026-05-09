@@ -47,6 +47,26 @@ struct ListsView: View {
                             }
                         }
 
+                        Section("People follow me (\(viewModel.activeProfile?.followersCount ?? 0))") {
+                            NavigationLink {
+                                RelationshipsView(mode: .followers)
+                                    .environmentObject(accountStore)
+                                    .environmentObject(blueskyClient)
+                            } label: {
+                                Label("View people who follow me", systemImage: "person.3")
+                            }
+                        }
+
+                        Section("People I follow (\(viewModel.activeProfile?.followsCount ?? 0))") {
+                            NavigationLink {
+                                RelationshipsView(mode: .following)
+                                    .environmentObject(accountStore)
+                                    .environmentObject(blueskyClient)
+                            } label: {
+                                Label("View who I follow", systemImage: "person.3.fill")
+                            }
+                        }
+
                         ForEach(BlueskyList.Kind.allCases, id: \.self) { kind in
                             if let lists = groupedLists[kind], !lists.isEmpty {
                                 Section(kind.title) {
@@ -61,26 +81,6 @@ struct ListsView: View {
                                         }
                                     }
                                 }
-                            }
-                        }
-
-                        Section("Followers (\(viewModel.activeProfile?.followersCount ?? 0))") {
-                            NavigationLink {
-                                RelationshipsView(mode: .followers)
-                                    .environmentObject(accountStore)
-                                    .environmentObject(blueskyClient)
-                            } label: {
-                                Label("View Followers", systemImage: "person.3")
-                            }
-                        }
-
-                        Section("Following (\(viewModel.activeProfile?.followsCount ?? 0))") {
-                            NavigationLink {
-                                RelationshipsView(mode: .following)
-                                    .environmentObject(accountStore)
-                                    .environmentObject(blueskyClient)
-                            } label: {
-                                Label("View Following", systemImage: "person.3.fill")
                             }
                         }
 

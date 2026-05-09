@@ -18,7 +18,7 @@ extension ListDetailView {
         @State private var showingCompareHelp = false
 
         var body: some View {
-            Section {
+            DisclosureGroup {
                 if viewModel.isLoadingAvailableLists {
                     LoadingPanel(message: "Loading your other lists\u{2026}")
                 } else if viewModel.availableLists.isEmpty {
@@ -97,7 +97,7 @@ extension ListDetailView {
                         }
                     }
                 }
-            } header: {
+            } label: {
                 HStack {
                     Text("Compare and Transfer")
                     Spacer()

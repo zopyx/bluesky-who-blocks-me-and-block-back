@@ -147,7 +147,7 @@ extension ListDetailView {
         }
 
         private var workflowToolsSection: some View {
-            Section("Workflow Tools") {
+            DisclosureGroup("Workflow Tools") {
                 Button {
                     isShowingImportSheet = true
                 } label: {

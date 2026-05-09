@@ -1,8 +1,15 @@
 import SwiftUI
 
 enum RelationshipMode: String, CaseIterable {
-    case followers = "Followers"
-    case following = "Following"
+    case followers
+    case following
+
+    var title: String {
+        switch self {
+        case .followers: return "People who follow me"
+        case .following: return "People I follow"
+        }
+    }
 }
 
 struct RelationshipsView: View {
@@ -30,7 +37,7 @@ struct RelationshipsView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading \(mode.rawValue.lowercased())...")
+                ProgressView("Loading \(mode.title.lowercased())...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage {
                 ErrorRetryBanner(message: errorMessage) {
@@ -97,7 +104,7 @@ struct RelationshipsView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle(mode.rawValue)
+        .navigationTitle(mode.title)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if isLoading {

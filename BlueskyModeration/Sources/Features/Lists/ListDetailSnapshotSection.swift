@@ -50,7 +50,7 @@ extension ListDetailView {
         @ViewBuilder
         private var snapshotContent: some View {
             if let snapshotSummary {
-                Section {
+                DisclosureGroup {
                     if let previousCaptureDate = snapshotSummary.previousCaptureDate {
                         Text("Previous snapshot: \(previousCaptureDate.formatted(date: .abbreviated, time: .shortened))")
                             .font(.caption)
@@ -85,7 +85,7 @@ extension ListDetailView {
                             snapshotSummaryView(selectedSnapshotComparison)
                         }
                     }
-                } header: {
+                } label: {
                     HStack {
                         Text("Snapshot History")
                         Spacer()
