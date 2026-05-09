@@ -9,6 +9,8 @@ struct ListsView: View {
     @State private var isShowingPendingActions = false
     @State private var isShowingCreateList = false
     @State private var createListKind: BlueskyList.Kind = .moderation
+    @State private var showFollowers = false
+    @State private var showFollowing = false
 
     var body: some View {
         NavigationStack {
@@ -50,24 +52,32 @@ struct ListsView: View {
 
                         Section("Relationships") {
                             HStack {
-                                NavigationLink {
-                                    RelationshipsView(mode: .followers)
-                                        .environmentObject(accountStore)
-                                        .environmentObject(blueskyClient)
+                                Button {
+                                    showFollowers = true
                                 } label: {
                                     Label("\(viewModel.activeProfile?.followersCount ?? 0) followers", systemImage: "person.3")
                                 }
+                                .buttonStyle(.plain)
 
                                 Spacer()
 
-                                NavigationLink {
-                                    RelationshipsView(mode: .following)
-                                        .environmentObject(accountStore)
-                                        .environmentObject(blueskyClient)
+                                Button {
+                                    showFollowing = true
                                 } label: {
                                     Label("\(viewModel.activeProfile?.followsCount ?? 0) following", systemImage: "person.3.fill")
                                 }
+                                .buttonStyle(.plain)
                             }
+                        }
+                        .navigationDestination(isPresented: $showFollowers) {
+                            RelationshipsView(mode: .followers)
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
+                        }
+                        .navigationDestination(isPresented: $showFollowing) {
+                            RelationshipsView(mode: .following)
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
                         }
 
                         Section {
