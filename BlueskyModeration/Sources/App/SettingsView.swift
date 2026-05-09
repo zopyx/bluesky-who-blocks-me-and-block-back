@@ -8,14 +8,6 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Accounts") {
-                    NavigationLink {
-                        AccountsView()
-                    } label: {
-                        Label("Manage Accounts", systemImage: "person.2")
-                    }
-                }
-
                 Section("Status") {
                     LabeledContent("Build Stage", value: "Release Candidate")
                     LabeledContent("Data Source", value: "Live Bluesky API")
