@@ -195,34 +195,32 @@ struct BlueskyProfileView: View {
                         if !profile.labels.isEmpty {
                             LabeledContent("Labels", value: profile.labels.joined(separator: ", "))
                         }
-                        if !viewModel.handleHistory.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Handle History")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                                ForEach(viewModel.handleHistory) { entry in
-                                    HStack {
-                                        Text(entry.handle)
-                                            .font(.caption.monospaced())
-                                        if entry.isCurrent {
-                                            Text("current")
-                                                .font(.caption2.weight(.semibold))
-                                                .foregroundStyle(.green)
-                                                .padding(.horizontal, 6)
-                                                .padding(.vertical, 2)
-                                                .background(Color.green.opacity(0.12), in: Capsule())
-                                        }
-                                        Spacer()
-                                        Text(entry.date.formatted(date: .abbreviated, time: .omitted))
-                                            .font(.caption2)
-                                            .foregroundStyle(.tertiary)
-                                    }
-                                }
-                            }
-                        }
                     } label: {
                         Text("Account Info")
                             .font(.subheadline.weight(.semibold))
+                    }
+                }
+
+                if !viewModel.handleHistory.isEmpty {
+                    Section("Handle History") {
+                        ForEach(viewModel.handleHistory) { entry in
+                            HStack {
+                                Text(entry.handle)
+                                    .font(.caption.monospaced())
+                                if entry.isCurrent {
+                                    Text("current")
+                                        .font(.caption2.weight(.semibold))
+                                        .foregroundStyle(.green)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.green.opacity(0.12), in: Capsule())
+                                }
+                                Spacer()
+                                Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
                     }
                 }
             } else if viewModel.isLoading {
