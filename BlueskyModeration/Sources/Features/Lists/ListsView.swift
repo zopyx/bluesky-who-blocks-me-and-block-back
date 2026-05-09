@@ -22,12 +22,15 @@ struct ListsView: View {
                         description: Text("Add a Bluesky account in the Accounts tab to load lists.")
                     )
                 } else if viewModel.isLoading && groupedLists.isEmpty {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 20) {
                         Image(systemName: "checklist.checked")
-                            .font(.system(size: 42))
+                            .font(.system(size: 48))
                             .foregroundStyle(Color.skyPrimary)
+                            .symbolEffect(.pulse, options: .repeating)
+
                         ProgressView()
-                            .scaleEffect(1.2)
+                            .controlSize(.large)
+
                         Text("Loading lists\u{2026}")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)

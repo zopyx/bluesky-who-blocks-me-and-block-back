@@ -132,13 +132,14 @@ struct RelationshipsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 if isLoading && actors.isEmpty {
                     ProgressView()
+                } else if isRefreshing {
+                    ProgressView()
                 } else {
                     Button {
                         Task { await refresh() }
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
-                    .disabled(isRefreshing)
                 }
             }
         }
