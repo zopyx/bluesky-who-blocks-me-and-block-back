@@ -249,8 +249,7 @@ struct InfoView: View {
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.85))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
+        .frame(maxWidth: .infinity, minHeight: 80)
         .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
     }
 
