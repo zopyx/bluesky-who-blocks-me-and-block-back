@@ -201,12 +201,36 @@ struct ListsView: View {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isShowingBulkLookup = true
+                    Menu {
+                        Button {
+                            isShowingBulkLookup = true
+                        } label: {
+                            Label("Bulk Lookup", systemImage: "magnifyingglass.circle")
+                        }
+
+                        NavigationLink {
+                            DashboardView()
+                                .environmentObject(accountStore)
+                                .environmentObject(workspaceStore)
+                        } label: {
+                            Label("Dashboard", systemImage: "chart.bar")
+                        }
+
+                        NavigationLink {
+                            ActivityLogView()
+                                .environmentObject(workspaceStore)
+                        } label: {
+                            Label("Activity Log", systemImage: "clock.arrow.circlepath")
+                        }
+
+                        NavigationLink {
+                            ActionPresetsView()
+                        } label: {
+                            Label("Action Presets", systemImage: "square.2.layers.3d")
+                        }
                     } label: {
-                        Image(systemName: "magnifyingglass.circle")
+                        Image(systemName: "ellipsis.circle")
                     }
-                    .accessibilityLabel("Bulk profile lookup")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {

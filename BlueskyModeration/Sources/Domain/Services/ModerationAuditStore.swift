@@ -96,11 +96,20 @@ final class ModerationAuditStore: ObservableObject {
         load()
     }
 
+    private(set) var lastUndoableOperation: ModerationOperationLogEntry?
+
     func recordOperation(_ result: ModerationOperationLogEntry) {
+        if result.succeededHandles.count > 0 || result.failedHandles.count > 0 {
+            lastUndoableOperation = result
+        }
         operationLog.insert(result, at: 0)
         operationLog = Array(operationLog.prefix(operationLogLimit))
         AppLogger.persistence.debug("Recorded moderation operation '\(result.title, privacy: .public)' with \(result.succeededHandles.count) successes and \(result.failedHandles.count) failures.")
         persistOperationLog()
+    }
+
+    func clearUndo() {
+        lastUndoableOperation = nil
     }
 
     func captureSnapshot(for list: BlueskyList, members: [BlueskyListMember]) -> ListMembershipSnapshotSummary {
