@@ -18,10 +18,16 @@ struct AccountSwitcherSheet: View {
                 } else {
                     Section("Saved Accounts") {
                         ForEach(accountStore.accounts) { account in
-                            AccountRowView(
-                                account: account,
-                                isActive: account.id == accountStore.activeAccountID
-                            )
+                            Button {
+                                accountStore.setActiveAccount(account)
+                                isPresented = false
+                            } label: {
+                                AccountRowView(
+                                    account: account,
+                                    isActive: account.id == accountStore.activeAccountID
+                                )
+                            }
+                            .buttonStyle(.plain)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     accountStore.removeAccount(account, client: blueskyClient)
