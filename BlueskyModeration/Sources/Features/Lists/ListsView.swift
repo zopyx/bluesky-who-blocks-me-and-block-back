@@ -8,6 +8,7 @@ struct ListsView: View {
     @State private var isShowingAccountPicker = false
     @State private var isShowingPendingActions = false
     @State private var isShowingCreateList = false
+    @State private var createListKind: BlueskyList.Kind = .moderation
 
     var body: some View {
         NavigationStack {
@@ -87,6 +88,7 @@ struct ListsView: View {
                                 Text("Moderation Lists")
                                 Spacer()
                                 Button {
+                                    createListKind = .moderation
                                     isShowingCreateList = true
                                 } label: {
                                     Image(systemName: "plus")
@@ -112,6 +114,7 @@ struct ListsView: View {
                                 Text("Lists")
                                 Spacer()
                                 Button {
+                                    createListKind = .regular
                                     isShowingCreateList = true
                                 } label: {
                                     Image(systemName: "plus")
@@ -182,7 +185,7 @@ struct ListsView: View {
                     .environmentObject(workspaceStore)
             }
             .sheet(isPresented: $isShowingCreateList) {
-                CreateListSheet { name, description, kind in
+                CreateListSheet(kind: createListKind) { name, description, kind in
                     if let account = accountStore.activeAccount,
                        let appPassword = accountStore.appPassword(for: account) {
                         Task {

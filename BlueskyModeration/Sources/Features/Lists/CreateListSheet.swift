@@ -4,7 +4,7 @@ struct CreateListSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var description = ""
-    @State private var selectedKind: BlueskyList.Kind = .moderation
+    let kind: BlueskyList.Kind
     let onCreate: (String, String, BlueskyList.Kind) -> Void
 
     var body: some View {
@@ -15,23 +15,8 @@ struct CreateListSheet: View {
                     TextField("Description (optional)", text: $description, axis: .vertical)
                         .lineLimit(3...6)
                 }
-
-                Section("Type") {
-                    Picker("Kind", selection: $selectedKind) {
-                        ForEach(BlueskyList.Kind.allCases, id: \.self) { kind in
-                            Text(kind.title).tag(kind)
-                        }
-                    }
-                    .pickerStyle(.inline)
-                }
-
-                Section {
-                    Text("Moderation lists are used for blocking and muting. Regular lists are for curation.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
             }
-            .navigationTitle("Create List")
+            .navigationTitle(kind == .moderation ? "Create Moderation List" : "Create List")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -39,7 +24,7 @@ struct CreateListSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
-                        onCreate(name.trimmingCharacters(in: .whitespacesAndNewlines), description.trimmingCharacters(in: .whitespacesAndNewlines), selectedKind)
+                        onCreate(name.trimmingCharacters(in: .whitespacesAndNewlines), description.trimmingCharacters(in: .whitespacesAndNewlines), kind)
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
