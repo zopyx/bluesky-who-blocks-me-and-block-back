@@ -354,6 +354,148 @@ This reduces risk because the multi-account and UI state model can be validated 
 
 ---
 
+# Feature-Rich Application Roadmap
+
+## Vision
+Turn Rulyx into the definitive moderation toolkit for the AT Protocol ecosystem — comparable to ClearSky for inspection, ModTools for bulk actions, and native list management — all in one iPhone app.
+
+## Milestone Plan
+
+---
+
+### Milestone A: Multi-PDS & Account Management
+**Theme:** Any account, any PDS, seamless switching.
+
+| Feature | Description |
+|---------|-------------|
+| Custom entryway PDS | Auto-detect from handle domain, optional manual override in AddAccount |
+| Per-account PDS store | `entrywayURL` persisted on `AppAccount`, used at auth time |
+| DID method support | Graceful handling of `did:web:`, `did:key:` — hide PLC-only features |
+| Account groups/labels | Tag accounts (e.g. "Work", "Personal", "Community Mod") for organization |
+| Bulk account actions | Remove multiple, export/import account list |
+| Account health indicators | Show auth status, expired tokens, last successful sync |
+
+**Exit criteria:** User can add accounts from any AT Protocol PDS and switch seamlessly.
+
+---
+
+### Milestone B: Advanced List Management
+**Theme:** Lists as a first-class moderation primitive.
+
+| Feature | Description |
+|---------|-------------|
+| List templates | Create pre-configured lists (e.g. "Spam Watch", "Reply Guys") with preset descriptions and purposes |
+| List subscriptions | Subscribe to third-party moderation lists (curated by trusted moderators) |
+| List merge/split | Combine two lists into one, or split a large list by criteria |
+| Scheduled snapshots | Automatic daily/weekly list snapshots with notification on changes |
+| List sharing | Generate shareable links or invite codes for list subscriptions |
+| Batch list operations | Update metadata, add/remove members across multiple lists at once |
+| List search & filter | Full-text search across all lists, filter by kind, size, last modified |
+| List stats | Growth trends, churn rate, most-frequently-added members |
+
+**Exit criteria:** Lists are fully manageable from creation to archival with rich analytics.
+
+---
+
+### Milestone C: Profile Intelligence
+**Theme:** Know every account before you act.
+
+| Feature | Description |
+|---------|-------------|
+| Profile enrichment | Cache and display account metadata from multiple sources (PLC directory, labeler services) |
+| Label management | View, filter, and act on moderation labels applied by subscribed labelers |
+| Follower/following diff | Compare follower lists across two points in time, see who followed/unfollowed |
+| Follower/following export | Export full follower/following lists as CSV |
+| Bulk profile lookup | Paste multiple handles/DIDs and see profiles side-by-side |
+| Profile notes | Attach private notes to any account (stored locally) |
+| Trust signals | Show account age, follower ratio, verification status, labeler reports |
+| Network graph | Visualize follower overlap between accounts (who follows both X and Y) |
+
+**Exit criteria:** Any account can be fully investigated within seconds.
+
+---
+
+### Milestone D: Batch & Automation
+**Theme:** Do once, apply everywhere.
+
+| Feature | Description |
+|---------|-------------|
+| Action presets | Save reusable action sets ("Block + Report + Add to Spam list") |
+| Rule engine | If-then rules: "If an account has label X and is new (<30 days), add to list Y" |
+| Scheduled actions | Run batch actions on a timer (daily cleanup of lists) |
+| Conditional bulk filtering | Filter members by criteria (age, follower count, label status) before applying actions |
+| Activity log search | Search and filter past moderation actions by type, date, target |
+| Undo support | Reversible batch actions where possible (e.g., unblock, remove from list) |
+| Reporting integration | Generate and submit Bluesky moderation reports from within the app |
+
+**Exit criteria:** Repetitive moderation workflows are fully automatable.
+
+---
+
+### Milestone E: Collaboration & Sharing
+**Theme:** Moderation is a team sport.
+
+| Feature | Description |
+|---------|-------------|
+| Team workspaces | Shared workspace with multiple moderators, synchronized via Bluesky lists |
+| Action feed | Chronological feed of moderation actions taken by the team |
+| Comments & review | Approve/reject workflow for suggested moderation actions |
+| Shared blocklists | Publish and maintain shared moderation lists with changelog |
+| Role-based access | Viewer, moderator, admin roles within a workspace |
+| Sync status | Visual indicators showing what data is local vs cloud-synced |
+
+**Exit criteria:** A moderation team can fully coordinate within the app.
+
+---
+
+### Milestone F: Intelligence & Insights
+**Theme:** See patterns, not just accounts.
+
+| Feature | Description |
+|---------|-------------|
+| Dashboard analytics | Charts: actions over time, top moderated accounts, list growth |
+| Trend detection | Identify accounts that suddenly gain many followers or change handle frequently |
+| Report summaries | Aggregate moderation reports into weekly/monthly digests |
+| Cross-account correlation | Detect same person operating multiple accounts by patterns |
+| Spam pattern recognition | Flag accounts matching known spam behaviors |
+| Export & audit trails | Full audit log export for legal/transparency purposes |
+
+**Exit criteria:** The app provides actionable intelligence, not just data.
+
+---
+
+### Milestone G: Platform & Ecosystem
+**Theme:** Meet users where they are.
+
+| Feature | Description |
+|---------|-------------|
+| iPad support | Adaptive layout for iPad with sidebar navigation |
+| macOS companion | Native Mac app with keyboard shortcuts and menu bar |
+| Widgets | iOS widgets: list member count, recent changes, quick actions |
+| Shortcuts & Siri | Apple Shortcuts integration for automation |
+| Push notifications | Alerts for list changes, new followers from blocked accounts, rule triggers |
+| API / Webhooks | Programmatic access for external tools (discord bots, etc.) |
+
+**Exit criteria:** Rulyx is available on all Apple platforms with automation hooks.
+
+---
+
+## Prioritization Matrix
+
+| Milestone | User Impact | Dev Effort | Dependency |
+|-----------|------------|------------|------------|
+| A: Multi-PDS | High | Low | None |
+| B: Advanced Lists | High | Medium | A |
+| C: Profile Intelligence | Medium | Medium | A |
+| D: Batch & Automation | High | High | B, C |
+| E: Collaboration | Medium | Very High | B, D |
+| F: Intelligence | Medium | High | C, D |
+| G: Platform | Low-Medium | High | A-F |
+
+**Recommended order:** A → B → C → D → F → E → G
+
+---
+
 # Multi-Provider Support (Bluesky, Eurosky, etc.)
 
 ## Goal
