@@ -37,11 +37,20 @@ struct ListsView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if groupedLists.isEmpty {
-                    ContentUnavailableView(
-                        "No Lists Found",
-                        systemImage: "tray",
-                        description: Text("This account has no lists or the data source returned nothing.")
-                    )
+                    if let errorMessage = viewModel.errorMessage {
+                        ErrorRetryBanner(message: errorMessage) {
+                            viewModel.errorMessage = nil
+                            Task {
+                                await reload()
+                            }
+                        }
+                    } else {
+                        ContentUnavailableView(
+                            "No Lists Found",
+                            systemImage: "tray",
+                            description: Text("This account has no lists or the data source returned nothing.")
+                        )
+                    }
                 } else {
                     List {
                         if let activeAccount = accountStore.activeAccount {
