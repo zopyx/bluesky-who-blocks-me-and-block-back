@@ -17,8 +17,18 @@ struct AccountRowView: View {
             avatarView
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(account.displayName)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(account.displayName)
+                        .font(.headline)
+                    if let label = account.label {
+                        Text(label)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color.skyPrimary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.skyPrimary.opacity(0.1), in: Capsule())
+                    }
+                }
                 HStack(spacing: 6) {
                     Text(account.handle)
                         .font(.subheadline)

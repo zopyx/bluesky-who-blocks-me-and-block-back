@@ -22,6 +22,7 @@ struct ListDetailView: View {
     @State var cachedExportFileURL: URL?
     @State var cachedDiffExportFileURL: URL?
     @State private var isShowingDeleteConfirmation = false
+    @State private var isShowingSubscribe = false
     @Environment(\.dismiss) private var dismiss
 
     init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
@@ -35,6 +36,11 @@ struct ListDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbarContent)
             .sheet(isPresented: $isShowingEditSheet, content: editSheetContent)
+            .sheet(isPresented: $isShowingSubscribe) {
+                SubscribeToListView(targetList: currentList)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
             .sheet(isPresented: $isShowingImportSheet, content: importSheetContent)
             .sheet(isPresented: importPreviewPresentedBinding, content: importPreviewSheetContent)
             .fileImporter(
@@ -171,6 +177,14 @@ struct ListDetailView: View {
     private func toolbarContent() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
+                isShowingSubscribe = true
+            } label: {
+                Label("Subscribe", systemImage: "link.badge.plus")
+            }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
                 isShowingEditSheet = true
             } label: {
                 Label("Edit", systemImage: "pencil")
@@ -299,6 +313,15 @@ struct ListDetailView: View {
                 comparisonList: comparisonList,
                 syncSnapshot: { syncSnapshot() }
             )
+
+            Section("List Stats") {
+                LabeledContent("Members", value: "\(currentList.memberCount ?? viewModel.members.count)")
+                LabeledContent("Snapshots", value: "\(snapshotHistory.count)")
+                if let first = snapshotHistory.last, let last = snapshotHistory.first {
+                    let growth = last.members.count - first.members.count
+                    LabeledContent("Growth", value: growth == 0 ? "Stable" : (growth > 0 ? "+\(growth)" : "\(growth)"))
+                }
+            }
 
             ListSnapshotSection(
                 viewModel: viewModel,

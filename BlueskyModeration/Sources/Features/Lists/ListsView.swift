@@ -12,6 +12,8 @@ struct ListsView: View {
     @State private var showFollowers = false
     @State private var showFollowing = false
     @State private var showBlocking = false
+    @State private var listSearchQuery = ""
+    @State private var isShowingBulkLookup = false
 
     var body: some View {
         NavigationStack {
@@ -39,6 +41,14 @@ struct ListsView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List {
+                        if !viewModel.listsByKind.values.flatMap({ $0 }).isEmpty || !(listSearchQuery.isEmpty) {
+                            Section {
+                                TextField("Filter lists\u{2026}", text: $listSearchQuery)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                            }
+                        }
+
                         if let activeAccount = accountStore.activeAccount {
                             Section {
                                 NavigationLink {
@@ -192,6 +202,15 @@ struct ListsView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        isShowingBulkLookup = true
+                    } label: {
+                        Image(systemName: "magnifyingglass.circle")
+                    }
+                    .accessibilityLabel("Bulk profile lookup")
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         Task {
                             await reload()
                         }
@@ -218,6 +237,13 @@ struct ListsView: View {
             .sheet(isPresented: $isShowingPendingActions) {
                 PendingActionsSheet(isPresented: $isShowingPendingActions)
                     .environmentObject(workspaceStore)
+            }
+            .sheet(isPresented: $isShowingBulkLookup) {
+                NavigationStack {
+                    BulkProfileLookupView()
+                        .environmentObject(accountStore)
+                        .environmentObject(blueskyClient)
+                }
             }
             .sheet(isPresented: $isShowingCreateList) {
                 CreateListSheet(kind: createListKind) { name, description, kind in
@@ -250,7 +276,11 @@ struct ListsView: View {
     }
 
     private var groupedLists: [BlueskyList.Kind: [BlueskyList]] {
-        viewModel.listsByKind
+        let query = listSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !query.isEmpty else { return viewModel.listsByKind }
+        return viewModel.listsByKind.mapValues { lists in
+            lists.filter { $0.name.lowercased().contains(query) || $0.description.lowercased().contains(query) }
+        }.filter { !$0.value.isEmpty }
     }
 
     private func reload() async {

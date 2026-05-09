@@ -115,6 +115,12 @@ final class AccountStore: ObservableObject {
         persist()
     }
 
+    func setLabel(for account: AppAccount, label: String?) {
+        guard let index = accounts.firstIndex(of: account) else { return }
+        accounts[index].label = label?.isEmpty == true ? nil : label
+        persist()
+    }
+
     func appPassword(for account: AppAccount) -> String? {
         try? keychain.read(service: passwordService, account: account.id.uuidString)
     }
