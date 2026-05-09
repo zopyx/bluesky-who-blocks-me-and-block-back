@@ -22,8 +22,17 @@ struct ListsView: View {
                         description: Text("Add a Bluesky account in the Accounts tab to load lists.")
                     )
                 } else if viewModel.isLoading && groupedLists.isEmpty {
-                    ProgressView("Loading Lists")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    VStack(spacing: 16) {
+                        Image(systemName: "checklist.checked")
+                            .font(.system(size: 42))
+                            .foregroundStyle(Color.skyPrimary)
+                        ProgressView()
+                            .scaleEffect(1.2)
+                        Text("Loading lists\u{2026}")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if groupedLists.isEmpty {
                     ContentUnavailableView(
                         "No Lists Found",

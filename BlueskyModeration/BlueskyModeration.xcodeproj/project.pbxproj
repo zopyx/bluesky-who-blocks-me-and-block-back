@@ -47,6 +47,7 @@
 		82CBAF902B663768E4D611DC /* AccountChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62D1726B87CDC5F70DF05EB /* AccountChip.swift */; };
 		82DFC595354A428ABCBC5BDB /* BlueskyRequestExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B01267CADAE8DD6E824E38 /* BlueskyRequestExecutor.swift */; };
 		84BB828A96C5EF3BD0DFFC3C /* ListDetailViewModel+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BA605E31B60F1A71763C15 /* ListDetailViewModel+Search.swift */; };
+		878D807B5A85A664CFDBD4DC /* RelationshipCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31CB1BC8F1FC46CC9125FAA6 /* RelationshipCache.swift */; };
 		880CC4BE7AAA1787AA97A307 /* ListDetailViewModel+Bulk.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8121B7C0C147CA5085B44 /* ListDetailViewModel+Bulk.swift */; };
 		8D51374098DD19897AD47672 /* BlueskyAPIDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */; };
 		94FA3749012F8FE45D8FA1F2 /* ActionQueueStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BE861EB8C76980DD8DD581 /* ActionQueueStore.swift */; };
@@ -124,6 +125,7 @@
 		298FB52B464CB1851425B485 /* PendingActionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingActionsSheet.swift; sourceTree = "<group>"; };
 		2BBAF9ED6126620E1729E736 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		2F0F3BEAA37A7079BA3DE52B /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
+		31CB1BC8F1FC46CC9125FAA6 /* RelationshipCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelationshipCache.swift; sourceTree = "<group>"; };
 		390E45D6B465D6470D878D0D /* ListDetailSnapshotSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailSnapshotSection.swift; sourceTree = "<group>"; };
 		39B01267CADAE8DD6E824E38 /* BlueskyRequestExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyRequestExecutor.swift; sourceTree = "<group>"; };
 		3E071265425B642977F4F283 /* BlueskyListMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListMember.swift; sourceTree = "<group>"; };
@@ -175,7 +177,7 @@
 		BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIError.swift; sourceTree = "<group>"; };
 		C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Data.swift"; sourceTree = "<group>"; };
-		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		D0343E7705C27F52D7BD3B03 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
 		D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationAuditStore.swift; sourceTree = "<group>"; };
@@ -183,7 +185,7 @@
 		D8CB9DF2B9A1EF17F60EBFAB /* ActorSearchResultRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorSearchResultRow.swift; sourceTree = "<group>"; };
 		DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePanels.swift; sourceTree = "<group>"; };
 		DF724B3AC46DD8943DA15180 /* ListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsView.swift; sourceTree = "<group>"; };
-		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSummaryCard.swift; sourceTree = "<group>"; };
 		E62D1726B87CDC5F70DF05EB /* AccountChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountChip.swift; sourceTree = "<group>"; };
 		EA7FBB1661AB736F578D68EA /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSwitcherSheet.swift; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 				D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */,
 				8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */,
 				D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */,
+				31CB1BC8F1FC46CC9125FAA6 /* RelationshipCache.swift */,
 				0FA3F299400BF2699443484B /* WorkspacePreferencesStore.swift */,
 				D90DF5CF27BCD1C048971A79 /* Preview */,
 			);
@@ -508,6 +511,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					0608BB4380516450DC5105DF = {
+						DevelopmentTeam = "";
+					};
 					28FA462115B88F07A4C1D7CE = {
 						DevelopmentTeam = "";
 						TestTargetID = 0608BB4380516450DC5105DF;
@@ -639,6 +645,7 @@
 				818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */,
 				5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */,
 				178D70F028B5C4268AA7124E /* ProfileMembershipModels.swift in Sources */,
+				878D807B5A85A664CFDBD4DC /* RelationshipCache.swift in Sources */,
 				7B0F420541C16E2AEE22861B /* RelationshipsView.swift in Sources */,
 				54C2EF8D797B10C173440B6D /* RootView.swift in Sources */,
 				D018A537FFAA6F6B993EF30D /* SearchToken.swift in Sources */,
@@ -846,7 +853,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Rulyx;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -886,7 +892,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Rulyx;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

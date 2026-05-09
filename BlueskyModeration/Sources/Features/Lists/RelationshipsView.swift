@@ -23,6 +23,7 @@ struct RelationshipsView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @State private var actors: [BlueskyActor] = []
     @State private var isLoading = true
+    @State private var isRefreshing = false
     @State private var searchQuery = ""
     @State private var errorMessage: String?
     @State private var selectedActorForList: BlueskyActor?
@@ -129,8 +130,15 @@ struct RelationshipsView: View {
         .navigationTitle(isLoading && initialCount != nil ? mode.titled(initialCount!) : mode.titled(actors.count))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if isLoading {
+                if isLoading && actors.isEmpty {
                     ProgressView()
+                } else {
+                    Button {
+                        Task { await refresh() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .disabled(isRefreshing)
                 }
             }
         }
@@ -174,6 +182,11 @@ struct RelationshipsView: View {
         }
     }
 
+    private var cacheKey: String? {
+        guard let did = accountStore.activeAccount?.did else { return nil }
+        return "\(mode.rawValue)_\(did)"
+    }
+
     private func load() async {
         guard let account = accountStore.activeAccount,
               let appPassword = accountStore.appPassword(for: account) else {
@@ -185,19 +198,45 @@ struct RelationshipsView: View {
         isLoading = true
         errorMessage = nil
 
-        do {
-            let did = account.did ?? account.handle
-            switch mode {
-            case .followers:
-                actors = try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
-            case .following:
-                actors = try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
-            }
-        } catch {
-            errorMessage = AppError.userMessage(from: error)
+        if let key = cacheKey {
+            actors = RelationshipCache.load(forKey: key)
         }
 
-        isLoading = false
+        await fetchFromAPI(account: account, appPassword: appPassword)
+
+        if isLoading {
+            isLoading = false
+        }
+    }
+
+    private func refresh() async {
+        guard let account = accountStore.activeAccount,
+              let appPassword = accountStore.appPassword(for: account) else { return }
+        isRefreshing = true
+        await fetchFromAPI(account: account, appPassword: appPassword)
+        isRefreshing = false
+    }
+
+    private func fetchFromAPI(account: AppAccount, appPassword: String) async {
+        do {
+            let did = account.did ?? account.handle
+            let result: [BlueskyActor]
+            switch mode {
+            case .followers:
+                result = try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
+            case .following:
+                result = try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
+            }
+            actors = result
+            isLoading = false
+            if let key = cacheKey {
+                RelationshipCache.save(result, forKey: key)
+            }
+        } catch {
+            if actors.isEmpty {
+                errorMessage = AppError.userMessage(from: error)
+            }
+        }
     }
 }
 

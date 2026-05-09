@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlueskyActor: Identifiable, Hashable, Sendable {
+struct BlueskyActor: Identifiable, Hashable, Sendable, Codable {
     let id: String
     let did: String
     let handle: String
