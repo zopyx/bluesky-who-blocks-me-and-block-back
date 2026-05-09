@@ -231,6 +231,14 @@ struct ListsView: View {
                         }
 
                         NavigationLink {
+                            NetworkGraphView()
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
+                        } label: {
+                            Label("Network Graph", systemImage: "point.3.connected.trianglepath.dotted")
+                        }
+
+                        NavigationLink {
                             FollowerDiffView()
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
