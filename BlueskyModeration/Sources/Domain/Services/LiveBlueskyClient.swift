@@ -584,13 +584,22 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         var cursor: String?
         var pageCount = 0
         let maxPages = 50
+        var lastError: Error?
         repeat {
-            let page = try await fetchFollowersPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
-            all.append(contentsOf: page.actors)
-            cursor = page.cursor
-            pageCount += 1
-            if pageCount >= maxPages { break }
+            do {
+                let page = try await fetchFollowersPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
+                all.append(contentsOf: page.actors)
+                cursor = page.cursor
+                pageCount += 1
+                if pageCount >= maxPages { break }
+                lastError = nil
+            } catch {
+                lastError = error
+                if cursor == nil { throw error }
+                break
+            }
         } while cursor != nil
+        if all.isEmpty, let lastError { throw lastError }
         return all
     }
 
@@ -642,13 +651,22 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         var cursor: String?
         var pageCount = 0
         let maxPages = 50
+        var lastError: Error?
         repeat {
-            let page = try await fetchFollowingPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
-            all.append(contentsOf: page.actors)
-            cursor = page.cursor
-            pageCount += 1
-            if pageCount >= maxPages { break }
+            do {
+                let page = try await fetchFollowingPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
+                all.append(contentsOf: page.actors)
+                cursor = page.cursor
+                pageCount += 1
+                if pageCount >= maxPages { break }
+                lastError = nil
+            } catch {
+                lastError = error
+                if cursor == nil { throw error }
+                break
+            }
         } while cursor != nil
+        if all.isEmpty, let lastError { throw lastError }
         return all
     }
 

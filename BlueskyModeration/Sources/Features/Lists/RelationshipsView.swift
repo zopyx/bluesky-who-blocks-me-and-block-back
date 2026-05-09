@@ -28,6 +28,7 @@ struct RelationshipsView: View {
     @State private var isRefreshing = false
     @State private var searchQuery = ""
     @State private var errorMessage: String?
+    @State private var statusMessage: String?
     @State private var selectedActorForList: BlueskyActor?
     @State private var isShowingListPicker = false
     @State private var isShowingBlockConfirm = false
@@ -58,6 +59,11 @@ struct RelationshipsView: View {
                             TextField("Search \(mode.rawValue.lowercased())", text: $searchQuery)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
+                            if let statusMessage {
+                                Text(statusMessage)
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
                     }
 
@@ -139,7 +145,7 @@ struct RelationshipsView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle(mode.titled(initialCount ?? actors.count))
+        .navigationTitle(mode.titled(isLoading ? (initialCount ?? actors.count) : actors.count))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if isLoading && actors.isEmpty {
@@ -290,6 +296,8 @@ struct RelationshipsView: View {
             if actors.isEmpty {
                 errorMessage = AppError.userMessage(from: error)
                 isLoading = false
+            } else {
+                statusMessage = "Loaded \(actors.count) of \(initialCount ?? actors.count). Pull to refresh."
             }
         }
     }
