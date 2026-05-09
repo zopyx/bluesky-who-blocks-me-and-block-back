@@ -74,23 +74,33 @@ struct RelationshipsView: View {
                                 )
                             } label: {
                                 HStack(spacing: 10) {
-                                    BlueskyActorRow(actor: actor)
+                                    VStack(spacing: 4) {
+                                        avatarView(for: actor)
+                                        if actor.isNew {
+                                            Text("New")
+                                                .font(.caption2.weight(.semibold))
+                                                .foregroundStyle(.orange)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color.orange.opacity(0.12), in: Capsule())
+                                        }
+                                    }
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(actor.title)
+                                            .font(.headline)
+                                        Text(actor.handle)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
 
                                     Spacer()
-
-                                    if actor.isNew {
-                                        Text("New")
-                                            .font(.caption2.weight(.semibold))
-                                            .foregroundStyle(.orange)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.orange.opacity(0.12), in: Capsule())
-                                    }
 
                                     Text("\(index + 1)")
                                         .font(.caption)
                                         .foregroundStyle(.tertiary)
                                 }
+                                .padding(.vertical, 4)
                             }
                             .contextMenu {
                                 Button(role: .destructive) {
@@ -181,6 +191,40 @@ struct RelationshipsView: View {
                     .environmentObject(blueskyClient)
             }
         }
+    }
+
+    @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 40
+
+    @ViewBuilder
+    private func avatarView(for actor: BlueskyActor) -> some View {
+        if let avatarURL = actor.avatarURL {
+            AsyncImage(url: avatarURL) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                avatarPlaceholder(for: actor)
+            }
+            .frame(width: avatarSize, height: avatarSize)
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
+            }
+        } else {
+            avatarPlaceholder(for: actor)
+        }
+    }
+
+    private func avatarPlaceholder(for actor: BlueskyActor) -> some View {
+        Circle()
+            .fill(Color.skyPrimary.opacity(0.16))
+            .frame(width: avatarSize, height: avatarSize)
+            .overlay {
+                Text(actor.title.prefix(1).uppercased())
+                    .font(.headline)
+                    .foregroundStyle(Color.skyPrimary)
+            }
     }
 
     private var cacheKey: String? {

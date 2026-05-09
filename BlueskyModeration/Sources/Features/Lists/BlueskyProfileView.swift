@@ -8,7 +8,6 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
-    @State private var isShowingBlockConfirmation = false
 
     var body: some View {
         Group {
@@ -26,28 +25,7 @@ struct BlueskyProfileView: View {
         .navigationTitle(member.actor.title)
         .navigationBarTitleDisplayMode(.inline)
 
-        .confirmationDialog(
-            blockConfirmationTitle,
-            isPresented: $isShowingBlockConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(blockConfirmationActionTitle, role: .destructive) {
-                if let account = accountStore.activeAccount,
-                   let appPassword = accountStore.appPassword(for: account) {
-                    Task {
-                        await viewModel.toggleBlock(
-                            account: account,
-                            appPassword: appPassword,
-                            using: blueskyClient
-                        )
-                    }
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text(blockConfirmationMessage)
         }
-    }
 
     @ViewBuilder
     private func content(account: AppAccount, appPassword: String) -> some View {
@@ -84,16 +62,44 @@ struct BlueskyProfileView: View {
                 if !isOwnProfile {
                     Section("Moderation") {
                     if let viewerState = profile.viewerState {
-                        statusChip(
-                            title: viewerState.isBlocking ? "Blocked" : "Not blocked",
-                            tint: viewerState.isBlocking ? .red : Color.secondary,
-                            emphasized: viewerState.isBlocking
-                        )
-                        statusChip(
-                            title: viewerState.muted ? "Muted" : "Not muted",
-                            tint: viewerState.muted ? .orange : Color.secondary,
-                            emphasized: viewerState.muted
-                        )
+                        HStack {
+                            statusChip(
+                                title: viewerState.isBlocking ? "Blocked" : "Not blocked",
+                                tint: viewerState.isBlocking ? .red : Color.secondary,
+                                emphasized: viewerState.isBlocking
+                            )
+                            Spacer()
+                            Button(viewerState.isBlocking ? "Unblock" : "Block") {
+                                Task {
+                                    await viewModel.toggleBlock(
+                                        account: account,
+                                        appPassword: appPassword,
+                                        using: blueskyClient
+                                    )
+                                }
+                            }
+                            .disabled(viewModel.isUpdatingModeration)
+                            .accessibilityHint("This action cannot be undone.")
+                        }
+
+                        HStack {
+                            statusChip(
+                                title: viewerState.muted ? "Muted" : "Not muted",
+                                tint: viewerState.muted ? .orange : Color.secondary,
+                                emphasized: viewerState.muted
+                            )
+                            Spacer()
+                            Button(viewerState.muted ? "Unmute" : "Mute") {
+                                Task {
+                                    await viewModel.toggleMute(
+                                        account: account,
+                                        appPassword: appPassword,
+                                        using: blueskyClient
+                                    )
+                                }
+                            }
+                            .disabled(viewModel.isUpdatingModeration)
+                        }
                     }
 
                     if let statusMessage = viewModel.statusMessage {
@@ -101,33 +107,6 @@ struct BlueskyProfileView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-
-                    Button(role: profile.viewerState?.isBlocking == true ? .destructive : nil) {
-                        isShowingBlockConfirmation = true
-                    } label: {
-                        Label(
-                            profile.viewerState?.isBlocking == true ? "Unblock Account" : "Block Account",
-                            systemImage: profile.viewerState?.isBlocking == true ? "hand.raised.slash" : "hand.raised.fill"
-                        )
-                    }
-                    .disabled(viewModel.isUpdatingModeration)
-                    .accessibilityHint("This action cannot be undone.")
-
-                    Button {
-                        Task {
-                            await viewModel.toggleMute(
-                                account: account,
-                                appPassword: appPassword,
-                                using: blueskyClient
-                            )
-                        }
-                    } label: {
-                        Label(
-                            profile.viewerState?.muted == true ? "Unmute Account" : "Mute Account",
-                            systemImage: profile.viewerState?.muted == true ? "speaker.wave.2" : "speaker.slash"
-                        )
-                    }
-                    .disabled(viewModel.isUpdatingModeration)
                 }
                 }
 
@@ -310,22 +289,6 @@ struct BlueskyProfileView: View {
             return viewModel.listMemberships
         }
         return moderationLists
-    }
-
-    private var blockConfirmationTitle: String {
-        viewModel.profile?.viewerState?.isBlocking == true ? "Unblock this account?" : "Block this account?"
-    }
-
-    private var blockConfirmationActionTitle: String {
-        viewModel.profile?.viewerState?.isBlocking == true ? "Unblock" : "Block"
-    }
-
-    private var blockConfirmationMessage: String {
-        if viewModel.profile?.viewerState?.isBlocking == true {
-            return "This removes your current block relationship for this account."
-        }
-
-        return "Blocking prevents interaction and is treated as a destructive moderation action."
     }
 
     private func statusChip(title: String, tint: Color, emphasized: Bool) -> some View {
