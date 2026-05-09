@@ -79,9 +79,6 @@ struct BlueskyProfileView: View {
                     LabeledContent("Followers", value: statText(profile.followersCount))
                     LabeledContent("Following", value: statText(profile.followsCount))
                     LabeledContent("Posts", value: statText(profile.postsCount))
-                    if let createdAt = profile.createdAt {
-                        LabeledContent("Joined", value: createdAt.formatted(date: .abbreviated, time: .omitted))
-                    }
                 }
 
                 if !isOwnProfile {
@@ -185,6 +182,22 @@ struct BlueskyProfileView: View {
                         Link(destination: profileURL) {
                             Label("Open in Bluesky", systemImage: "arrow.up.right.square")
                         }
+                    }
+                }
+
+                Section {
+                    DisclosureGroup {
+                        LabeledContent("Handle", value: profile.handle)
+                        LabeledContent("DID", value: profile.did)
+                        if let createdAt = profile.createdAt {
+                            LabeledContent("Joined", value: createdAt.formatted(date: .abbreviated, time: .omitted))
+                        }
+                        if !profile.labels.isEmpty {
+                            LabeledContent("Labels", value: profile.labels.joined(separator: ", "))
+                        }
+                    } label: {
+                        Text("Account Info")
+                            .font(.subheadline.weight(.semibold))
                     }
                 }
             } else if viewModel.isLoading {
