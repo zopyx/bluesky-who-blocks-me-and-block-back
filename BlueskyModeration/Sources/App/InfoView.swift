@@ -59,16 +59,16 @@ struct InfoView: View {
                 .padding(14)
                 .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
 
-            Text("Rulyx")
+            Text("RULYX")
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.white)
 
-            Text("Moderation rules, made manageable.")
+            Text("Bluesky moderation made easy")
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.75))
 
-            Text("Trust & safety tooling for AT Protocol communities.")
-                .font(.caption)
+            Text("Powered by Bluesky")
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.55))
                 .multilineTextAlignment(.center)
         }
