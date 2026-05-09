@@ -85,8 +85,10 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
         AppLogger.performance.debug("\(method, privacy: .public) \(path, privacy: .public) took \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s (\(httpResponse.statusCode))")
 
         do {
-            return try JSONDecoder().decode(Response.self, from: data)
+            let decodedData = data.isEmpty ? Data("{}".utf8) : data
+            return try JSONDecoder().decode(Response.self, from: decodedData)
         } catch {
+            AppLogger.performance.debug("Decoding failure for \(path, privacy: .public): \(error.localizedDescription, privacy: .public)")
             throw BlueskyAPIError.invalidResponse
         }
     }
