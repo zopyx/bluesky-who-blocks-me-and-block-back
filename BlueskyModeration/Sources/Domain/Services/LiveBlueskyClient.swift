@@ -418,6 +418,59 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    func fetchFollowers(
+        actor actorDID: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        var all: [BlueskyActor] = []
+        var cursor: String?
+        repeat {
+            let page = try await fetchFollowersPage(actor: actorDID, cursor: cursor, account: account, appPassword: appPassword)
+            all.append(contentsOf: page.actors)
+            cursor = page.cursor
+        } while cursor != nil
+        return all
+    }
+
+    func fetchFollowersPage(
+        actor actorDID: String,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> PagedActorSearch {
+        let response: GetFollowersResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            var queryItems = [
+                URLQueryItem(name: "actor", value: actorDID),
+                URLQueryItem(name: "limit", value: "100")
+            ]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.graph.getFollowers",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+        return PagedActorSearch(
+            actors: response.followers.map {
+                BlueskyActor(
+                    did: $0.did,
+                    handle: $0.handle,
+                    displayName: $0.displayName,
+                    avatarURL: URL(string: $0.avatar ?? "")
+                )
+            },
+            cursor: response.cursor
+        )
+    }
+
     func fetchProfile(
         did actorDID: String,
         account: AppAccount,

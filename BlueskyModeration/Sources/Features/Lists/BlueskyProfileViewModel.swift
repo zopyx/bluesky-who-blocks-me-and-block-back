@@ -117,6 +117,55 @@ final class BlueskyProfileViewModel: ObservableObject {
         }
     }
 
+    @Published var isBlockingFollowers = false
+    @Published var blockFollowersProgress: BatchProgress?
+
+    func blockAllFollowers(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        guard let profile else { return }
+
+        isBlockingFollowers = true
+        defer { isBlockingFollowers = false }
+
+        do {
+            let followers = try await client.fetchFollowers(
+                actor: profile.did,
+                account: account,
+                appPassword: appPassword
+            )
+
+            guard !followers.isEmpty else {
+                statusMessage = "No followers to block."
+                return
+            }
+
+            let batchController = ListBatchController()
+            let result = await batchController.performBatch(
+                title: "Blocking followers",
+                actors: followers,
+                operation: .block,
+                onProgress: { [weak self] progress in
+                    self?.blockFollowersProgress = progress
+                },
+                onActorStart: nil,
+                onActorComplete: nil
+            ) { actor in
+                try await client.blockActor(
+                    did: actor.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+            }
+
+            statusMessage = result.summaryText
+        } catch {
+            errorMessage = AppError.userMessage(from: error)
+        }
+    }
+
     func toggleListMembership(
         _ membership: ProfileListMembership,
         account: AppAccount,

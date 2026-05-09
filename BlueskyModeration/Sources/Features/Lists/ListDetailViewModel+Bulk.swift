@@ -248,6 +248,20 @@ extension ListDetailViewModel {
             onMembersChanged()
             bulkActionResult = retryResult
 
+        case .block:
+            let retryResult = await performActorBatch(
+                title: "Retrying blocks",
+                actors: failedActors,
+                operation: .block
+            ) { actor in
+                try await client.blockActor(
+                    did: actor.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+            }
+            bulkActionResult = retryResult
+
         case .copy, .move:
             guard let comparisonList else {
                 errorMessage = "Select a comparison list before retrying this action."

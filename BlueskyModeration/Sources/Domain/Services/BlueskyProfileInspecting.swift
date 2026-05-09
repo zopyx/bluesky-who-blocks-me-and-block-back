@@ -10,4 +10,6 @@ protocol BlueskyProfileInspecting {
     func unblockActor(recordURI: String, account: AppAccount, appPassword: String?) async throws
     func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
     func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
+    func fetchFollowers(actor actorDID: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor]
+    func fetchFollowersPage(actor actorDID: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch
 }

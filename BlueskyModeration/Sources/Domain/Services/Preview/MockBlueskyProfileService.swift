@@ -67,6 +67,21 @@ final class MockBlueskyProfileService: BlueskyProfileInspecting {
         )
     }
 
+    func fetchFollowers(actor actorDID: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] {
+        try await Task.sleep(for: .milliseconds(200))
+        return MockBlueskyListService.previewActors
+    }
+
+    func fetchFollowersPage(actor actorDID: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
+        try await Task.sleep(for: .milliseconds(120))
+        let actors = MockBlueskyListService.previewActors
+        let pageSize = 3
+        let startIndex = Int(cursor ?? "0") ?? 0
+        let endIndex = min(startIndex + pageSize, actors.count)
+        let nextCursor = endIndex < actors.count ? String(endIndex) : nil
+        return PagedActorSearch(actors: Array(actors[startIndex..<endIndex]), cursor: nextCursor)
+    }
+
     func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }

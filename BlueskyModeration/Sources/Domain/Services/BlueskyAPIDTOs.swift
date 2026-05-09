@@ -61,6 +61,11 @@ struct ActorView: Decodable {
     let avatar: String?
 }
 
+struct GetFollowersResponse: Decodable {
+    let cursor: String?
+    let followers: [ActorView]
+}
+
 struct SearchActorsResponse: Decodable {
     let cursor: String?
     let actors: [ActorView]

@@ -147,6 +147,30 @@ struct BlueskyProfileView: View {
                         }
                     }
 
+                    if viewModel.isBlockingFollowers {
+                        if let progress = viewModel.blockFollowersProgress {
+                            BatchProgressCard(
+                                title: progress.title,
+                                completedCount: progress.completedCount,
+                                totalCount: progress.totalCount,
+                                currentHandle: progress.currentHandle
+                            )
+                        }
+                    } else {
+                        Button {
+                            Task {
+                                await viewModel.blockAllFollowers(
+                                    account: account,
+                                    appPassword: appPassword,
+                                    using: blueskyClient
+                                )
+                            }
+                        } label: {
+                            Label("Block All Followers", systemImage: "hand.raised.slash")
+                        }
+                        .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
+                    }
+
                     if let list {
                         Label("Member of \(list.name)", systemImage: "person.2.badge.gearshape")
                             .foregroundStyle(.secondary)

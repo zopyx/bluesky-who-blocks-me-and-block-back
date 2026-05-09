@@ -7,6 +7,7 @@ struct ListBulkActionResult: Identifiable, Equatable {
         case copy
         case move
         case `import`
+        case block
 
         var title: String {
             switch self {
@@ -20,6 +21,8 @@ struct ListBulkActionResult: Identifiable, Equatable {
                 "Move Members"
             case .import:
                 "Import Handles"
+            case .block:
+                "Block Followers"
             }
         }
 
@@ -35,6 +38,8 @@ struct ListBulkActionResult: Identifiable, Equatable {
                 "moved"
             case .import:
                 "imported"
+            case .block:
+                "blocked"
             }
         }
     }

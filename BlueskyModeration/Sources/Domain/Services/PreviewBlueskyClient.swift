@@ -187,6 +187,32 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         )
     }
 
+    override func fetchFollowers(
+        actor actorDID: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        try await Task.sleep(for: .milliseconds(200))
+        return previewActors
+    }
+
+    override func fetchFollowersPage(
+        actor actorDID: String,
+        cursor: String?,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> PagedActorSearch {
+        try await Task.sleep(for: .milliseconds(120))
+        let pageSize = 3
+        let startIndex = Int(cursor ?? "0") ?? 0
+        let endIndex = min(startIndex + pageSize, previewActors.count)
+        let nextCursor = endIndex < previewActors.count ? String(endIndex) : nil
+        return PagedActorSearch(
+            actors: Array(previewActors[startIndex..<endIndex]),
+            cursor: nextCursor
+        )
+    }
+
     override func fetchProfile(
         did actorDID: String,
         account: AppAccount,
