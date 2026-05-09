@@ -21,7 +21,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         )
     }
 
-    override func fetchLists(for account: AppAccount, appPassword: String) async throws -> [BlueskyList] {
+    override func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
         try await Task.sleep(for: .milliseconds(150))
 
         let seed = abs(account.handle.hashValue)
@@ -70,7 +70,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func fetchListMembers(
         list: BlueskyList,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyListMember] {
         var cursor: String?
         var allMembers: [BlueskyListMember] = []
@@ -93,7 +93,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         list: BlueskyList,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedListMembers {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -112,7 +112,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func searchActors(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyActor] {
         let page = try await searchActorsPage(
             query: query,
@@ -127,7 +127,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         query: String,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedActorSearch {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -155,7 +155,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         did actorDID: String,
         to list: BlueskyList,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> String {
         try await Task.sleep(for: .milliseconds(100))
         return "at://\(actorDID)/app.bsky.graph.listitem/\(UUID().uuidString)"
@@ -164,7 +164,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func removeMember(
         recordURI: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(100))
     }
@@ -174,7 +174,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         title: String,
         description: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyList {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -190,7 +190,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func fetchProfile(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyProfile {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -226,7 +226,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func inspectProfile(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> ProfileInspection {
         try await Task.sleep(for: .milliseconds(150))
 
@@ -291,7 +291,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func fetchList(
         uri: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyList? {
         try await fetchLists(for: account, appPassword: appPassword).first { $0.id == uri }
     }
@@ -299,7 +299,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func blockActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
@@ -307,7 +307,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func unblockActor(
         recordURI: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
@@ -315,7 +315,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func muteActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
@@ -323,7 +323,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func unmuteActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }

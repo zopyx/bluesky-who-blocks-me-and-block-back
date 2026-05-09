@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		003D2AF2037A4B510F1C1A11 /* LiveAuthenticationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003D2AF1037A4B510F1C1A11 /* LiveAuthenticationTests.swift */; };
 		0512C626C2B7E63DA47027D6 /* BlueskyListServicing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */; };
 		06F7D806B2C3522A82D3A99A /* LoadableState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69EC0405E28F2993D2F08CD9 /* LoadableState.swift */; };
+		071F909B037A4A810A2D4E62 /* AccountStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071F909A037A4A810A2D4E62 /* AccountStoreTests.swift */; };
 		08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8276C95D84E24D1C7E651B65 /* ModerationWorkspaceStore.swift */; };
 		121BF1E5DD44EEE41545C343 /* BlueskyListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A66DCBAD6A830220641347 /* BlueskyListService.swift */; };
 		13BF687163F3A2FC9A88AA04 /* AccountSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */; };
@@ -102,7 +104,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		003D2AF1037A4B510F1C1A11 /* LiveAuthenticationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAuthenticationTests.swift; sourceTree = "<group>"; };
 		03561C1580449FBB58D3E623 /* BlueskySessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskySessionService.swift; sourceTree = "<group>"; };
+		071F909A037A4A810A2D4E62 /* AccountStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStoreTests.swift; sourceTree = "<group>"; };
 		089E40E6F7B67B05A08AD96E /* ListImportControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListImportControllerTests.swift; sourceTree = "<group>"; };
 		08CDD4AC481D588629B31A73 /* BlueskyProfileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileService.swift; sourceTree = "<group>"; };
 		0CD5EDFE8B1DAAE5AB4D0656 /* SearchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchToken.swift; sourceTree = "<group>"; };
@@ -253,7 +257,9 @@
 		6ED80CBED49F9449459FB96D /* BlueskyModerationTests */ = {
 			isa = PBXGroup;
 			children = (
+				071F909A037A4A810A2D4E62 /* AccountStoreTests.swift */,
 				97BA9E2B32FEB4A158D05D65 /* BlueskyRequestExecutorTests.swift */,
+				003D2AF1037A4B510F1C1A11 /* LiveAuthenticationTests.swift */,
 				97AE8BA236C2AA6B8E8EEACC /* ListDiffControllerTests.swift */,
 				089E40E6F7B67B05A08AD96E /* ListImportControllerTests.swift */,
 				EAD663120FE1E51A2441DBD9 /* ModerationWorkspaceStoreTests.swift */,
@@ -548,7 +554,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				071F909B037A4A810A2D4E62 /* AccountStoreTests.swift in Sources */,
 				BBB052AA616857501F99262D /* BlueskyRequestExecutorTests.swift in Sources */,
+				003D2AF2037A4B510F1C1A11 /* LiveAuthenticationTests.swift in Sources */,
 				E4CBFC8AF053A725DC813B3E /* ListDiffControllerTests.swift in Sources */,
 				A3F338CFC071F3A35D6EA3BF /* ListImportControllerTests.swift in Sources */,
 				B90585D2016E034BC9D25A68 /* ModerationWorkspaceStoreTests.swift in Sources */,

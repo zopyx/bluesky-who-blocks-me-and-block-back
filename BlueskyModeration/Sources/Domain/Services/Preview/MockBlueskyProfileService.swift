@@ -2,12 +2,12 @@ import Foundation
 
 @MainActor
 final class MockBlueskyProfileService: BlueskyProfileInspecting {
-    func searchActors(query: String, account: AppAccount, appPassword: String) async throws -> [BlueskyActor] {
+    func searchActors(query: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] {
         let page = try await searchActorsPage(query: query, cursor: nil, account: account, appPassword: appPassword)
         return page.actors
     }
 
-    func searchActorsPage(query: String, cursor: String?, account: AppAccount, appPassword: String) async throws -> PagedActorSearch {
+    func searchActorsPage(query: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
         try await Task.sleep(for: .milliseconds(120))
 
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -27,7 +27,7 @@ final class MockBlueskyProfileService: BlueskyProfileInspecting {
         return PagedActorSearch(actors: Array(matches[startIndex..<endIndex]), cursor: nextCursor)
     }
 
-    func fetchProfile(did actorDID: String, account: AppAccount, appPassword: String) async throws -> BlueskyProfile {
+    func fetchProfile(did actorDID: String, account: AppAccount, appPassword: String?) async throws -> BlueskyProfile {
         try await Task.sleep(for: .milliseconds(120))
 
         return BlueskyProfile(
@@ -42,7 +42,7 @@ final class MockBlueskyProfileService: BlueskyProfileInspecting {
         )
     }
 
-    func inspectProfile(query: String, account: AppAccount, appPassword: String) async throws -> ProfileInspection {
+    func inspectProfile(query: String, account: AppAccount, appPassword: String?) async throws -> ProfileInspection {
         try await Task.sleep(for: .milliseconds(150))
 
         return ProfileInspection(
@@ -67,19 +67,19 @@ final class MockBlueskyProfileService: BlueskyProfileInspecting {
         )
     }
 
-    func blockActor(did actorDID: String, account: AppAccount, appPassword: String) async throws {
+    func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 
-    func unblockActor(recordURI: String, account: AppAccount, appPassword: String) async throws {
+    func unblockActor(recordURI: String, account: AppAccount, appPassword: String?) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 
-    func muteActor(did actorDID: String, account: AppAccount, appPassword: String) async throws {
+    func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 
-    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String) async throws {
+    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 }

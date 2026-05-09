@@ -70,7 +70,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         await sessionService.restoreSessions(for: accounts)
     }
 
-    func fetchLists(for account: AppAccount, appPassword: String) async throws -> [BlueskyList] {
+    func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
         let response: GetListsResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
             appPassword: appPassword
@@ -101,7 +101,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func fetchList(
         uri: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyList? {
         let lists = try await fetchLists(for: account, appPassword: appPassword)
         return lists.first { $0.id == uri }
@@ -110,7 +110,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func fetchListMembers(
         list: BlueskyList,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyListMember] {
         var allMembers: [BlueskyListMember] = []
         var cursor: String?
@@ -133,7 +133,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         list: BlueskyList,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedListMembers {
         let response: GetListResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -175,7 +175,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func searchActors(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyActor] {
         let page = try await searchActorsPage(
             query: query,
@@ -190,7 +190,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         query: String,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedActorSearch {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
@@ -235,7 +235,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         did actorDID: String,
         to list: BlueskyList,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> String {
         let response: CreateRecordResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -268,7 +268,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func removeMember(
         recordURI: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let record = try parseATURI(recordURI)
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
@@ -297,7 +297,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         title: String,
         description: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyList {
         let record = try parseATURI(list.id)
         let _: CreateRecordResponse = try await sessionService.performAuthenticatedRequest(
@@ -339,7 +339,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func blockActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -367,7 +367,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func unblockActor(
         recordURI: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         try await removeMember(
             recordURI: recordURI,
@@ -379,7 +379,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func muteActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -400,7 +400,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func unmuteActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -421,7 +421,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func fetchProfile(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyProfile {
         let response: ProfileViewDetailed = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -462,7 +462,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func inspectProfile(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> ProfileInspection {
         let actor = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !actor.isEmpty else {
@@ -548,5 +548,4 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         )
     }
 }
-
 

@@ -11,7 +11,7 @@ final class MockBlueskyListService: BlueskyListServicing {
         BlueskyActor(did: "did:plc:6", handle: "reports.ops", displayName: "Reports Ops")
     ]
 
-    func fetchLists(for account: AppAccount, appPassword: String) async throws -> [BlueskyList] {
+    func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
         try await Task.sleep(for: .milliseconds(150))
 
         let seed = abs(account.handle.hashValue)
@@ -27,11 +27,11 @@ final class MockBlueskyListService: BlueskyListServicing {
         ]
     }
 
-    func fetchList(uri: String, account: AppAccount, appPassword: String) async throws -> BlueskyList? {
+    func fetchList(uri: String, account: AppAccount, appPassword: String?) async throws -> BlueskyList? {
         try await fetchLists(for: account, appPassword: appPassword).first { $0.id == uri }
     }
 
-    func fetchListMembers(list: BlueskyList, account: AppAccount, appPassword: String) async throws -> [BlueskyListMember] {
+    func fetchListMembers(list: BlueskyList, account: AppAccount, appPassword: String?) async throws -> [BlueskyListMember] {
         var cursor: String?
         var allMembers: [BlueskyListMember] = []
 
@@ -44,7 +44,7 @@ final class MockBlueskyListService: BlueskyListServicing {
         return allMembers
     }
 
-    func fetchListMembersPage(list: BlueskyList, cursor: String?, account: AppAccount, appPassword: String) async throws -> PagedListMembers {
+    func fetchListMembersPage(list: BlueskyList, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedListMembers {
         try await Task.sleep(for: .milliseconds(120))
 
         let members = previewMembers(for: list)
@@ -56,16 +56,16 @@ final class MockBlueskyListService: BlueskyListServicing {
         return PagedListMembers(members: Array(members[startIndex..<endIndex]), cursor: nextCursor)
     }
 
-    func addActor(did actorDID: String, to list: BlueskyList, account: AppAccount, appPassword: String) async throws -> String {
+    func addActor(did actorDID: String, to list: BlueskyList, account: AppAccount, appPassword: String?) async throws -> String {
         try await Task.sleep(for: .milliseconds(100))
         return "at://\(actorDID)/app.bsky.graph.listitem/\(UUID().uuidString)"
     }
 
-    func removeMember(recordURI: String, account: AppAccount, appPassword: String) async throws {
+    func removeMember(recordURI: String, account: AppAccount, appPassword: String?) async throws {
         try await Task.sleep(for: .milliseconds(100))
     }
 
-    func updateListMetadata(list: BlueskyList, title: String, description: String, account: AppAccount, appPassword: String) async throws -> BlueskyList {
+    func updateListMetadata(list: BlueskyList, title: String, description: String, account: AppAccount, appPassword: String?) async throws -> BlueskyList {
         try await Task.sleep(for: .milliseconds(120))
         return BlueskyList(id: list.id, name: title, description: description.isEmpty ? list.kind.title : description, memberCount: list.memberCount, kind: list.kind)
     }

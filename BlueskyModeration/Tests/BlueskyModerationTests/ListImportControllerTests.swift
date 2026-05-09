@@ -115,7 +115,7 @@ private final class MockImportClient: LiveBlueskyClient {
     override func fetchProfile(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyProfile {
         if shouldFail {
             throw BlueskyAPIError.server("Not found")

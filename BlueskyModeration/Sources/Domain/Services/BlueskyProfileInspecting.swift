@@ -2,12 +2,12 @@ import Foundation
 
 @MainActor
 protocol BlueskyProfileInspecting {
-    func searchActors(query: String, account: AppAccount, appPassword: String) async throws -> [BlueskyActor]
-    func searchActorsPage(query: String, cursor: String?, account: AppAccount, appPassword: String) async throws -> PagedActorSearch
-    func fetchProfile(did actorDID: String, account: AppAccount, appPassword: String) async throws -> BlueskyProfile
-    func inspectProfile(query: String, account: AppAccount, appPassword: String) async throws -> ProfileInspection
-    func blockActor(did actorDID: String, account: AppAccount, appPassword: String) async throws
-    func unblockActor(recordURI: String, account: AppAccount, appPassword: String) async throws
-    func muteActor(did actorDID: String, account: AppAccount, appPassword: String) async throws
-    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String) async throws
+    func searchActors(query: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor]
+    func searchActorsPage(query: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch
+    func fetchProfile(did actorDID: String, account: AppAccount, appPassword: String?) async throws -> BlueskyProfile
+    func inspectProfile(query: String, account: AppAccount, appPassword: String?) async throws -> ProfileInspection
+    func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
+    func unblockActor(recordURI: String, account: AppAccount, appPassword: String?) async throws
+    func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
+    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
 }

@@ -9,7 +9,7 @@ protocol BlueskySessionServicing {
     func clearSessionCache()
     func performAuthenticatedRequest<Response>(
         account: AppAccount,
-        appPassword: String,
+        appPassword: String?,
         operation: (BlueskySession) async throws -> Response
     ) async throws -> Response
 }
@@ -85,7 +85,7 @@ final class BlueskySessionService: BlueskySessionServicing {
 
     func performAuthenticatedRequest<Response>(
         account: AppAccount,
-        appPassword: String,
+        appPassword: String?,
         operation: (BlueskySession) async throws -> Response
     ) async throws -> Response {
         var authSession = try await cachedSession(for: account, appPassword: appPassword)

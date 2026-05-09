@@ -15,13 +15,7 @@ final class ListsViewModel: ObservableObject {
         guard let account else {
             listsByKind = [:]
             activeProfile = nil
-            return
-        }
-
-        guard let appPassword, !appPassword.isEmpty else {
-            listsByKind = [:]
-            activeProfile = nil
-            errorMessage = AppError.userMessage(from: BlueskyAPIError.missingCredentials)
+            errorMessage = nil
             return
         }
 

@@ -66,6 +66,7 @@ final class AccountStore: ObservableObject {
                 did: session.did,
                 pdsURL: session.pdsURL
             )
+            try keychain.save(trimmedPassword, service: passwordService, account: account.id.uuidString)
             try await client.persistSession(session, for: account)
             accounts.insert(account, at: 0)
             activeAccountID = account.id
@@ -120,9 +121,7 @@ final class AccountStore: ObservableObject {
 
         for index in updatedAccounts.indices {
             let account = updatedAccounts[index]
-            guard let appPassword = appPassword(for: account), !appPassword.isEmpty else {
-                continue
-            }
+            let appPassword = appPassword(for: account)
 
             do {
                 let profile = try await client.fetchProfile(

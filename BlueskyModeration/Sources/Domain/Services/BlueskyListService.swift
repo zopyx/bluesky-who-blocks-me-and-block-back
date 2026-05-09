@@ -10,7 +10,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         self.sessionService = sessionService
     }
 
-    func fetchLists(for account: AppAccount, appPassword: String) async throws -> [BlueskyList] {
+    func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
         let response: GetListsResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
             appPassword: appPassword
@@ -41,7 +41,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
     func fetchList(
         uri: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyList? {
         let lists = try await fetchLists(for: account, appPassword: appPassword)
         return lists.first { $0.id == uri }
@@ -50,7 +50,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
     func fetchListMembers(
         list: BlueskyList,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyListMember] {
         var allMembers: [BlueskyListMember] = []
         var cursor: String?
@@ -73,7 +73,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         list: BlueskyList,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedListMembers {
         let response: GetListResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -116,7 +116,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         did actorDID: String,
         to list: BlueskyList,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> String {
         let response: CreateRecordResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -149,7 +149,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
     func removeMember(
         recordURI: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let record = try parseATURI(recordURI)
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
@@ -178,7 +178,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         title: String,
         description: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyList {
         let record = try parseATURI(list.id)
         let _: CreateRecordResponse = try await sessionService.performAuthenticatedRequest(

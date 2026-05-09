@@ -13,7 +13,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func searchActors(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyActor] {
         let page = try await searchActorsPage(
             query: query,
@@ -28,7 +28,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
         query: String,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedActorSearch {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
@@ -72,7 +72,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func fetchProfile(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyProfile {
         let response: ProfileViewDetailed = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -113,7 +113,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func inspectProfile(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> ProfileInspection {
         let actor = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !actor.isEmpty else {
@@ -202,7 +202,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func blockActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -230,7 +230,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func unblockActor(
         recordURI: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let record = try parseATURI(recordURI)
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
@@ -257,7 +257,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func muteActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -278,7 +278,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
     func unmuteActor(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,

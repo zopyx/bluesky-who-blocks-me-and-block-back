@@ -159,7 +159,7 @@ private struct MockLiveBlueskyClient: BlueskyProfileInspecting {
     func searchActors(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> [BlueskyActor] {
         try await searchHandler(query)
     }
@@ -168,7 +168,7 @@ private struct MockLiveBlueskyClient: BlueskyProfileInspecting {
         query: String,
         cursor: String?,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> PagedActorSearch {
         let actors = try await searchHandler(query)
         return PagedActorSearch(actors: actors, cursor: nil)
@@ -177,7 +177,7 @@ private struct MockLiveBlueskyClient: BlueskyProfileInspecting {
     func fetchProfile(
         did actorDID: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> BlueskyProfile {
         throw BlueskyAPIError.server("Not implemented")
     }
@@ -185,13 +185,13 @@ private struct MockLiveBlueskyClient: BlueskyProfileInspecting {
     func inspectProfile(
         query: String,
         account: AppAccount,
-        appPassword: String
+        appPassword: String?
     ) async throws -> ProfileInspection {
         try await inspectHandler(query)
     }
 
-    func blockActor(did actorDID: String, account: AppAccount, appPassword: String) async throws {}
-    func unblockActor(recordURI: String, account: AppAccount, appPassword: String) async throws {}
-    func muteActor(did actorDID: String, account: AppAccount, appPassword: String) async throws {}
-    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String) async throws {}
+    func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {}
+    func unblockActor(recordURI: String, account: AppAccount, appPassword: String?) async throws {}
+    func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {}
+    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {}
 }
