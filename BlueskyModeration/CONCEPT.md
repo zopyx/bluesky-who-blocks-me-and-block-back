@@ -351,3 +351,147 @@ Start with a small vertical slice:
 6. replace mocks with real Bluesky integration
 
 This reduces risk because the multi-account and UI state model can be validated before the network layer is finalized.
+
+---
+
+# Multi-Provider Support (Bluesky, Eurosky, etc.)
+
+## Goal
+
+Allow users to authenticate against any AT Protocol PDS (Personal Data Server) — not just `bsky.social`. Examples include Eurosky (`eurosky.social`), community-hosted PDS instances, and self-hosted servers.
+
+## Current Architecture
+
+The app already supports multi-PDS at the protocol level:
+
+| Layer | Current behavior | Status |
+|-------|-----------------|--------|
+| Authentication | `createSession` called on `entrywayURL` (defaults to `bsky.social`), PDS resolved from DID document | ✅ Works for any PDS |
+| API routing | All requests use `authSession.pdsURL` from the session | ✅ Automatic |
+| Handle resolution | `com.atproto.identity.resolveHandle` queries the entryway, then DID document provides PDS endpoint | ✅ Protocol-level |
+| PLC history | `plc.directory/{did}/log/audit` hardcoded | ⚠️ Only works for `did:plc:` |
+| Entryway selection | No user-facing way to pick a different entryway | ❌ Hardcoded to `bsky.social` |
+
+## Required Changes
+
+### 1. Custom Entryway URL in Account Setup
+
+The `AddAccountView` needs an optional field for the entryway PDS URL:
+
+```
+Handle: [________________]
+App Password: [________________]
+PDS Entryway (optional): [https://bsky.social]
+```
+
+- Default to `https://bsky.social`
+- Auto-detect from handle domain when possible (e.g. `@user.eurosky.social` → `https://eurosky.social`)
+- Allow manual override for advanced users
+- Store the entryway URL per-account
+
+### 2. Auto-Detection from Handle Domain
+
+The handle format `@user.domain.tld` often reveals the PDS:
+
+```
+user.bsky.social       → https://bsky.social
+user.eurosky.social    → https://eurosky.social
+user.mypds.com         → https://mypds.com
+```
+
+Detection logic in `authenticationURL(forHandle:)`:
+
+```swift
+// Step 1: Extract domain from handle suffix
+// Step 2: Try https://<domain> as entryway
+// Step 3: Fall back to DID-based resolution
+// Step 4: Fall back to bsky.social
+```
+
+This already partially exists — handles ending in `.bsky.social` use `entrywayURL`. The domain-specific logic should be generalized.
+
+### 3. DID Method Resolution
+
+The PLC directory only works for `did:plc:` DIDs. Other DID methods need different approaches:
+
+| DID Method | History Source | Implementation |
+|-----------|---------------|----------------|
+| `did:plc:` | `plc.directory/{did}/log/audit` | Already implemented |
+| `did:web:` | No standard audit log | Hide handle history section |
+| `did:key:` | No audit log | Hide handle history section |
+
+The `fetchPLCAuditLog` should detect DID method and skip gracefully for non-PLC DIDs:
+
+```swift
+guard did.hasPrefix("did:plc:") else { return [] }
+```
+
+### 4. Per-Account Entryway Storage
+
+Extend `AppAccount` model:
+
+```swift
+struct AppAccount: Identifiable, Codable, Hashable {
+    let id: UUID
+    var handle: String
+    var displayName: String
+    var did: String?
+    var pdsURL: URL?           // Already exists
+    var entrywayURL: URL?      // NEW: stores custom entryway
+    var lastUsedAt: Date
+}
+```
+
+The `BlueskySessionService` should use `account.entrywayURL` instead of `entrywayURL` when authenticating for a specific account.
+
+### 5. PLC Directory Fallback
+
+The PLC directory endpoint should use the correct PLC server based on the DID:
+
+```
+did:plc:abc123    → https://plc.directory/did:plc:abc123/log/audit
+did:plc:xyz789    → https://plc.directory/did:plc:xyz789/log/audit
+```
+
+For non-PLC DIDs, the handle history section should be hidden.
+
+### 6. UI Changes
+
+| View | Change |
+|------|--------|
+| `AddAccountView` | Add optional "PDS Entryway" text field (collapsed by default) |
+| `AccountSwitcherSheet` | Show entryway domain next to handle for non-default PDS |
+| `AccountRowView` | Small PDS badge when entryway differs from default |
+| `InfoView` | Note in Features: "Works with any AT Protocol PDS" |
+
+### 7. Migration for Existing Accounts
+
+Existing accounts that were authenticated through `bsky.social` should continue to work unchanged. The `entrywayURL` defaults to `nil`, which means `bsky.social` is used.
+
+## Implementation Priority
+
+| Priority | Change | Effort | Risk |
+|----------|--------|--------|------|
+| P1 | Handle domain auto-detection in `authenticationURL` | Low | Low |
+| P1 | Store `entrywayURL` in `AppAccount` | Low | Low |
+| P2 | Add entryway field to `AddAccountView` | Medium | Low |
+| P2 | PLC method guard in `fetchPLCAuditLog` | Low | Low |
+| P3 | Show PDS badge in account rows | Low | Low |
+| P3 | Update InfoView with multi-PDS claim | Low | Low |
+
+## Testing
+
+| Scenario | Expected behavior |
+|----------|------------------|
+| User enters `user.bsky.social` | Authenticates against `bsky.social` |
+| User enters `user.eurosky.social` | Auto-detects `eurosky.social`, authenticates |
+| User enters custom `pds.example.com` | Uses provided PDS for all API calls |
+| DID is `did:web:` | API calls work; handle history hidden |
+| Account added with custom PDS | Entryway stored in account; survives relaunch |
+
+## Non-Goals
+
+- Cross-PDS federation features (e.g., searching users across PDS instances)
+- Multi-PDS account merging
+- PDS health monitoring or uptime checks
+- Automatic PDS migration
