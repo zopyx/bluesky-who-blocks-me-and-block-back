@@ -3,11 +3,13 @@ import SwiftUI
 enum RelationshipMode: String, CaseIterable {
     case followers
     case following
+    case blocking
 
     var title: String {
         switch self {
         case .followers: return "My followers"
         case .following: return "My followings"
+        case .blocking: return "Blocking"
         }
     }
 
@@ -276,6 +278,8 @@ struct RelationshipsView: View {
                 result = try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
             case .following:
                 result = try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
+            case .blocking:
+                result = try await blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
             }
             actors = result
             isLoading = false

@@ -11,6 +11,7 @@ struct ListsView: View {
     @State private var createListKind: BlueskyList.Kind = .moderation
     @State private var showFollowers = false
     @State private var showFollowing = false
+    @State private var showBlocking = false
 
     var body: some View {
         NavigationStack {
@@ -74,6 +75,19 @@ struct ListsView: View {
                                 }
                                 .buttonStyle(.plain)
                             }
+
+                            HStack {
+                                Button {
+                                    showBlocking = true
+                                } label: {
+                                    Label("\(viewModel.blockingCount) blocking", systemImage: "hand.raised")
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+
+                                Spacer()
+                            }
                         }
                         .navigationDestination(isPresented: $showFollowers) {
                             RelationshipsView(mode: .followers, initialCount: viewModel.activeProfile?.followersCount)
@@ -82,6 +96,11 @@ struct ListsView: View {
                         }
                         .navigationDestination(isPresented: $showFollowing) {
                             RelationshipsView(mode: .following, initialCount: viewModel.activeProfile?.followsCount)
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
+                        }
+                        .navigationDestination(isPresented: $showBlocking) {
+                            RelationshipsView(mode: .blocking, initialCount: viewModel.blockingCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
                         }

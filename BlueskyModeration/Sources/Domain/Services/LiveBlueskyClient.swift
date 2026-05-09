@@ -526,13 +526,49 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         )
     }
 
+    func fetchBlockedActors(
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        var all: [BlueskyActor] = []
+        var cursor: String?
+        repeat {
+            let response: GetBlocksResponse = try await sessionService.performAuthenticatedRequest(
+                account: account,
+                appPassword: appPassword
+            ) { authSession in
+                var queryItems = [URLQueryItem(name: "limit", value: "100")]
+                if let cursor {
+                    queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+                }
+                return try await requestExecutor.send(
+                    path: "app.bsky.graph.getBlocks",
+                    method: "GET",
+                    queryItems: queryItems,
+                    accessToken: authSession.accessJWT,
+                    hostURL: authSession.pdsURL
+                )
+            }
+            all.append(contentsOf: response.blocks.map {
+                BlueskyActor(
+                    did: $0.did,
+                    handle: $0.handle,
+                    displayName: $0.displayName,
+                    avatarURL: URL(string: $0.avatar ?? "")
+                )
+            })
+            cursor = response.cursor
+        } while cursor != nil
+        return all
+    }
+
     func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
         guard let url = URL(string: "https://plc.directory/\(did)/log/audit") else {
             throw BlueskyAPIError.invalidURL
         }
         var request = URLRequest(url: url)
         request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
             throw BlueskyAPIError.invalidResponse
         }

@@ -4,6 +4,7 @@ import Foundation
 final class ListsViewModel: ObservableObject {
     @Published private(set) var listsByKind: [BlueskyList.Kind: [BlueskyList]] = [:]
     @Published private(set) var activeProfile: BlueskyProfile?
+    @Published private(set) var blockingCount = 0
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
 
@@ -15,6 +16,7 @@ final class ListsViewModel: ObservableObject {
         guard let account else {
             listsByKind = [:]
             activeProfile = nil
+            blockingCount = 0
             errorMessage = nil
             return
         }
@@ -38,6 +40,13 @@ final class ListsViewModel: ObservableObject {
             )
         } catch {
             AppLogger.moderation.debug("Failed to fetch account profile: \(error.localizedDescription, privacy: .public)")
+        }
+
+        do {
+            let blocked = try await client.fetchBlockedActors(account: account, appPassword: appPassword)
+            blockingCount = blocked.count
+        } catch {
+            AppLogger.moderation.debug("Failed to fetch blocked actors: \(error.localizedDescription, privacy: .public)")
         }
 
         isLoading = false

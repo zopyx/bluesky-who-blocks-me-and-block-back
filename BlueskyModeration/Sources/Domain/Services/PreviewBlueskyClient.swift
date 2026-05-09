@@ -358,6 +358,17 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         try await fetchLists(for: account, appPassword: appPassword).first { $0.id == uri }
     }
 
+    override func fetchBlockedActors(
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        try await Task.sleep(for: .milliseconds(80))
+        return [
+            BlueskyActor(did: "did:plc:blocked1", handle: "spam.bsky.social", displayName: "Spam Account"),
+            BlueskyActor(did: "did:plc:blocked2", handle: "troll.bsky.social", displayName: "Troll Account")
+        ]
+    }
+
     override func blockActor(
         did actorDID: String,
         account: AppAccount,

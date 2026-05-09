@@ -62,6 +62,11 @@ struct ActorView: Decodable {
     let createdAt: String?
 }
 
+struct GetBlocksResponse: Decodable {
+    let cursor: String?
+    let blocks: [ActorView]
+}
+
 struct GetFollowersResponse: Decodable {
     let cursor: String?
     let followers: [ActorView]
