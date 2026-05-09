@@ -69,19 +69,52 @@ struct ListsView: View {
                             }
                         }
 
-                        ForEach(BlueskyList.Kind.allCases, id: \.self) { kind in
-                            if let lists = groupedLists[kind], !lists.isEmpty {
-                                Section(kind.title) {
-                                    ForEach(lists) { list in
-                                        NavigationLink {
-                                            ListDetailView(list: list) { updatedList in
-                                                viewModel.updateList(updatedList)
-                                            }
-                                        } label: {
-                                            ListRowView(list: list)
-                                                .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
+                        Section {
+                            if let lists = groupedLists[.moderation], !lists.isEmpty {
+                                ForEach(lists) { list in
+                                    NavigationLink {
+                                        ListDetailView(list: list) { updatedList in
+                                            viewModel.updateList(updatedList)
                                         }
+                                    } label: {
+                                        ListRowView(list: list)
+                                            .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
                                     }
+                                }
+                            }
+                        } header: {
+                            HStack {
+                                Text("Moderation Lists")
+                                Spacer()
+                                Button {
+                                    isShowingCreateList = true
+                                } label: {
+                                    Image(systemName: "plus")
+                                }
+                            }
+                        }
+
+                        Section {
+                            if let lists = groupedLists[.regular], !lists.isEmpty {
+                                ForEach(lists) { list in
+                                    NavigationLink {
+                                        ListDetailView(list: list) { updatedList in
+                                            viewModel.updateList(updatedList)
+                                        }
+                                    } label: {
+                                        ListRowView(list: list)
+                                            .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
+                                    }
+                                }
+                            }
+                        } header: {
+                            HStack {
+                                Text("Lists")
+                                Spacer()
+                                Button {
+                                    isShowingCreateList = true
+                                } label: {
+                                    Image(systemName: "plus")
                                 }
                             }
                         }
@@ -117,15 +150,6 @@ struct ListsView: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel("Switch active account")
                     }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isShowingCreateList = true
-                    } label: {
-                        Label("Create List", systemImage: "plus")
-                    }
-                    .disabled(accountStore.activeAccount == nil)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
