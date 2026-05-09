@@ -10,6 +10,10 @@ enum RelationshipMode: String, CaseIterable {
         case .following: return "My followings"
         }
     }
+
+    func titled(_ count: Int) -> String {
+        "\(title) (\(count))"
+    }
 }
 
 struct RelationshipsView: View {
@@ -60,14 +64,21 @@ struct RelationshipsView: View {
                             description: Text(searchQuery.isEmpty ? "No accounts found." : "No accounts match your search.")
                         )
                     } else {
-                        ForEach(filteredActors) { actor in
+                        ForEach(Array(filteredActors.enumerated()), id: \.element.id) { index, actor in
                             NavigationLink {
                                 BlueskyProfileView(
                                     member: BlueskyListMember(recordURI: "rel:\(actor.did)", actor: actor),
                                     list: nil
                                 )
                             } label: {
-                                BlueskyActorRow(actor: actor)
+                                HStack(spacing: 10) {
+                                    Text("\(index + 1)")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                        .frame(width: 24, alignment: .trailing)
+
+                                    BlueskyActorRow(actor: actor)
+                                }
                             }
                             .contextMenu {
                                 Button(role: .destructive) {
@@ -104,7 +115,7 @@ struct RelationshipsView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle(mode.title)
+        .navigationTitle(mode.titled(actors.count))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if isLoading {
