@@ -526,6 +526,19 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         )
     }
 
+    func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
+        guard let url = URL(string: "https://plc.directory/\(did)/log/audit") else {
+            throw BlueskyAPIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        return try JSONDecoder().decode([PLCAuditLogEntry].self, from: data)
+    }
+
     func fetchFollowers(
         actor actorDID: String,
         account: AppAccount,

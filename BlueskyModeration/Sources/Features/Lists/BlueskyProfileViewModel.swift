@@ -5,6 +5,7 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published private(set) var inspection: ProfileInspection?
     @Published private(set) var isLoading = false
     @Published private(set) var isUpdatingModeration = false
+    @Published private(set) var handleHistory: [HandleChange] = []
     @Published var statusMessage: String?
     @Published var errorMessage: String?
 
@@ -32,8 +33,15 @@ final class BlueskyProfileViewModel: ObservableObject {
                 account: account,
                 appPassword: appPassword
             )
+            if let profile {
+                let auditLog = try? await client.fetchPLCAuditLog(did: profile.did)
+                if let auditLog {
+                    handleHistory = parseHandleChanges(from: auditLog, currentHandle: profile.handle)
+                }
+            }
         } catch {
             inspection = nil
+            handleHistory = []
             errorMessage = AppError.userMessage(from: error)
         }
 

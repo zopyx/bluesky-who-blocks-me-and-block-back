@@ -239,6 +239,63 @@ func mapViewerState(_ viewer: ProfileViewerState?) -> BlueskyViewerState? {
     )
 }
 
+// MARK: - PLC Directory
+
+struct PLCAuditLogEntry: Decodable {
+    let did: String
+    let operation: PLCOperation
+    let cid: String?
+    let nullified: Bool?
+    let createdAt: String
+}
+
+struct PLCOperation: Decodable {
+    let type: String?
+    let alsoKnownAs: [String]?
+    let services: [String: PLCServiceEntry]?
+}
+
+struct PLCServiceEntry: Decodable {
+    let type: String?
+    let endpoint: String?
+}
+
+struct HandleChange: Identifiable {
+    let id: String
+    let handle: String
+    let date: Date
+    let isCurrent: Bool
+}
+
+func parseHandleChanges(from auditLog: [PLCAuditLogEntry], currentHandle: String) -> [HandleChange] {
+    let entries = auditLog
+        .filter { !($0.nullified ?? false) }
+        .compactMap { entry -> (handle: String, date: Date)? in
+            guard let alsoKnownAs = entry.operation.alsoKnownAs,
+                  let atHandle = alsoKnownAs.first(where: { $0.hasPrefix("at://") }),
+                  let date = parseDate(entry.createdAt) else {
+                return nil
+            }
+            let handle = String(atHandle.dropFirst(5))
+            return (handle, date)
+        }
+        .sorted { $0.date < $1.date }
+
+    var seen = Set<String>()
+    var result: [HandleChange] = []
+    for (handle, date) in entries {
+        if seen.insert(handle).inserted {
+            result.append(HandleChange(
+                id: "\(handle)-\(date.timeIntervalSince1970)",
+                handle: handle,
+                date: date,
+                isCurrent: handle == currentHandle
+            ))
+        }
+    }
+    return result
+}
+
 enum ListPurpose: String, Decodable {
     case curate = "app.bsky.graph.defs#curatelist"
     case mod = "app.bsky.graph.defs#modlist"
