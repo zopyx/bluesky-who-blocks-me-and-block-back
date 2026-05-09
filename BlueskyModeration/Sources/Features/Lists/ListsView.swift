@@ -70,12 +70,12 @@ struct ListsView: View {
                             }
                         }
                         .navigationDestination(isPresented: $showFollowers) {
-                            RelationshipsView(mode: .followers)
+                            RelationshipsView(mode: .followers, initialCount: viewModel.activeProfile?.followersCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
                         }
                         .navigationDestination(isPresented: $showFollowing) {
-                            RelationshipsView(mode: .following)
+                            RelationshipsView(mode: .following, initialCount: viewModel.activeProfile?.followsCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
                         }

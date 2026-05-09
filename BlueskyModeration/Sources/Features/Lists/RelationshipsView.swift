@@ -18,6 +18,7 @@ enum RelationshipMode: String, CaseIterable {
 
 struct RelationshipsView: View {
     let mode: RelationshipMode
+    let initialCount: Int?
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @State private var actors: [BlueskyActor] = []
@@ -72,12 +73,13 @@ struct RelationshipsView: View {
                                 )
                             } label: {
                                 HStack(spacing: 10) {
+                                    BlueskyActorRow(actor: actor)
+
+                                    Spacer()
+
                                     Text("\(index + 1)")
                                         .font(.caption)
                                         .foregroundStyle(.tertiary)
-                                        .frame(width: 24, alignment: .trailing)
-
-                                    BlueskyActorRow(actor: actor)
                                 }
                             }
                             .contextMenu {
@@ -115,7 +117,7 @@ struct RelationshipsView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle(mode.titled(actors.count))
+        .navigationTitle(isLoading && initialCount != nil ? mode.titled(initialCount!) : mode.titled(actors.count))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if isLoading {
