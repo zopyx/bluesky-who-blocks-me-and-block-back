@@ -33,7 +33,7 @@ struct InfoView: View {
                 }
             }
             .background(background)
-            .navigationTitle("Rulyx")
+            .navigationTitle("RULYX")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)

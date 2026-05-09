@@ -102,7 +102,7 @@ struct ListsView: View {
                     }
                 }
             }
-            .navigationTitle("Rulyx")
+            .navigationTitle("RULYX")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if let activeAccount = accountStore.activeAccount {
