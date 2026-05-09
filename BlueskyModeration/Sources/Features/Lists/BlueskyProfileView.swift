@@ -81,7 +81,8 @@ struct BlueskyProfileView: View {
                     LabeledContent("Posts", value: statText(profile.postsCount))
                 }
 
-                Section("Moderation") {
+                if !isOwnProfile {
+                    Section("Moderation") {
                     if let viewerState = profile.viewerState {
                         statusChip(
                             title: viewerState.isBlocking ? "Blocked" : "Not blocked",
@@ -128,8 +129,9 @@ struct BlueskyProfileView: View {
                     }
                     .disabled(viewModel.isUpdatingModeration)
                 }
+                }
 
-                if !moderationMemberships.isEmpty {
+                if !isOwnProfile, !moderationMemberships.isEmpty {
                     Section("Moderation Lists") {
                         ForEach(moderationMemberships) { membership in
                             membershipButton(
@@ -141,7 +143,8 @@ struct BlueskyProfileView: View {
                     }
                 }
 
-                Section("Actions") {
+                if !isOwnProfile {
+                    Section("Actions") {
                     if let profileURL = profile.profileURL {
                         Link(destination: profileURL) {
                             Label("Open in Bluesky", systemImage: "arrow.up.right.square")
@@ -177,6 +180,7 @@ struct BlueskyProfileView: View {
                         Label("Member of \(list.name)", systemImage: "person.2.badge.gearshape")
                             .foregroundStyle(.secondary)
                     }
+                }
                 }
             } else if viewModel.isLoading {
                 Section {
@@ -251,6 +255,12 @@ struct BlueskyProfileView: View {
         }
 
         return "-"
+    }
+
+    private var isOwnProfile: Bool {
+        guard let profile = viewModel.profile,
+              let activeAccount = accountStore.activeAccount else { return false }
+        return activeAccount.did != nil && profile.did == activeAccount.did
     }
 
     private var moderationMemberships: [ProfileListMembership] {
