@@ -221,6 +221,8 @@ struct InfoView: View {
                 legalRow(icon: "hand.raised", title: "Privacy Policy", value: "py-consultant.com/imprint-privacy.html", link: true)
             }
 
+            legalRow(icon: "doc.text.magnifyingglass", title: "License", value: "MIT — see LICENSE file")
+
             legalDivider
 
             VStack(alignment: .leading, spacing: 8) {
