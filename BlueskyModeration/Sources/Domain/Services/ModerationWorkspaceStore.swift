@@ -8,6 +8,9 @@ final class ModerationWorkspaceStore: ObservableObject {
     @Published private(set) var operationLog: [ModerationOperationLogEntry] = []
     @Published var selectedTab: WorkspaceTab = .moderation
     @Published var lastProfileQuery = ""
+    @Published private(set) var queuedActions: [QueuedAction] = []
+
+    let actionQueue = ActionQueueStore()
 
     private let preferencesStore: WorkspacePreferencesStore
     private let auditStore: ModerationAuditStore
@@ -17,6 +20,7 @@ final class ModerationWorkspaceStore: ObservableObject {
         self.auditStore = ModerationAuditStore(defaults: defaults, preview: preview)
         syncFromStores()
         setupBindings()
+        setupActionQueueBindings()
     }
 
     func saveProfileSearch(_ query: String) {
@@ -74,6 +78,7 @@ final class ModerationWorkspaceStore: ObservableObject {
     private func syncFromStores() {
         syncFromPreferences()
         syncFromAudit()
+        syncFromActionQueue()
     }
 
     private func syncFromPreferences() {
@@ -85,6 +90,16 @@ final class ModerationWorkspaceStore: ObservableObject {
 
     private func syncFromAudit() {
         operationLog = auditStore.operationLog
+    }
+
+    private func syncFromActionQueue() {
+        queuedActions = actionQueue.actions
+    }
+
+    private func setupActionQueueBindings() {
+        actionQueue.objectWillChange.sink { [weak self] in
+            self?.syncFromActionQueue()
+        }.store(in: &cancellables)
     }
 
     private var cancellables: Set<AnyCancellable> = []

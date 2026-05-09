@@ -39,12 +39,15 @@ struct RootView: View {
                             Image(systemName: "checklist.checked")
                                 .font(.system(size: 48))
                                 .foregroundStyle(Color.skyPrimary)
-                            Text("Welcome to Bluesky Moderation")
-                                .font(.title.weight(.bold))
-                            Text("A native iPhone tool for list-driven moderation workflows.")
+                    Text("Welcome to Rulyx")
+                        .font(.title.weight(.bold))
+                            Text("Moderation rules, made manageable.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
+                            Text("Free  ·  Open source  ·  No ads  ·  No tracking")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                         }
                         .padding(.top, 32)
 

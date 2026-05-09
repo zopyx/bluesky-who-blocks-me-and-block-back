@@ -6,6 +6,7 @@ struct ListsView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = ListsViewModel()
     @State private var isShowingAccountPicker = false
+    @State private var isShowingPendingActions = false
 
     var body: some View {
         NavigationStack {
@@ -108,10 +109,23 @@ struct ListsView: View {
                     .accessibilityLabel("Refresh lists")
                     .disabled(accountStore.activeAccount == nil)
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingPendingActions = true
+                    } label: {
+                        Label("Pending Actions", systemImage: "clock.arrow.circlepath")
+                    }
+                    .disabled(workspaceStore.queuedActions.isEmpty)
+                }
             }
             .sheet(isPresented: $isShowingAccountPicker) {
                 AccountSwitcherSheet(isPresented: $isShowingAccountPicker)
                     .environmentObject(accountStore)
+            }
+            .sheet(isPresented: $isShowingPendingActions) {
+                PendingActionsSheet(isPresented: $isShowingPendingActions)
+                    .environmentObject(workspaceStore)
             }
             .task(id: accountStore.activeAccountID) {
                 await reload()

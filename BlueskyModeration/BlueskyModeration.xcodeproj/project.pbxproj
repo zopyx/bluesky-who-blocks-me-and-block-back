@@ -47,6 +47,7 @@
 		84BB828A96C5EF3BD0DFFC3C /* ListDetailViewModel+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BA605E31B60F1A71763C15 /* ListDetailViewModel+Search.swift */; };
 		880CC4BE7AAA1787AA97A307 /* ListDetailViewModel+Bulk.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8121B7C0C147CA5085B44 /* ListDetailViewModel+Bulk.swift */; };
 		8D51374098DD19897AD47672 /* BlueskyAPIDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */; };
+		94FA3749012F8FE45D8FA1F2 /* ActionQueueStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BE861EB8C76980DD8DD581 /* ActionQueueStore.swift */; };
 		99CBFED5BCD536122863CE17 /* ListDetailView+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */; };
 		9DDC086668CD4E5B2A2D0963 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A910BA174672E7A0D03AFED /* SettingsView.swift */; };
 		A3F338CFC071F3A35D6EA3BF /* ListImportControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 089E40E6F7B67B05A08AD96E /* ListImportControllerTests.swift */; };
@@ -61,6 +62,7 @@
 		BCB345A8FC2C437F7F8D790D /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0F3BEAA37A7079BA3DE52B /* InfoView.swift */; };
 		BDF8395A7521312660E32084 /* BlueskyActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28FAFCF58F647BD69091D56 /* BlueskyActor.swift */; };
 		BE687452B0CF1076EFB538B2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53649A49B5C112C35534FB0D /* Assets.xcassets */; };
+		C43E6FB7AC166AB8B45E991A /* PendingActionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298FB52B464CB1851425B485 /* PendingActionsSheet.swift */; };
 		C4A09AF0287AFF8D082510A1 /* MockBlueskyListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */; };
 		C83A3BE167467FF43C0ABAEF /* BlueskyProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B80E5E2025B8AA5882C4DF2 /* BlueskyProfile.swift */; };
 		CB2A496A7D7678C0B77FD2EF /* ListMembersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2280BC45F8BE5A6E1B43CE9D /* ListMembersController.swift */; };
@@ -116,6 +118,7 @@
 		2280BC45F8BE5A6E1B43CE9D /* ListMembersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListMembersController.swift; sourceTree = "<group>"; };
 		24B8DD93DE77C5A5C4DA5283 /* ProfileInspectorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInspectorViewModel.swift; sourceTree = "<group>"; };
 		24F5E39018B0F8FEF488527C /* ListDetailComparisonSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailComparisonSection.swift; sourceTree = "<group>"; };
+		298FB52B464CB1851425B485 /* PendingActionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingActionsSheet.swift; sourceTree = "<group>"; };
 		2BBAF9ED6126620E1729E736 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		2F0F3BEAA37A7079BA3DE52B /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		390E45D6B465D6470D878D0D /* ListDetailSnapshotSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailSnapshotSection.swift; sourceTree = "<group>"; };
@@ -136,6 +139,7 @@
 		71F1147B361CE2AA95C77F9A /* LiveBlueskyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveBlueskyClient.swift; sourceTree = "<group>"; };
 		73A46736FC0C1C5021AF660D /* String+CSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+CSV.swift"; sourceTree = "<group>"; };
 		7930ABCB9DDA0325197A398A /* ListDetailMembersSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailMembersSection.swift; sourceTree = "<group>"; };
+		79BE861EB8C76980DD8DD581 /* ActionQueueStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionQueueStore.swift; sourceTree = "<group>"; };
 		7D7DE549B3D37C1D71F6E56E /* Color+BlueskyModeration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+BlueskyModeration.swift"; sourceTree = "<group>"; };
 		7E19ABD0130D0DC00A52ED38 /* BlueskyListServicing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListServicing.swift; sourceTree = "<group>"; };
 		8024A6F4F98C08C9D5523C72 /* BlueskyList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyList.swift; sourceTree = "<group>"; };
@@ -167,7 +171,7 @@
 		BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIError.swift; sourceTree = "<group>"; };
 		C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Data.swift"; sourceTree = "<group>"; };
-		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		D0343E7705C27F52D7BD3B03 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
 		D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationAuditStore.swift; sourceTree = "<group>"; };
@@ -175,7 +179,7 @@
 		D8CB9DF2B9A1EF17F60EBFAB /* ActorSearchResultRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorSearchResultRow.swift; sourceTree = "<group>"; };
 		DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePanels.swift; sourceTree = "<group>"; };
 		DF724B3AC46DD8943DA15180 /* ListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsView.swift; sourceTree = "<group>"; };
-		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSummaryCard.swift; sourceTree = "<group>"; };
 		E62D1726B87CDC5F70DF05EB /* AccountChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountChip.swift; sourceTree = "<group>"; };
 		EA7FBB1661AB736F578D68EA /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSwitcherSheet.swift; sourceTree = "<group>"; };
@@ -297,6 +301,7 @@
 				5726B67E2FB6C49AD66393D0 /* ListRowView.swift */,
 				DF724B3AC46DD8943DA15180 /* ListsView.swift */,
 				5B209B0F15D6518DF3A8F996 /* ListsViewModel.swift */,
+				298FB52B464CB1851425B485 /* PendingActionsSheet.swift */,
 			);
 			path = Lists;
 			sourceTree = "<group>";
@@ -329,6 +334,7 @@
 			isa = PBXGroup;
 			children = (
 				D0343E7705C27F52D7BD3B03 /* AccountStore.swift */,
+				79BE861EB8C76980DD8DD581 /* ActionQueueStore.swift */,
 				4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */,
 				C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */,
 				A5A66DCBAD6A830220641347 /* BlueskyListService.swift */,
@@ -496,6 +502,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					0608BB4380516450DC5105DF = {
+						DevelopmentTeam = "";
+					};
 					28FA462115B88F07A4C1D7CE = {
 						DevelopmentTeam = "";
 						TestTargetID = 0608BB4380516450DC5105DF;
@@ -570,6 +579,7 @@
 				189FA455C5241B0C5451208C /* AccountStore.swift in Sources */,
 				13BF687163F3A2FC9A88AA04 /* AccountSummaryCard.swift in Sources */,
 				B3326FFFD84B1C034E066A64 /* AccountSwitcherSheet.swift in Sources */,
+				94FA3749012F8FE45D8FA1F2 /* ActionQueueStore.swift in Sources */,
 				D8C2721E53E07E05A76EDF71 /* ActorSearchResultRow.swift in Sources */,
 				4BE36982C76EB339751B3733 /* AddAccountView.swift in Sources */,
 				E4FED0E311A32EE25C4835BD /* AppAccount.swift in Sources */,
@@ -620,6 +630,7 @@
 				CCC4DAC3D5FB15D0CD9C50A5 /* MockBlueskyProfileService.swift in Sources */,
 				FD5A0A546B8B9B5F59AA9E19 /* ModerationAuditStore.swift in Sources */,
 				08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */,
+				C43E6FB7AC166AB8B45E991A /* PendingActionsSheet.swift in Sources */,
 				57463BDF5FE8746553C8DF37 /* PreviewBlueskyClient.swift in Sources */,
 				818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */,
 				5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */,
@@ -830,8 +841,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Rulyx;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -869,8 +880,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Rulyx;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

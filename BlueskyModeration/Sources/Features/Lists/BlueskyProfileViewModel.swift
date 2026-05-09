@@ -123,7 +123,8 @@ final class BlueskyProfileViewModel: ObservableObject {
     func blockAllFollowers(
         account: AppAccount,
         appPassword: String,
-        using client: LiveBlueskyClient
+        using client: LiveBlueskyClient,
+        queue: ActionQueueStore
     ) async {
         guard let profile else { return }
 
@@ -142,25 +143,19 @@ final class BlueskyProfileViewModel: ObservableObject {
                 return
             }
 
-            let batchController = ListBatchController()
-            let result = await batchController.performBatch(
-                title: "Blocking followers",
+            statusMessage = "Queued \(followers.count) followers for blocking."
+
+            queue.enqueue(QueuedAction(
+                title: "Block followers of \(profile.handle)",
                 actors: followers,
-                operation: .block,
-                onProgress: { [weak self] progress in
-                    self?.blockFollowersProgress = progress
-                },
-                onActorStart: nil,
-                onActorComplete: nil
+                operation: .block
             ) { actor in
                 try await client.blockActor(
                     did: actor.did,
                     account: account,
                     appPassword: appPassword
                 )
-            }
-
-            statusMessage = result.summaryText
+            })
         } catch {
             errorMessage = AppError.userMessage(from: error)
         }

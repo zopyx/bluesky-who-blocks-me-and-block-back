@@ -6,8 +6,9 @@ struct InfoView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     heroCard
-                    metricStrip
+                    claimsStrip
                     detailGrid
+                    openSourceCard
                     authorCard
                     footerCard
                 }
@@ -51,13 +52,13 @@ struct InfoView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Bluesky Moderation")
-                            .font(.title2.weight(.bold))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Rulyx")
+                            .font(.title.weight(.bold))
                             .foregroundStyle(.white)
-                        Text("Native iPhone tooling for list-driven moderation workflows.")
+                        Text("moderation rules, made manageable.")
                             .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.84))
+                            .foregroundStyle(.white.opacity(0.80))
                     }
 
                     Spacer()
@@ -69,10 +70,14 @@ struct InfoView: View {
                         .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
 
+                Text("Trust & safety tooling for AT Protocol communities.")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.70))
+
                 HStack(spacing: 10) {
                     heroBadge("Live API")
                     heroBadge("Keychain")
-                    heroBadge("List Tools")
+                    heroBadge("Bulk Tools")
                 }
             }
             .padding(22)
@@ -81,49 +86,102 @@ struct InfoView: View {
         .shadow(color: Color.skyPrimary.opacity(0.22), radius: 22, y: 12)
     }
 
-    private var metricStrip: some View {
+    private var claimsStrip: some View {
         HStack(spacing: 12) {
-            metricCard(title: "Accounts", value: "Multi", note: "switch fast")
-            metricCard(title: "Lists", value: "Live", note: "regular + mod")
-            metricCard(title: "Security", value: "Safe", note: "Keychain")
+            claimCard(icon: "dollarsign.circle", text: "Free")
+            claimCard(icon: "swift", text: "Open source")
+            claimCard(icon: "hand.raised.slash", text: "No tracking")
+            claimCard(icon: "megaphone.slash", text: "No ads")
         }
     }
 
     private var detailGrid: some View {
         VStack(spacing: 12) {
             detailCard(
-                title: "Core Workflows",
+                title: "Lists & Members",
                 systemImage: "checklist.checked",
                 tone: .skyPrimary,
                 lines: [
-                    "Add multiple Bluesky accounts, store app passwords in Keychain, and switch the active account quickly.",
-                    "Browse owned curation and moderation lists, inspect members, and edit list metadata.",
-                    "Search for actors, add them to lists, remove current members, and run multi-select bulk actions."
+                    "Browse curation and moderation lists with inline search and member filtering.",
+                    "Multi-select members for bulk add, remove, copy, and move between lists.",
+                    "Import handles from pasted text, CSV, or file. Preview before commit with duplicate and conflict detection.",
+                    "Export list membership and diff results as CSV files."
                 ]
             )
 
             detailCard(
-                title: "Moderation Tools",
+                title: "Compare & Transfer",
+                systemImage: "rectangle.split.3x1",
+                tone: Color(red: 0.96, green: 0.60, blue: 0.18),
+                lines: [
+                    "Compare two lists and see overlap, only-in-current, and only-in-other buckets.",
+                    "Copy or move selected members between lists with progress tracking.",
+                    "Export diff results to CSV for outside review."
+                ]
+            )
+
+            detailCard(
+                title: "Profile Moderation",
                 systemImage: "hand.raised.square.on.square",
                 tone: .skyAccent,
                 lines: [
-                    "Open profile inspection to review labels, account stats, owned-list membership, and direct moderation controls.",
-                    "Mute, unmute, block, unblock, and add or remove an actor from moderation-oriented lists.",
-                    "Compare lists, copy or move selected members, and export member CSV files for outside review."
+                    "Inspect profiles: labels, stats, owned-list and starter-pack membership.",
+                    "Block or mute directly from profile detail with confirmation.",
+                    "Block all followers of an account — runs as a background task with progress and retry.",
+                    "View and toggle membership in moderation lists from the profile screen."
                 ]
             )
 
             detailCard(
-                title: "Saved Work",
+                title: "Audit & History",
                 systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90",
-                tone: Color(red: 0.96, green: 0.60, blue: 0.18),
+                tone: Color(red: 0.70, green: 0.35, blue: 0.90),
                 lines: [
-                    "Save profile searches, reopen recent lookups, and keep the last-used query between launches.",
-                    "Import handles from pasted text or files, then export current membership as CSV.",
-                    "Capture local list snapshots so the app can show what changed between refreshes."
+                    "Local list snapshots captured on each load — compare any two to see what changed.",
+                    "Operation log tracks bulk actions with success/failure breakdown.",
+                    "Pending actions sheet shows running background tasks with progress, cancel, and retry.",
+                    "Saved and recent profile searches restored across launches."
                 ]
             )
         }
+    }
+
+    private var openSourceCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                    .font(.headline)
+                    .foregroundStyle(Color.skyPrimary)
+                    .frame(width: 34, height: 34)
+                    .background(Color.skyPrimary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                Text("Open Source")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
+                    HStack {
+                        Text("View on GitHub")
+                            .font(.subheadline.weight(.semibold))
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(.white)
+                }
+            }
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.white.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.24), radius: 16, y: 10)
     }
 
     private var footerCard: some View {
@@ -137,7 +195,7 @@ struct InfoView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Account secrets stay in the iOS Keychain.")
                     .font(.subheadline.weight(.semibold))
-                Text("Every list action, profile lookup, import, export, and moderation request runs against the selected account context.")
+                Text("All list actions, profile lookups, imports, exports, and moderation requests run against the selected account. No data is sent to any server other than the Bluesky PDS you authenticate with.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -201,20 +259,17 @@ struct InfoView: View {
             .background(Color.white.opacity(0.18), in: Capsule())
     }
 
-    private func metricCard(title: String, value: String, note: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased())
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(Color.white.opacity(0.62))
-            Text(value)
-                .font(.title3.weight(.bold))
+    private func claimCard(icon: String, text: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(Color.skyAccent)
+            Text(text)
+                .font(.caption2.weight(.semibold))
                 .foregroundStyle(.white)
-            Text(note)
-                .font(.caption)
-                .foregroundStyle(Color.white.opacity(0.72))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
+        .frame(maxWidth: .infinity)
+        .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.white.opacity(0.08))

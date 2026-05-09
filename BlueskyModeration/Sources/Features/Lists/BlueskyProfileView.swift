@@ -6,6 +6,7 @@ struct BlueskyProfileView: View {
 
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
     @State private var isShowingBlockConfirmation = false
 
@@ -162,7 +163,8 @@ struct BlueskyProfileView: View {
                                 await viewModel.blockAllFollowers(
                                     account: account,
                                     appPassword: appPassword,
-                                    using: blueskyClient
+                                    using: blueskyClient,
+                                    queue: workspaceStore.actionQueue
                                 )
                             }
                         } label: {
