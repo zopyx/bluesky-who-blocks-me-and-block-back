@@ -6,8 +6,8 @@ enum RelationshipMode: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .followers: return "People who follow me"
-        case .following: return "People I follow"
+        case .followers: return "My followers"
+        case .following: return "My followings"
         }
     }
 }
