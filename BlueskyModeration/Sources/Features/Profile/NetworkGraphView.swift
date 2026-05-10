@@ -29,52 +29,65 @@ struct NetworkGraphView: View {
 
     var body: some View {
         List {
-            Section("Account A") {
+            Section {
                 SearchField(query: $searchQueryA, results: $searchResultsA, onSelect: { actor in
                     accountA = actor; searchQueryA = actor.handle
                 }, accountStore: accountStore, blueskyClient: blueskyClient)
                 if let a = accountA {
                     Label(a.handle, systemImage: "person.fill")
                 }
+            } header: {
+                Text(verbatim: loc("network.account_a"))
             }
 
-            Section("Account B") {
+            Section {
                 SearchField(query: $searchQueryB, results: $searchResultsB, onSelect: { actor in
                     accountB = actor; searchQueryB = actor.handle
                 }, accountStore: accountStore, blueskyClient: blueskyClient)
                 if let b = accountB {
                     Label(b.handle, systemImage: "person.fill")
                 }
+            } header: {
+                Text(verbatim: loc("network.account_b"))
             }
 
             if let a = accountA, let b = accountB {
-                Section("Overlap") {
-                    LabeledContent("Mutual Followers", value: "\(mutualFollowers.count)")
-                    LabeledContent("Mutual Following", value: "\(mutualFollowing.count)")
-                    LabeledContent("\(a.handle) follows \(b.handle)", value: aFollowsB ? "Yes" : "No")
-                    LabeledContent("\(b.handle) follows \(a.handle)", value: bFollowsA ? "Yes" : "No")
+                Section {
+                    LabeledContent(loc("network.mutual_followers"), value: "\(mutualFollowers.count)")
+                    LabeledContent(loc("network.mutual_following"), value: "\(mutualFollowing.count)")
+                    LabeledContent("\(a.handle) follows \(b.handle)", value: aFollowsB ? loc("network.yes") : loc("network.no"))
+                    LabeledContent("\(b.handle) follows \(a.handle)", value: bFollowsA ? loc("network.yes") : loc("network.no"))
+                } header: {
+                    Text(verbatim: loc("network.overlap"))
                 }
 
                 if !mutualFollowers.isEmpty {
-                    Section("Accounts Following Both") {
+                    Section {
                         ForEach(mutualFollowers.prefix(20), id: \.self) { did in
                             Text(did).font(.caption.monospaced())
                         }
                         if mutualFollowers.count > 20 {
                             Text("+ \(mutualFollowers.count - 20) more").font(.caption).foregroundStyle(.secondary)
                         }
+                    } header: {
+                        Text(verbatim: loc("network.following_both"))
                     }
                 }
             }
 
             Section {
-                Button("Analyze") { Task { await analyze() } }
+                Button(loc("network.analyze")) { Task { await analyze() } }
                     .disabled(accountA == nil || accountB == nil || isLoading)
                     .foregroundStyle(Color.skyPrimary)
+                    .accessibilityHint("Analyzes the network relationship between the two selected accounts")
             }
 
             if isLoading {
-                Section { ProgressView("Loading relationships...") }
+                Section {
+                    SkeletonRow()
+                    SkeletonRow()
+                    SkeletonRow()
+                }
             }
 
             if let statusMessage {
@@ -82,7 +95,7 @@ struct NetworkGraphView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Network Graph")
+        .navigationTitle(loc("network.title"))
     }
 
     private func analyze() async {
@@ -117,7 +130,7 @@ private struct SearchField: View {
     let blueskyClient: LiveBlueskyClient
 
     var body: some View {
-        TextField("Search handle", text: $query)
+        TextField(loc("network.search_placeholder"), text: $query)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             .task(id: query) {
@@ -135,6 +148,7 @@ private struct SearchField: View {
                 Button { onSelect(actor); results = [] } label: {
                     Label(actor.handle, systemImage: "person").foregroundStyle(.primary)
                 }
+                .accessibilityHint("Selects \(actor.handle) for analysis")
             }
         }
     }

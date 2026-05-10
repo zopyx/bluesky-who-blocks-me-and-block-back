@@ -8,41 +8,45 @@ struct ImportHandlesSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Paste Handles, DIDs, or Profile URLs") {
+                Section {
                     TextEditor(text: $rawInput)
                         .frame(minHeight: 180)
+                } header: {
+                    Text(verbatim: loc("list.import.paste_section"))
                 }
 
                 Section {
                     HelpSection(
-                        title: "What to paste",
+                        title: loc("list.import.help_title"),
                         bulletPoints: [
-                            "Bluesky handles: alice.bsky.social",
-                            "DIDs: did:plc:abc123",
-                            "CSV rows with handles, DIDs, or profile URLs",
-                            "Bluesky profile URLs: https://bsky.app/profile/alice.bsky.social",
-                            "Duplicate and already-present entries will be detected before import."
+                            loc("list.import.help_1"),
+                            loc("list.import.help_2"),
+                            loc("list.import.help_3"),
+                            loc("list.import.help_4"),
+                            loc("list.import.help_5")
                         ]
                     )
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
                 }
             }
-            .navigationTitle("Import Handles")
+            .navigationTitle(loc("list.import.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(loc("actions.cancel")) {
                         dismiss()
                     }
+                    .accessibilityHint("Dismisses the import sheet")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Review Import") {
+                    Button(loc("list.import.review")) {
                         importAction(rawInput)
                         dismiss()
                     }
                     .disabled(rawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityHint("Reviews the imported handles")
                 }
             }
         }
@@ -59,16 +63,22 @@ struct ImportPreviewSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Summary") {
+                Section {
                     Text(preview.sourceDescription)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("\(preview.readyItems.count) ready, \(preview.alreadyPresentItems.count) already present, \(preview.duplicateItems.count) duplicates, \(preview.unresolvedItems.count) unresolved.")
+                    Text(verbatim: loc("list.import_preview.summary_text")
+                        .replacingOccurrences(of: "{ready}", with: "\(preview.readyItems.count)")
+                        .replacingOccurrences(of: "{already}", with: "\(preview.alreadyPresentItems.count)")
+                        .replacingOccurrences(of: "{duplicates}", with: "\(preview.duplicateItems.count)")
+                        .replacingOccurrences(of: "{unresolved}", with: "\(preview.unresolvedItems.count)"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("Already-present accounts will be skipped during import.")
+                    Text(verbatim: loc("list.import_preview.skip_note"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                } header: {
+                    Text(verbatim: loc("list.import_preview.summary"))
                 }
 
                 previewSection("Ready to Import", items: preview.readyItems)
@@ -79,13 +89,13 @@ struct ImportPreviewSheet: View {
                 if !isImporting {
                     Section {
                         HelpSection(
-                            title: "Understanding classifications",
+                            title: loc("list.import_preview.help_title"),
                             bulletPoints: [
-                                "Ready: These accounts will be added to the list.",
-                                "Already in List: These accounts are already members and will be skipped.",
-                                "Duplicate: Multiple entries in your import resolve to the same account.",
-                                "Unresolved: These identifiers could not be found on Bluesky.",
-                                "Importing writes to the live Bluesky list immediately."
+                                loc("list.import_preview.help_ready"),
+                                loc("list.import_preview.help_already"),
+                                loc("list.import_preview.help_duplicate"),
+                                loc("list.import_preview.help_unresolved"),
+                                loc("list.import_preview.help_write")
                             ]
                         )
                         .listRowInsets(EdgeInsets())
@@ -93,22 +103,24 @@ struct ImportPreviewSheet: View {
                     }
                 }
             }
-            .navigationTitle("Import Review")
+            .navigationTitle(loc("list.import_preview.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") {
+                    Button(loc("actions.close")) {
                         dismissAction()
                         dismiss()
                     }
                     .disabled(isImporting)
+                    .accessibilityHint("Closes the import preview")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isImporting ? "Importing" : "Import") {
+                    Button(isImporting ? loc("list.import_preview.importing") : loc("list.import_preview.import_button")) {
                         importAction()
                     }
                     .disabled(isImporting || preview.readyItems.isEmpty)
+                    .accessibilityHint("Imports the reviewed items")
                 }
             }
         }
@@ -162,27 +174,31 @@ struct EditListMetadataSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Metadata") {
-                    TextField("Title", text: $title)
-                    TextField("Description", text: $description, axis: .vertical)
+                Section {
+                    TextField(loc("list.edit.name_placeholder"), text: $title)
+                    TextField(loc("list.edit.desc_placeholder"), text: $description)
                         .lineLimit(3...6)
+                } header: {
+                    Text(verbatim: loc("list.edit.metadata"))
                 }
             }
-            .navigationTitle("Edit List")
+            .navigationTitle(loc("list.edit.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(loc("actions.cancel")) {
                         dismiss()
                     }
                     .disabled(isSaving)
+                    .accessibilityHint("Discards changes and dismisses the edit sheet")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(loc("actions.save")) {
                         saveAction(title, description)
                     }
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
+                    .accessibilityHint("Saves the updated list metadata")
                 }
             }
         }

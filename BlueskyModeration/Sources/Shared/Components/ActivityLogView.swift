@@ -24,28 +24,32 @@ struct ActivityLogView: View {
     var body: some View {
         List {
             Section {
-                TextField("Search operations\u{2026}", text: $searchQuery)
+                TextField(loc("activity.search"), text: $searchQuery)
                     .textInputAutocapitalization(.never)
             }
 
             if !types.isEmpty {
-                Section("Filter by Type") {
+                Section {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            FilterChip(title: "All", isSelected: selectedType == nil) { selectedType = nil }
+                            FilterChip(title: loc("activity.all"), isSelected: selectedType == nil) { selectedType = nil }
+                                .accessibilityHint("Shows all activity types")
                             ForEach(types, id: \.self) { type in
                                 FilterChip(title: type, isSelected: selectedType == type) { selectedType = type }
+                                    .accessibilityHint("Filters activity by \(type)")
                             }
                         }
                         .padding(.horizontal, 4)
                     }
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
+                } header: {
+                    Text(verbatim: loc("activity.filter_by_type"))
                 }
             }
 
             if filtered.isEmpty {
-                ContentUnavailableView("No matches", systemImage: "magnifyingglass", description: Text("Try a different search."))
+                ContentUnavailableView(loc("activity.no_matches"), systemImage: "magnifyingglass", description: Text(verbatim: loc("activity.no_matches_desc")))
             } else {
                 ForEach(filtered) { entry in
                     VStack(alignment: .leading, spacing: 6) {
@@ -65,7 +69,7 @@ struct ActivityLogView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Activity Log")
+        .navigationTitle(loc("activity.title"))
     }
 }
 

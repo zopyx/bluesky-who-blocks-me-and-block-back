@@ -48,6 +48,7 @@ struct ErrorRetryBanner: View {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
+                    .accessibilityHidden(true)
                 Text(message)
                     .font(.subheadline)
                 Spacer()
@@ -57,6 +58,8 @@ struct ErrorRetryBanner: View {
                 Label("Retry", systemImage: "arrow.clockwise")
             }
             .buttonStyle(.bordered)
+            .glassBorderedButton()
+            .accessibilityLabel("Retry: \(message)")
         }
         .padding()
         .background(Color(.systemGray6))
@@ -105,11 +108,27 @@ struct StatusChip: View {
             .font(.caption2.weight(.semibold))
             .foregroundStyle(foregroundColor)
             .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(backgroundColor, in: Capsule())
+            .padding(.vertical, 12)
+            .background {
+                if #available(iOS 26, *) {
+                    Color.clear.glassEffect(.regular.tint(tintColor), in: .rect(cornerRadius: .infinity))
+                } else {
+                    Color.clear.background(backgroundColor, in: Capsule())
+                }
+            }
     }
 
     private var foregroundColor: Color {
+        switch style {
+        case .neutral: return .secondary
+        case .positive: return .green
+        case .warning: return .orange
+        case .destructive: return .red
+        case .info: return Color.skyPrimary
+        }
+    }
+
+    private var tintColor: Color {
         switch style {
         case .neutral: return .secondary
         case .positive: return .green
@@ -176,6 +195,9 @@ struct OnboardingRow: View {
                 Text(description).font(.caption).foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+        .padding(.vertical, 8)
     }
 }
 

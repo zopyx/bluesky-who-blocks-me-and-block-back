@@ -26,7 +26,13 @@ struct AccountRowView: View {
                             .foregroundStyle(Color.skyPrimary)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.skyPrimary.opacity(0.1), in: Capsule())
+                            .background {
+                                if #available(iOS 26, *) {
+                                    Color.clear.glassEffect(.regular.tint(.skyPrimary), in: .rect(cornerRadius: .infinity))
+                                } else {
+                                    Color.clear.background(Color.skyPrimary.opacity(0.1), in: Capsule())
+                                }
+                            }
                     }
                 }
                 HStack(spacing: 6) {
@@ -39,7 +45,13 @@ struct AccountRowView: View {
                             .foregroundStyle(.tertiary)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
-                            .background(Color.secondary.opacity(0.1), in: Capsule())
+                            .background {
+                                if #available(iOS 26, *) {
+                                    Color.clear.glassEffect(.regular, in: .rect(cornerRadius: .infinity))
+                                } else {
+                                    Color.clear.background(Color.secondary.opacity(0.1), in: Capsule())
+                                }
+                            }
                     }
                 }
             }
@@ -51,7 +63,13 @@ struct AccountRowView: View {
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.skyPrimary.opacity(0.14), in: Capsule())
+                    .background {
+                        if #available(iOS 26, *) {
+                            Color.clear.glassEffect(.regular.tint(.skyPrimary), in: .rect(cornerRadius: .infinity))
+                        } else {
+                            Color.clear.background(Color.skyPrimary.opacity(0.14), in: Capsule())
+                        }
+                    }
                     .foregroundStyle(Color.skyPrimary)
             }
         }

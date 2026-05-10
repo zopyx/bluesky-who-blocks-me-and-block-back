@@ -7,23 +7,27 @@ struct DashboardView: View {
 
     var body: some View {
         List {
-            Section("Overview") {
+            Section {
                 let totalLists = accountStore.accounts.reduce(0) { _, _ in 0 }
-                LabeledContent("Accounts", value: "\(accountStore.accounts.count)")
-                LabeledContent("Total Operations", value: "\(workspaceStore.operationLog.count)")
+                LabeledContent(loc("dashboard.accounts"), value: "\(accountStore.accounts.count)")
+                LabeledContent(loc("dashboard.total_ops"), value: "\(workspaceStore.operationLog.count)")
+            } header: {
+                Text(verbatim: loc("dashboard.overview"))
             }
 
             if !workspaceStore.operationLog.isEmpty {
-                Section("Operations by Type") {
+                Section {
                     Chart(operationCounts, id: \.0) { type, count in
                         BarMark(x: .value("Type", type), y: .value("Count", count))
                             .foregroundStyle(Color.skyPrimary.gradient)
                     }
                     .frame(height: 180)
                     .chartXAxis { AxisMarks { AxisValueLabel() } }
+                } header: {
+                    Text(verbatim: loc("dashboard.by_type"))
                 }
 
-                Section("Recent Activity") {
+                Section {
                     ForEach(workspaceStore.operationLog.prefix(10)) { entry in
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
@@ -35,12 +39,14 @@ struct DashboardView: View {
                         }
                         .padding(.vertical, 2)
                     }
+                } header: {
+                    Text(verbatim: loc("dashboard.recent"))
                 }
 
-                Section("Top Moderated Accounts") {
+                Section {
                     let top = topModeratedAccounts()
                     if top.isEmpty {
-                        Text("No moderation data yet.").foregroundStyle(.secondary)
+                        Text(verbatim: loc("dashboard.no_data_yet")).foregroundStyle(.secondary)
                     } else {
                         ForEach(top.prefix(10), id: \.0) { handle, count in
                             HStack {
@@ -50,13 +56,15 @@ struct DashboardView: View {
                             }
                         }
                     }
+                } header: {
+                    Text(verbatim: loc("dashboard.top_moderated"))
                 }
             } else {
-                ContentUnavailableView("No Data", systemImage: "chart.bar", description: Text("Start moderating to see analytics."))
+                ContentUnavailableView(loc("dashboard.no_data"), systemImage: "chart.bar", description: Text(loc("dashboard.no_data_desc")))
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Dashboard")
+        .navigationTitle(loc("dashboard.title"))
     }
 
     private var operationCounts: [(String, Int)] {

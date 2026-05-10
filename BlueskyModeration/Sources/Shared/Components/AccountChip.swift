@@ -18,8 +18,15 @@ struct AccountChip: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(.thinMaterial, in: Capsule())
+        .padding(.vertical, 12)
+        .background {
+            if #available(iOS 26, *) {
+                Color.clear
+                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: .infinity))
+            } else {
+                Color.clear.background(.thinMaterial, in: Capsule())
+            }
+        }
     }
 
     @ViewBuilder

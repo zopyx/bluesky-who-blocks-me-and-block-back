@@ -24,23 +24,24 @@ extension ListDetailView {
                 NavigationStack {
                     List {
                         HelpSection(
-                            title: "About Snapshots",
+                            title: loc("list.snapshot.help_about"),
                             bulletPoints: [
-                                "Snapshots capture the full membership of this list at a point in time.",
-                                "Use the pickers to compare two historical snapshots and see what changed.",
-                                "New snapshots are created automatically after bulk operations.",
-                                "The diff shows exactly which members were added or removed between snapshots.",
-                                "Snapshots are stored locally and tied to this workspace."
+                                loc("list.snapshot.help_1"),
+                                loc("list.snapshot.help_2"),
+                                loc("list.snapshot.help_3"),
+                                loc("list.snapshot.help_4"),
+                                loc("list.snapshot.help_5")
                             ]
                         )
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                     }
-                    .navigationTitle("Snapshots Help")
+                    .navigationTitle(loc("list.snapshot.help_title"))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") { showingSnapshotHelp = false }
+                            Button(loc("actions.done")) { showingSnapshotHelp = false }
+                            .accessibilityHint("Closes the snapshot help screen")
                         }
                     }
                 }
@@ -64,30 +65,32 @@ extension ListDetailView {
                     snapshotSummaryView(snapshotSummary)
 
                     if snapshotHistory.count > 1 {
-                        Picker("Newer Snapshot", selection: $selectedNewerSnapshotID) {
+                        Picker(loc("list.snapshot.newer"), selection: $selectedNewerSnapshotID) {
                             ForEach(snapshotHistory, id: \.id) { snapshot in
                                 Text(snapshot.capturedAt.formatted(date: .abbreviated, time: .shortened))
                                     .tag(Optional(snapshot.id))
                             }
                         }
+                        .accessibilityHint("Select the newer snapshot for comparison")
 
-                        Picker("Older Snapshot", selection: $selectedOlderSnapshotID) {
+                        Picker(loc("list.snapshot.older"), selection: $selectedOlderSnapshotID) {
                             ForEach(snapshotHistory, id: \.id) { snapshot in
                                 Text(snapshot.capturedAt.formatted(date: .abbreviated, time: .shortened))
                                     .tag(Optional(snapshot.id))
                             }
                         }
+                        .accessibilityHint("Select the older snapshot for comparison")
 
                         if let selectedSnapshotComparison {
                             Divider()
-                            Text("What Changed Since")
+                            Text(verbatim: loc("list.snapshot.what_changed"))
                                 .font(.subheadline.weight(.semibold))
                             snapshotSummaryView(selectedSnapshotComparison)
                         }
                     }
                 } label: {
                     HStack {
-                        Text("Snapshot History")
+                        Text(verbatim: loc("list.snapshot.title"))
                         Spacer()
                         Button {
                             showingSnapshotHelp = true
@@ -97,6 +100,8 @@ extension ListDetailView {
                                 .foregroundStyle(Color.skyPrimary)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Help with snapshots")
+                        .accessibilityHint("Explains how snapshots track membership changes over time")
                     }
                 }
             }
@@ -105,7 +110,7 @@ extension ListDetailView {
         @ViewBuilder
         private var operationLogContent: some View {
             if !workspaceStore.operationLog.isEmpty {
-                Section("Recent Operations") {
+                Section {
                     ForEach(workspaceStore.operationLog.prefix(5)) { entry in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
@@ -118,13 +123,15 @@ extension ListDetailView {
                             }
                             Text(entry.summary)
                             if !entry.failedHandles.isEmpty {
-                                Text("Failed: \(entry.failedHandles.joined(separator: ", "))")
+                                Text(verbatim: loc("list.snapshot.failed").replacingOccurrences(of: "{handles}", with: entry.failedHandles.joined(separator: ", ")))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                         }
                         .padding(.vertical, 2)
                     }
+                } header: {
+                    Text(verbatim: loc("list.snapshot.recent_ops"))
                 }
             }
         }
@@ -133,14 +140,14 @@ extension ListDetailView {
             VStack(alignment: .leading, spacing: 8) {
                 if summary.hasChanges {
                     if !summary.addedMembers.isEmpty {
-                        Text("Added: \(summary.addedMembers.map(\.handle).joined(separator: ", "))")
+                        Text(verbatim: loc("list.snapshot.added").replacingOccurrences(of: "{handles}", with: summary.addedMembers.map(\.handle).joined(separator: ", ")))
                     }
 
                     if !summary.removedMembers.isEmpty {
-                        Text("Removed: \(summary.removedMembers.map(\.handle).joined(separator: ", "))")
+                        Text(verbatim: loc("list.snapshot.removed").replacingOccurrences(of: "{handles}", with: summary.removedMembers.map(\.handle).joined(separator: ", ")))
                     }
                 } else {
-                    Text("No membership changes in this comparison.")
+                    Text(verbatim: loc("list.snapshot.no_changes"))
                         .foregroundStyle(.secondary)
                 }
             }

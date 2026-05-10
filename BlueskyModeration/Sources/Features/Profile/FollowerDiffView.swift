@@ -21,7 +21,11 @@ struct FollowerDiffView: View {
     var body: some View {
         List {
             if isLoading {
-                Section { ProgressView("Loading followers...") }
+                Section {
+                    SkeletonRow()
+                    SkeletonRow()
+                    SkeletonRow()
+                }
             }
 
             if !newFollowers.isEmpty {
@@ -41,7 +45,7 @@ struct FollowerDiffView: View {
             }
 
             if !isLoading && newFollowers.isEmpty && unfollowed.isEmpty && !followers.isEmpty {
-                ContentUnavailableView("No Changes", systemImage: "person.3", description: Text("Follower list is unchanged since last check."))
+                ContentUnavailableView(loc("follower_diff.no_changes"), systemImage: "person.3", description: Text(loc("follower_diff.no_changes_desc")))
             }
 
             if let statusMessage {
@@ -49,11 +53,12 @@ struct FollowerDiffView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Follower Changes")
+        .navigationTitle(loc("follower_diff.title"))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Refresh") { Task { await load() } }
+                Button(loc("follower_diff.refresh")) { Task { await load() } }
                     .disabled(isLoading)
+                    .accessibilityHint("Refreshes the follower data to detect changes")
             }
         }
         .task { await load() }
@@ -72,7 +77,7 @@ struct FollowerDiffView: View {
         do {
             followers = try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
             RelationshipCache.save(followers, forKey: cacheKey)
-            statusMessage = previousFollowers.isEmpty ? "Baseline captured. Next refresh will show changes." : nil
+            statusMessage = previousFollowers.isEmpty ? loc("follower_diff.baseline") : nil
         } catch {
             if !previousFollowers.isEmpty { followers = previousFollowers }
             statusMessage = AppError.userMessage(from: error)

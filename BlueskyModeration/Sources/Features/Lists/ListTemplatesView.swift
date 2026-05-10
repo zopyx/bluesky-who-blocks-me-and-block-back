@@ -41,6 +41,7 @@ struct ListTemplatesView: View {
             }
             .disabled(isCreating)
             .buttonStyle(.plain)
+            .accessibilityHint("Creates a new \(template.name) list from this template")
         }
         .listStyle(.insetGrouped)
         .navigationTitle("List Templates")

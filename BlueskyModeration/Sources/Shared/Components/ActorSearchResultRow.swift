@@ -16,6 +16,7 @@ struct ActorSearchResultRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(isSelected ? "Deselect \(actor.handle)" : "Select \(actor.handle)")
+            .accessibilityHint("Toggles the selection of this actor")
 
             BlueskyActorRow(actor: actor)
 
@@ -30,12 +31,19 @@ struct ActorSearchResultRow: View {
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.skyPrimary.opacity(0.14), in: Capsule())
+                        .background {
+                            if #available(iOS 26, *) {
+                                Color.clear.glassEffect(.regular.tint(.skyPrimary), in: .rect(cornerRadius: .infinity))
+                            } else {
+                                Color.clear.background(Color.skyPrimary.opacity(0.14), in: Capsule())
+                            }
+                        }
                         .foregroundStyle(Color.skyPrimary)
                 }
             }
             .buttonStyle(.plain)
             .disabled(isAdding)
+            .accessibilityHint("Adds \(actor.handle) to the list")
         }
     }
 }

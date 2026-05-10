@@ -7,7 +7,7 @@ struct ModerationRulesView: View {
     var body: some View {
         List {
             if store.rules.isEmpty {
-                ContentUnavailableView("No Rules", systemImage: "wand.and.rays", description: Text("Create rules to automatically moderate accounts."))
+                ContentUnavailableView(loc("rules.no_rules"), systemImage: "wand.and.rays", description: Text(loc("rules.no_rules_desc")))
             }
             ForEach(store.rules) { rule in
                 HStack {
@@ -18,16 +18,18 @@ struct ModerationRulesView: View {
                     Spacer()
                     Toggle("", isOn: Binding(get: { rule.isEnabled }, set: { _ in store.toggle(rule) }))
                         .labelsHidden()
+                        .accessibilityHint(rule.isEnabled ? "Disables this moderation rule" : "Enables this moderation rule")
                 }
                 .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) { store.delete(rule) } label: { Label("Delete", systemImage: "trash") }
+                    Button(role: .destructive) { store.delete(rule) } label: { Label(loc("actions.delete"), systemImage: "trash") }
+                    .accessibilityHint("Permanently deletes this moderation rule")
                 }
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Rules")
+        .navigationTitle(loc("rules.title"))
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) { Button { isCreating = true } label: { Image(systemName: "plus") } }
+            ToolbarItem(placement: .topBarTrailing) { Button { isCreating = true } label: { Image(systemName: "plus") }.accessibilityHint("Creates a new moderation rule") }
         }
         .sheet(isPresented: $isCreating) { EditRuleView(store: store) }
     }
@@ -44,27 +46,30 @@ private struct EditRuleView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Rule Name", text: $name)
-                Picker("Trigger", selection: $trigger) {
+                TextField(loc("rules.name_placeholder"), text: $name)
+                Picker(loc("rules.trigger"), selection: $trigger) {
                     ForEach(ModerationRule.Trigger.allCases) { t in Text(t.rawValue).tag(t) }
                 }
+                .accessibilityHint("Choose what condition triggers this rule")
                 if trigger == .handleContains || trigger == .hasLabel {
-                    TextField("Value", text: $triggerValue)
+                    TextField(loc("rules.value_placeholder"), text: $triggerValue)
                 }
-                Picker("Action", selection: $action) {
+                Picker(loc("rules.action"), selection: $action) {
                     ForEach(ModerationRule.Action.allCases) { a in Text(a.rawValue).tag(a) }
                 }
+                .accessibilityHint("Choose what action to take when the rule triggers")
             }
-            .navigationTitle("New Rule")
+            .navigationTitle(loc("rules.new_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(loc("actions.cancel")) { dismiss() }.accessibilityHint("Discards changes and closes the rule editor") }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(loc("actions.save")) {
                         store.save(ModerationRule(name: name, trigger: trigger, triggerValue: triggerValue, action: action))
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityHint("Saves this moderation rule")
                 }
             }
         }

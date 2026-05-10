@@ -49,26 +49,28 @@ struct ListDetailView: View {
             ) { result in
                 handleImportedFile(result)
             }
-            .alert("List", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-                Button("OK") {
+            .alert(loc("list.detail.alert_title"), isPresented: .constant(viewModel.errorMessage != nil), actions: {
+                Button(loc("actions.ok")) {
                     viewModel.errorMessage = nil
                 }
+                .accessibilityHint("Dismisses this error message")
             }, message: {
                 Text(viewModel.errorMessage ?? "")
             })
             .alert(
-                viewModel.bulkActionResult?.operation.title ?? "Bulk Update",
+                viewModel.bulkActionResult?.operation.title ?? loc("list.detail.bulk_update"),
                 isPresented: bulkResultPresentedBinding
             ) {
-                Button("OK") {
+                Button(loc("actions.ok")) {
                     viewModel.bulkActionResult = nil
                 }
+                .accessibilityHint("Dismisses the bulk operation result")
 
                 if let account = accountStore.activeAccount,
                    let appPassword = accountStore.appPassword(for: account),
                    let result = viewModel.bulkActionResult,
                    !result.failures.isEmpty {
-                    Button("Retry Failed") {
+                    Button(loc("list.detail.retry_failed")) {
                         Task {
                             await viewModel.retryFailures(
                                 from: result,
@@ -81,6 +83,7 @@ struct ListDetailView: View {
                             syncSnapshot()
                         }
                     }
+                    .accessibilityHint("Retries the failed operations")
                 }
             } message: {
                 if let result = viewModel.bulkActionResult {
@@ -88,11 +91,11 @@ struct ListDetailView: View {
                 }
             }
             .confirmationDialog(
-                "Remove selected members?",
+                loc("list.detail.remove_confirm"),
                 isPresented: $isShowingBulkRemoveConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Remove", role: .destructive) {
+                Button(loc("list.detail.remove_button"), role: .destructive) {
                     if let account = accountStore.activeAccount,
                        let appPassword = accountStore.appPassword(for: account) {
                         Task {
@@ -105,17 +108,19 @@ struct ListDetailView: View {
                         }
                     }
                 }
+                .accessibilityHint("Removes the selected members from this list")
 
-                Button("Cancel", role: .cancel) {}
+                Button(loc("actions.cancel"), role: .cancel) {}
+                    .accessibilityHint("Cancels the removal")
             } message: {
-                Text("This removes \(viewModel.selectedMemberIDs.count) selected member\(viewModel.selectedMemberIDs.count == 1 ? "" : "s") from the list.")
+                Text(verbatim: loc("list.detail.remove_message").replacingOccurrences(of: "{count}", with: "\(viewModel.selectedMemberIDs.count)"))
             }
             .confirmationDialog(
-                "Delete this list?",
+                loc("list.detail.delete_confirm"),
                 isPresented: $isShowingDeleteConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Delete", role: .destructive) {
+                Button(loc("actions.delete"), role: .destructive) {
                     if let account = accountStore.activeAccount,
                        let appPassword = accountStore.appPassword(for: account) {
                         Task {
@@ -133,9 +138,11 @@ struct ListDetailView: View {
                         }
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                .accessibilityHint("Deletes this list permanently")
+                Button(loc("actions.cancel"), role: .cancel) {}
+                    .accessibilityHint("Cancels the deletion")
             } message: {
-                Text("This permanently deletes \"\(currentList.name)\" and all its members. This cannot be undone.")
+                Text(verbatim: loc("list.detail.delete_message"))
             }
             .onChange(of: viewModel.bulkActionResult) { _, newResult in
                 guard let newResult else { return }
@@ -156,9 +163,9 @@ struct ListDetailView: View {
                 content(account: account, appPassword: appPassword)
             } else {
                 ContentUnavailableView(
-                    "Missing Credentials",
+                    loc("list.detail.missing_creds"),
                     systemImage: "key.slash",
-                    description: Text("This account no longer has a saved app password.")
+                    description: Text(verbatim: loc("list.detail.missing_creds.desc"))
                 )
             }
         }
@@ -179,24 +186,27 @@ struct ListDetailView: View {
             Button {
                 isShowingSubscribe = true
             } label: {
-                Label("Subscribe", systemImage: "link.badge.plus")
+                Label { Text(verbatim: loc("list.detail.subscribe")) } icon: { Image(systemName: "link.badge.plus") }
             }
+            .accessibilityHint("Opens a sheet to subscribe to this list")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 isShowingEditSheet = true
             } label: {
-                Label("Edit", systemImage: "pencil")
+                Label { Text(verbatim: loc("list.detail.edit")) } icon: { Image(systemName: "pencil") }
             }
+            .accessibilityHint("Opens the edit sheet for this list")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Button(role: .destructive) {
                 isShowingDeleteConfirmation = true
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
             }
+            .accessibilityHint("Deletes this list permanently")
         }
     }
 
@@ -284,13 +294,15 @@ struct ListDetailView: View {
             }
 
             if let batchProgress = viewModel.batchProgress {
-                Section("Bulk Operation") {
+                Section {
                     BatchProgressCard(
                         title: batchProgress.title,
                         completedCount: batchProgress.completedCount,
                         totalCount: batchProgress.totalCount,
                         currentHandle: batchProgress.currentHandle
                     )
+                } header: {
+                    Text(verbatim: loc("list.detail.bulk_operation"))
                 }
             }
 
@@ -327,13 +339,15 @@ struct ListDetailView: View {
                 syncSnapshot: { syncSnapshot() }
             )
 
-            Section("List Stats") {
-                LabeledContent("Members", value: "\(currentList.memberCount ?? viewModel.members.count)")
-                LabeledContent("Snapshots", value: "\(snapshotHistory.count)")
+            Section {
+                LabeledContent(loc("list.detail.members"), value: "\(currentList.memberCount ?? viewModel.members.count)")
+                LabeledContent(loc("list.detail.snapshots"), value: "\(snapshotHistory.count)")
                 if let first = snapshotHistory.last, let last = snapshotHistory.first {
                     let growth = last.members.count - first.members.count
-                    LabeledContent("Growth", value: growth == 0 ? "Stable" : (growth > 0 ? "+\(growth)" : "\(growth)"))
+                    LabeledContent(loc("list.detail.growth"), value: growth == 0 ? loc("list.detail.stable") : (growth > 0 ? "+\(growth)" : "\(growth)"))
                 }
+            } header: {
+                Text(verbatim: loc("list.detail.stats_section"))
             }
 
             ListSnapshotSection(

@@ -8,11 +8,7 @@ struct PendingActionsSheet: View {
         NavigationStack {
             List {
                 if workspaceStore.queuedActions.isEmpty {
-                    ContentUnavailableView(
-                        "No Pending Actions",
-                        systemImage: "tray",
-                        description: Text("Long-running operations like blocking followers will appear here.")
-                    )
+                    ContentUnavailableView(loc("pending.empty.title"), systemImage: "tray", description: Text(loc("pending.empty.desc")))
                 } else {
                     ForEach(workspaceStore.queuedActions) { action in
                         VStack(alignment: .leading, spacing: 8) {
@@ -25,7 +21,7 @@ struct PendingActionsSheet: View {
 
                             switch action.status {
                             case .pending:
-                                Text("Waiting to start\u{2026}")
+                                Text(loc("pending.waiting"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             case .running(let done, let total, let handle):
@@ -46,16 +42,18 @@ struct PendingActionsSheet: View {
                             }
 
                             if case .pending = action.status {
-                                Button("Cancel", role: .destructive) {
+                                Button(loc("pending.cancel_button"), role: .destructive) {
                                     workspaceStore.actionQueue.cancel(action.id)
                                 }
                                 .font(.caption)
+                                .accessibilityHint("Cancels this queued action before it starts")
                             }
                             if case .completed = action.status {
-                                Button("Retry") {
+                                Button(loc("pending.retry_button")) {
                                     workspaceStore.actionQueue.retry(action.id)
                                 }
                                 .font(.caption)
+                                .accessibilityHint("Re-runs this action for any failed items")
                             }
                         }
                         .padding(.vertical, 4)
@@ -67,11 +65,12 @@ struct PendingActionsSheet: View {
                     }
                 }
             }
-            .navigationTitle("Pending Actions")
+            .navigationTitle(loc("pending.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { isPresented = false }
+                    Button(loc("pending.done_button")) { isPresented = false }
+                    .accessibilityHint("Closes the pending actions sheet")
                 }
             }
         }
@@ -82,18 +81,30 @@ struct PendingActionsSheet: View {
     private func statusBadge(_ status: QueuedActionStatus) -> some View {
         switch status {
         case .pending:
-            Text("Pending")
+            Text(loc("pending.status.pending"))
                 .font(.caption2.weight(.semibold))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(Color.secondary.opacity(0.12), in: Capsule())
+                .background {
+                    if #available(iOS 26, *) {
+                        Color.clear.glassEffect(.regular, in: .rect(cornerRadius: .infinity))
+                    } else {
+                        Color.clear.background(Color.secondary.opacity(0.12), in: Capsule())
+                    }
+                }
                 .foregroundStyle(.secondary)
         case .running:
-            Text("Running")
+            Text(loc("pending.badge_running"))
                 .font(.caption2.weight(.semibold))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(Color.skyPrimary.opacity(0.12), in: Capsule())
+                .background {
+                    if #available(iOS 26, *) {
+                        Color.clear.glassEffect(.regular.tint(.skyPrimary), in: .rect(cornerRadius: .infinity))
+                    } else {
+                        Color.clear.background(Color.skyPrimary.opacity(0.12), in: Capsule())
+                    }
+                }
                 .foregroundStyle(Color.skyPrimary)
         case .completed(let succeeded, let failed):
             if failed > 0 {
@@ -101,14 +112,26 @@ struct PendingActionsSheet: View {
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color.orange.opacity(0.12), in: Capsule())
+                    .background {
+                        if #available(iOS 26, *) {
+                            Color.clear.glassEffect(.regular.tint(.orange), in: .rect(cornerRadius: .infinity))
+                        } else {
+                            Color.clear.background(Color.orange.opacity(0.12), in: Capsule())
+                        }
+                    }
                     .foregroundStyle(.orange)
             } else {
-                Text("Done")
+                Text(loc("pending.status.done"))
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color.green.opacity(0.12), in: Capsule())
+                    .background {
+                        if #available(iOS 26, *) {
+                            Color.clear.glassEffect(.regular.tint(.green), in: .rect(cornerRadius: .infinity))
+                        } else {
+                            Color.clear.background(Color.green.opacity(0.12), in: Capsule())
+                        }
+                    }
                     .foregroundStyle(.green)
             }
         }

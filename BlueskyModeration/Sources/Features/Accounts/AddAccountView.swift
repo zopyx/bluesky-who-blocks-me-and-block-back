@@ -29,47 +29,63 @@ struct AddAccountView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Provider") {
-                    Picker("Provider", selection: $selectedProvider) {
+                Section {
+                    Picker(selection: $selectedProvider) {
                         ForEach(ProviderOption.allCases) { option in
-                            Text(option.rawValue).tag(option)
+                            if option == .bluesky {
+                                Text(verbatim: loc("account.add.bluesky")).tag(option)
+                            } else if option == .eurosky {
+                                Text(verbatim: loc("account.add.eurosky")).tag(option)
+                            } else {
+                                Text(verbatim: loc("account.add.other")).tag(option)
+                            }
                         }
+                    } label: {
+                        Text(verbatim: loc("account.add.provider"))
                     }
+                    .accessibilityHint("Selects the Bluesky PDS provider for this account")
 
                     if selectedProvider == .other {
-                        TextField("Custom PDS URL", text: $customPDS)
+                        TextField(loc("account.add.placeholder.url"), text: $customPDS)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .keyboardType(.URL)
                     }
+                } header: {
+                    Text(verbatim: loc("account.add.provider"))
                 }
 
-                Section("Credentials") {
-                    TextField("Handle", text: $handle)
+                Section {
+                    TextField(loc("account.add.placeholder.handle"), text: $handle)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
 
-                    SecureField("App Password", text: $appPassword)
+                    SecureField(loc("account.add.placeholder.password"), text: $appPassword)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                } header: {
+                    Text(verbatim: loc("account.add.credentials"))
                 }
 
-                Section("Why app password?") {
-                    Text("The app stores the password securely in the iOS Keychain and uses it for Bluesky account access.")
+                Section {
+                    Text(verbatim: loc("account.add.password_hint"))
                         .foregroundStyle(.secondary)
+                } header: {
+                    Text(verbatim: loc("account.add.why_password"))
                 }
             }
-            .navigationTitle("Add Account")
+            .navigationTitle(Text(verbatim: loc("account.add.title")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(loc("account.add.cancel")) {
                         dismiss()
                     }
+                    .accessibilityHint("Discards changes and closes the add account form")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(loc("account.add.save")) {
                         Task {
                             let entrywayURL: URL?
                             if selectedProvider == .other && !customPDS.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -93,15 +109,23 @@ struct AddAccountView: View {
                         appPassword.isEmpty ||
                         accountStore.isAddingAccount
                     )
+                    .accessibilityHint("Validates credentials and adds the account")
                 }
             }
             .overlay {
                 if accountStore.isAddingAccount {
                     ZStack {
                         Color.black.opacity(0.08).ignoresSafeArea()
-                        ProgressView("Validating Account")
+                        ProgressView(loc("account.add.validating"))
                             .padding(20)
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .background {
+                                if #available(iOS 26, *) {
+                                    Color.clear
+                                        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                                } else {
+                                    Color.clear.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                }
+                            }
                     }
                 }
             }

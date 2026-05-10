@@ -46,10 +46,19 @@ struct RelationshipsView: View {
         }
     }
 
+    private var modeLocalized: String {
+        switch mode {
+        case .followers: return loc("rel.mode.followers")
+        case .following: return loc("rel.mode.following")
+        case .blocking: return loc("rel.mode.blocking")
+        case .blockedBy: return loc("rel.mode.blocked_by")
+        }
+    }
+
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading \(mode.title.lowercased())...")
+                ProgressView(loc("rel.loading").replacingOccurrences(of: "{mode}", with: modeLocalized.lowercased()))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage {
                 ErrorRetryBanner(message: errorMessage) {
@@ -58,13 +67,13 @@ struct RelationshipsView: View {
             } else {
                 List {
                     Section {
-                        Text(mode.titled(isLoading ? (initialCount ?? 0) : actors.count))
+                        Text("\(modeLocalized) (\(isLoading ? (initialCount ?? 0) : actors.count))")
                             .font(.title2.weight(.bold))
                     }
 
                     if !actors.isEmpty {
                         Section {
-                            TextField("Search \(mode.rawValue.lowercased())", text: $searchQuery)
+                            TextField(loc("rel.search_placeholder").replacingOccurrences(of: "{mode}", with: modeLocalized.lowercased()), text: $searchQuery)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                             if let statusMessage {
@@ -76,11 +85,11 @@ struct RelationshipsView: View {
                     }
 
                     if filteredActors.isEmpty && !isLoading {
-                        ContentUnavailableView(
-                            "No \(mode.rawValue)",
-                            systemImage: "person.3",
-                            description: Text(searchQuery.isEmpty ? "No accounts found." : "No accounts match your search.")
-                        )
+                        ContentUnavailableView {
+                            Label(modeLocalized, systemImage: "person.3")
+                        } description: {
+                            Text(searchQuery.isEmpty ? loc("rel.no_accounts") : loc("rel.no_matches"))
+                        }
                     } else {
                         ForEach(Array(filteredActors.enumerated()), id: \.element.id) { index, actor in
                             NavigationLink {
@@ -97,7 +106,7 @@ struct RelationshipsView: View {
                                             Text(actor.title)
                                                 .font(.subheadline.weight(.semibold))
                                             if actor.isNew {
-                                                Text("New")
+                                                Text(loc("rel.new_badge"))
                                                     .font(.caption2.weight(.semibold))
                                                     .foregroundStyle(.orange)
                                                     .padding(.horizontal, 5)
@@ -125,23 +134,26 @@ struct RelationshipsView: View {
                                     actorToBlock = actor
                                     isShowingBlockConfirm = true
                                 } label: {
-                                    Label("Block", systemImage: "hand.raised.fill")
+                                    Label(loc("rel.block"), systemImage: "hand.raised.fill")
                                 }
+                                .accessibilityHint("Blocks this account from interacting with you")
 
                                 Button {
                                     selectedActorForList = actor
                                     isShowingListPicker = true
                                 } label: {
-                                    Label("Add to List", systemImage: "list.bullet")
+                                    Label(loc("rel.add_to_list"), systemImage: "list.bullet")
                                 }
+                                .accessibilityHint("Adds this account to one of your moderation lists")
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     actorToBlock = actor
                                     isShowingBlockConfirm = true
                                 } label: {
-                                    Label("Block", systemImage: "hand.raised.fill")
+                                    Label(loc("rel.block"), systemImage: "hand.raised.fill")
                                 }
+                                .accessibilityHint("Blocks this account — swipe action")
                             }
                         }
                         .onDelete { indexSet in
@@ -160,9 +172,10 @@ struct RelationshipsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if !actors.isEmpty {
-                    ShareLink(item: csvContent, subject: Text("\(mode.title) Export"), message: Text("Bluesky \(mode.title.lowercased()) list")) {
+                    ShareLink(item: csvContent, subject: Text(loc("rel.export_subject").replacingOccurrences(of: "{mode}", with: modeLocalized)), message: Text(loc("rel.export_message").replacingOccurrences(of: "{mode}", with: modeLocalized.lowercased()))) {
                         Image(systemName: "square.and.arrow.up")
                     }
+                    .accessibilityHint("Shares a CSV export of these accounts")
                 }
             }
 
@@ -177,6 +190,7 @@ struct RelationshipsView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityHint("Reloads this list from Bluesky")
                 }
             }
         }
@@ -184,11 +198,11 @@ struct RelationshipsView: View {
             await load()
         }
         .confirmationDialog(
-            "Block this account?",
+            loc("rel.block_confirm"),
             isPresented: $isShowingBlockConfirm,
             titleVisibility: .visible
         ) {
-            Button("Block", role: .destructive) {
+            Button(loc("rel.block"), role: .destructive) {
                 guard let actor = actorToBlock,
                       let account = accountStore.activeAccount,
                       let appPassword = accountStore.appPassword(for: account) else { return }
@@ -205,9 +219,9 @@ struct RelationshipsView: View {
                     }
                 }
             }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Blocking prevents interaction and is treated as a destructive moderation action.")
+            Button(loc("actions.cancel"), role: .cancel) {}
+
+            Text(loc("rel.block_message"))
         }
         .sheet(isPresented: $isShowingListPicker) {
             if let actor = selectedActorForList,
@@ -275,7 +289,7 @@ struct RelationshipsView: View {
     private func load() async {
         guard let account = accountStore.activeAccount,
               let appPassword = accountStore.appPassword(for: account) else {
-            errorMessage = "Select an active account first."
+            errorMessage = loc("rel.select_account_first")
             isLoading = false
             return
         }
@@ -350,9 +364,9 @@ struct ListPickerSheet: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView("Loading lists...")
+                    ProgressView(loc("rel.loading_lists"))
                 } else if lists.isEmpty {
-                    ContentUnavailableView("No Lists", systemImage: "tray", description: Text("Create a list first."))
+                    ContentUnavailableView(loc("rel.no_lists_title"), systemImage: "tray", description: Text(loc("rel.no_lists_desc")))
                 } else {
                     List(lists) { list in
                         Button {
@@ -376,14 +390,16 @@ struct ListPickerSheet: View {
                                     .foregroundStyle(Color.skyPrimary)
                             }
                         }
+                        .accessibilityHint("Adds \(actor.handle) to \(list.name)")
                     }
                 }
             }
-            .navigationTitle("Add \(actor.handle)")
+            .navigationTitle("\(loc("rel.add_to_list")) \(actor.handle)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Cancel") { dismiss() }
+                    Button(loc("actions.cancel")) { dismiss() }
+                    .accessibilityHint("Closes the list picker without adding")
                 }
             }
             .task {

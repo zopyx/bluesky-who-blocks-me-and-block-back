@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct InfoView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var selectedTab: InfoTab = .overview
 
     enum InfoTab: String, CaseIterable {
@@ -12,10 +13,12 @@ struct InfoView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                Picker("Section", selection: $selectedTab) {
+                Picker(selection: $selectedTab) {
                     ForEach(InfoTab.allCases, id: \.self) { tab in
-                        Text(tab.rawValue).tag(tab)
+                        Text(verbatim: localizationManager.localized("info.\(tab.rawValue.lowercased())")).tag(tab)
                     }
+                } label: {
+                    Text(verbatim: localizationManager.localized("info.section"))
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 16)
@@ -46,6 +49,7 @@ struct InfoView: View {
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     // MARK: - Overview Tab
@@ -62,7 +66,7 @@ struct InfoView: View {
     private var heroCard: some View {
         VStack(spacing: 10) {
             Image(systemName: "checklist.checked")
-                .font(.system(size: 36))
+                .font(.largeTitle)
                 .foregroundStyle(.white)
                 .padding(14)
                 .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
@@ -72,13 +76,13 @@ struct InfoView: View {
                 .scaledToFit()
                 .frame(height: 32)
 
-            Text("Bluesky moderation made easy")
+            Text(verbatim: localizationManager.localized("onboarding.title"))
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.75))
 
-            Text("Powered by Bluesky")
+            Text(verbatim: localizationManager.localized("info.powered_by"))
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(.white.opacity(0.80))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -101,15 +105,15 @@ struct InfoView: View {
 
     private var claimsGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            claimTile(icon: "dollarsign.circle.fill", text: "Free", color: .green)
-            claimTile(icon: "swift", text: "Open Source", color: .orange)
-            claimTile(icon: "hand.raised.slash.fill", text: "No Tracking", color: .skyPrimary)
-            claimTile(icon: "megaphone.slash.fill", text: "No Ads", color: .skyAccent)
+            claimTile(icon: "dollarsign.circle.fill", text: localizationManager.localized("info.claim.free"), color: .green)
+            claimTile(icon: "swift", text: localizationManager.localized("info.claim.opensource"), color: .orange)
+            claimTile(icon: "hand.raised.slash.fill", text: localizationManager.localized("info.claim.notracking"), color: .skyPrimary)
+            claimTile(icon: "megaphone.slash.fill", text: localizationManager.localized("info.claim.noads"), color: .skyAccent)
         }
     }
 
     private var openSourceCard: some View {
-        Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
+                Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
             HStack(spacing: 14) {
                 Image(systemName: "chevron.left.forwardslash.chevron.right")
                     .font(.title3)
@@ -118,12 +122,12 @@ struct InfoView: View {
                     .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("View on GitHub")
+                    Text(verbatim: localizationManager.localized("info.view_github"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
-                    Text("github.com/zopyx/bluesky-who-blocks-me-and-block-back")
+                    Text(verbatim: localizationManager.localized("info.github_url"))
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.55))
+                        .foregroundStyle(.white.opacity(0.80))
                 }
 
                 Spacer()
@@ -135,6 +139,8 @@ struct InfoView: View {
             .padding(16)
             .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
         }
+        .accessibilityLabel("View on GitHub")
+        .accessibilityHint("Opens the project repository on GitHub in your browser")
     }
 
     private var securityNote: some View {
@@ -146,12 +152,12 @@ struct InfoView: View {
                 .background(Color.skyPrimary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("Keychain-secured")
+                Text(verbatim: localizationManager.localized("info.keychain.title"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
-                Text("Account secrets never leave your device. All API calls go directly to your Bluesky PDS.")
+                Text(verbatim: localizationManager.localized("info.keychain.desc"))
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.white.opacity(0.80))
             }
 
             Spacer()
@@ -167,7 +173,7 @@ struct InfoView: View {
             featureCard(
                 icon: "checklist.checked",
                 color: .skyPrimary,
-                title: "Lists & Members",
+                title: localizationManager.localized("info.feature.lists"),
                 items: [
                     "Browse curation and moderation lists with inline search and filtering.",
                     "Bulk add, remove, copy, and move members across lists with progress tracking.",
@@ -179,7 +185,7 @@ struct InfoView: View {
             featureCard(
                 icon: "rectangle.split.3x1",
                 color: Color(red: 0.96, green: 0.60, blue: 0.18),
-                title: "Compare & Transfer",
+                title: localizationManager.localized("info.feature.compare"),
                 items: [
                     "Compare lists and view overlap, only-in-A, and only-in-B buckets.",
                     "Copy or move selected members between lists in bulk.",
@@ -190,7 +196,7 @@ struct InfoView: View {
             featureCard(
                 icon: "hand.raised.square.on.square",
                 color: .skyAccent,
-                title: "Moderation",
+                title: localizationManager.localized("info.feature.moderation"),
                 items: [
                     "Block or mute from profile detail with confirmation dialogs.",
                     "Block all followers of an account — runs as a background task.",
@@ -201,7 +207,7 @@ struct InfoView: View {
             featureCard(
                 icon: "clock.arrow.trianglehead.counterclockwise.rotate.90",
                 color: Color(red: 0.70, green: 0.35, blue: 0.90),
-                title: "Audit & History",
+                title: localizationManager.localized("info.feature.audit"),
                 items: [
                     "Local list snapshots captured on each load — compare any two.",
                     "Operation log tracks bulk actions with success and failure counts.",
@@ -216,40 +222,50 @@ struct InfoView: View {
 
     private var legalTab: some View {
         VStack(spacing: 12) {
-            legalRow(icon: "person.crop.square", title: "Author", value: "Andreas Jung")
+            legalRow(icon: "person.crop.square", title: localizationManager.localized("info.legal.author"), value: "Andreas Jung")
 
             Link(destination: URL(string: "https://www.py-consultant.com/")!) {
-                legalRow(icon: "globe", title: "Website", value: "py-consultant.com", link: true)
+                legalRow(icon: "globe", title: localizationManager.localized("info.legal.website"), value: "py-consultant.com", link: true)
             }
+            .accessibilityLabel("Visit website")
+            .accessibilityHint("Opens the author's website in your browser")
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
-                legalRow(icon: "doc.text", title: "Imprint", value: "py-consultant.com/imprint-privacy.html", link: true)
+                legalRow(icon: "doc.text", title: localizationManager.localized("info.legal.imprint"), value: "py-consultant.com/imprint-privacy.html", link: true)
             }
+            .accessibilityLabel("View imprint")
+            .accessibilityHint("Opens the legal imprint page in your browser")
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
-                legalRow(icon: "hand.raised", title: "Privacy Policy", value: "py-consultant.com/imprint-privacy.html", link: true)
+                legalRow(icon: "hand.raised", title: localizationManager.localized("info.legal.privacy"), value: "py-consultant.com/imprint-privacy.html", link: true)
             }
+            .accessibilityLabel("View privacy policy")
+            .accessibilityHint("Opens the privacy policy page in your browser")
 
-            legalRow(icon: "doc.text.magnifyingglass", title: "License", value: "MIT — see LICENSE file")
+            legalRow(icon: "doc.text.magnifyingglass", title: localizationManager.localized("info.legal.license"), value: localizationManager.localized("info.legal.license_value"))
 
             legalDivider
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Third-Party Services")
+                Text(verbatim: localizationManager.localized("info.third_party"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
 
                 Link(destination: URL(string: "https://clearsky.app")!) {
-                    legalRow(icon: "cloud", title: "ClearSky", value: "clearsky.app", link: true)
+                    legalRow(icon: "cloud", title: localizationManager.localized("info.legal.clearsky"), value: "clearsky.app", link: true)
                 }
+                .accessibilityLabel("Visit ClearSky website")
+                .accessibilityHint("Opens the ClearSky website in your browser")
 
                 Link(destination: URL(string: "https://github.com/ClearskyApp06/clearskyservices")!) {
-                    legalRow(icon: "chevron.left.forwardslash.chevron.right", title: "ClearSky GitHub", value: "github.com/ClearskyApp06", link: true)
+                    legalRow(icon: "chevron.left.forwardslash.chevron.right", title: localizationManager.localized("info.legal.clearsky_github"), value: "github.com/ClearskyApp06", link: true)
                 }
+                .accessibilityLabel("View ClearSky on GitHub")
+                .accessibilityHint("Opens the ClearSky GitHub repository in your browser")
 
-                Text("Blocking and blocked-by data is provided by ClearSky. ClearSky indexes block records from the Bluesky firehose and makes them available via a public API. No authentication is required.")
+                Text(verbatim: localizationManager.localized("info.clearsky.desc"))
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.white.opacity(0.80))
                     .padding(.leading, 50)
             }
             .padding(16)
@@ -259,13 +275,13 @@ struct InfoView: View {
             legalDivider
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Data Classification")
+                Text(verbatim: localizationManager.localized("info.data_classification"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
 
-                dataRow(label: "Account Data", value: "Stored Locally")
-                dataRow(label: "Bluesky API", value: "Live Read/Write")
-                dataRow(label: "Audit History", value: "Local Only")
+                dataRow(label: localizationManager.localized("info.data.account"), value: localizationManager.localized("info.data.account_value"))
+                dataRow(label: localizationManager.localized("info.data.api"), value: localizationManager.localized("info.data.api_value"))
+                dataRow(label: localizationManager.localized("info.data.audit"), value: localizationManager.localized("info.data.audit_value"))
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -336,7 +352,7 @@ struct InfoView: View {
                     .foregroundStyle(.white)
                 Text(value)
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.white.opacity(0.80))
             }
 
             Spacer()
@@ -361,7 +377,7 @@ struct InfoView: View {
         HStack {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.65))
+                .foregroundStyle(.white.opacity(0.80))
             Spacer()
             Text(value)
                 .font(.caption.weight(.semibold))

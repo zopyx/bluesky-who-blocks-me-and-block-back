@@ -12,11 +12,11 @@ final class SubscribeToListViewModel: ObservableObject {
     func fetch(account: AppAccount?, appPassword: String?, using client: LiveBlueskyClient) async {
         let trimmed = listURI.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            errorMessage = "Enter a list AT URI or URL."
+            errorMessage = loc("list.subscribe.error_uri")
             return
         }
-        guard let account else { errorMessage = "Select an active account first."; return }
-        guard let appPassword else { errorMessage = "No saved app password found."; return }
+        guard let account else { errorMessage = loc("list.subscribe.error_account"); return }
+        guard let appPassword else { errorMessage = loc("list.subscribe.error_password"); return }
 
         isLoading = true
         errorMessage = nil
@@ -27,7 +27,7 @@ final class SubscribeToListViewModel: ObservableObject {
             let resolvedURI = resolveListURI(trimmed)
             let list = try await client.fetchList(uri: resolvedURI, account: account, appPassword: appPassword)
             guard let list else {
-                throw BlueskyAPIError.server("List not found.")
+                throw BlueskyAPIError.server(loc("list.subscribe.error_not_found"))
             }
             fetchedList = list
             fetchedMembers = try await client.fetchListMembers(list: list, account: account, appPassword: appPassword)
@@ -85,35 +85,38 @@ struct SubscribeToListView: View {
         NavigationStack {
             List {
                 Section {
-                    TextField("List AT URI or URL", text: $viewModel.listURI, axis: .vertical)
+                    TextField(loc("list.subscribe.uri_placeholder"), text: $viewModel.listURI)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .lineLimit(2...4)
                         .font(.body.monospaced())
                 } header: {
-                    Text("List URI")
+                    Text(verbatim: loc("list.subscribe.uri_section"))
                 } footer: {
-                    Text("Paste the AT URI of a list (e.g. at://did:plc:.../app.bsky.graph.list/rkey) or a bsky.app profile URL.")
+                    Text(verbatim: loc("list.subscribe.uri_footer"))
                 }
 
                 if let list = viewModel.fetchedList {
-                    Section("Subscribed List") {
-                        LabeledContent("Name", value: list.name)
-                        LabeledContent("Members", value: "\(viewModel.fetchedMembers.count)")
-                        LabeledContent("Kind", value: list.kind.title)
+                    Section {
+                        LabeledContent(loc("list.subscribe.name"), value: list.name)
+                        LabeledContent(loc("list.detail.members"), value: "\(viewModel.fetchedMembers.count)")
+                        LabeledContent(loc("list.subscribe.kind"), value: list.kind.title)
+                    } header: {
+                        Text(verbatim: loc("list.subscribe.subscribed_section"))
                     }
 
                     Section {
-                        Button {
-                            Task {
-                                await viewModel.addAll(to: targetList, account: accountStore.activeAccount, appPassword: accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }, using: blueskyClient)
-                                if viewModel.errorMessage == nil { dismiss() }
-                            }
-                        } label: {
-                            Label("Add All to \"\(targetList.name)\"", systemImage: "person.crop.circle.badge.plus")
+                    Button {
+                        Task {
+                            await viewModel.addAll(to: targetList, account: accountStore.activeAccount, appPassword: accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }, using: blueskyClient)
+                            if viewModel.errorMessage == nil { dismiss() }
                         }
-                        .disabled(viewModel.isAdding)
-                        .foregroundStyle(Color.skyPrimary)
+                    } label: {
+                        Label(loc("list.subscribe.add_all").replacingOccurrences(of: "{list}", with: targetList.name), systemImage: "person.crop.circle.badge.plus")
+                    }
+                    .disabled(viewModel.isAdding)
+                    .foregroundStyle(Color.skyPrimary)
+                    .accessibilityHint("Adds all members from the fetched list to the target list")
                     }
                 }
 
@@ -124,21 +127,23 @@ struct SubscribeToListView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Subscribe to List")
+            .navigationTitle(loc("list.subscribe.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if viewModel.isLoading {
                         ProgressView()
                     } else {
-                        Button("Fetch") {
+                        Button(loc("list.subscribe.fetch")) {
                             Task { await viewModel.fetch(account: accountStore.activeAccount, appPassword: accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }, using: blueskyClient) }
                         }
                         .disabled(viewModel.listURI.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .accessibilityHint("Fetches the list details from the provided URI")
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(loc("list.subscribe.cancel")) { dismiss() }
+                        .accessibilityHint("Dismisses the subscribe sheet")
                 }
             }
         }

@@ -4,9 +4,9 @@ struct ListsView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = ListsViewModel()
     @State private var isShowingAccountPicker = false
-    @State private var isShowingPendingActions = false
     @State private var isShowingCreateList = false
     @State private var createListKind: BlueskyList.Kind = .moderation
     @State private var showProfile = false
@@ -15,32 +15,43 @@ struct ListsView: View {
     @State private var showBlocking = false
     @State private var showBlockedBy = false
     @State private var isShowingBulkLookup = false
+    @State private var isShowingQuickAccountSwitcher = false
+    @State private var isShowingAccountManagement = false
 
     var body: some View {
         NavigationStack {
             Group {
                 if accountStore.accounts.isEmpty {
-                    ContentUnavailableView(
-                        "No Active Account",
-                        systemImage: "person.crop.circle.badge.plus",
-                        description: Text("Add a Bluesky account in the Accounts tab to load lists.")
-                    )
-                } else if viewModel.isLoading {
-                    VStack(spacing: 28) {
-                        Image("RulyxLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 100)
-
-                        ProgressView()
-                            .controlSize(.large)
-                            .scaleEffect(1.5)
-
-                        Text("Loading your data\u{2026}")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                    ContentUnavailableView {
+                        Label(localizationManager.localized("lists.no_account.title"), systemImage: "person.crop.circle.badge.plus")
+                    } description: {
+                        Text(verbatim: localizationManager.localized("lists.no_account.desc"))
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if viewModel.isLoading {
+                    List {
+                        Section {
+                            SkeletonCard()
+                                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                                .listRowBackground(Color.clear)
+                        }
+                        Section {
+                            SkeletonGrid()
+                                .listRowInsets(EdgeInsets())
+                                .listRowBackground(Color.clear)
+                        } header: {
+                            Text(verbatim: localizationManager.localized("lists.relationships"))
+                                .redacted(reason: .placeholder)
+                        }
+                        Section {
+                            SkeletonRow()
+                            SkeletonRow()
+                        } header: {
+                            Text(verbatim: localizationManager.localized("lists.moderation_lists"))
+                                .redacted(reason: .placeholder)
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                    .redacted(reason: .placeholder)
                 } else {
                     List {
                         if let activeAccount = accountStore.activeAccount {
@@ -222,25 +233,27 @@ struct ListsView: View {
             .navigationTitle("")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Image("RulyxLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 28)
-                }
-
                 ToolbarItem(placement: .topBarLeading) {
                     if let activeAccount = accountStore.activeAccount {
                         Button {
-                            isShowingAccountPicker = true
+                            isShowingQuickAccountSwitcher = true
                         } label: {
-                            AccountChip(
-                                account: activeAccount,
-                                avatarURL: viewModel.activeProfile?.avatarURL
-                            )
+                            HStack(spacing: 8) {
+                                accountAvatarView()
+
+                                Text(activeAccount.displayName)
+                                    .font(.subheadline.weight(.semibold))
+                                    .lineLimit(1)
+                                    .foregroundStyle(.primary)
+
+                                Image(systemName: "chevron.up")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Switch active account")
+                        .accessibilityLabel(localizationManager.localized("account.switcher.label"))
+                        .accessibilityHint(localizationManager.localized("account.switcher.hint"))
                     }
                 }
 
@@ -321,24 +334,12 @@ struct ListsView: View {
                     .accessibilityLabel("Refresh lists")
                     .disabled(accountStore.activeAccount == nil)
                 }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isShowingPendingActions = true
-                    } label: {
-                        Label("Pending Actions", systemImage: "clock.arrow.circlepath")
-                    }
-                    .disabled(workspaceStore.queuedActions.isEmpty)
-                }
             }
             .sheet(isPresented: $isShowingAccountPicker) {
                 AccountSwitcherSheet(isPresented: $isShowingAccountPicker)
                     .environmentObject(accountStore)
             }
-            .sheet(isPresented: $isShowingPendingActions) {
-                PendingActionsSheet(isPresented: $isShowingPendingActions)
-                    .environmentObject(workspaceStore)
-            }
+
             .sheet(isPresented: $isShowingBulkLookup) {
                 NavigationStack {
                     BulkProfileLookupView()
@@ -368,6 +369,19 @@ struct ListsView: View {
                 }
                 .environmentObject(accountStore)
                 .environmentObject(blueskyClient)
+            }
+            .sheet(isPresented: $isShowingQuickAccountSwitcher) {
+                AccountQuickSwitcherSheet(isPresented: $isShowingQuickAccountSwitcher) {
+                    openAccountManagement()
+                }
+                .environmentObject(accountStore)
+            }
+            .sheet(isPresented: $isShowingAccountManagement) {
+                NavigationStack {
+                    AccountSwitcherSheet(isPresented: $isShowingAccountManagement)
+                        .environmentObject(accountStore)
+                        .environmentObject(blueskyClient)
+                }
             }
             .task(id: accountStore.activeAccountID) {
                 await reload()
@@ -435,6 +449,17 @@ struct ListsView: View {
                 avatarURL: viewModel.activeProfile?.avatarURL
             )
         )
+    }
+
+    private func openAccountManagement() {
+        isShowingAccountManagement = true
+    }
+
+    @ViewBuilder
+    private func accountAvatarView() -> some View {
+        if let account = accountStore.activeAccount {
+            self.accountAvatarView(for: account)
+        }
     }
 }
 

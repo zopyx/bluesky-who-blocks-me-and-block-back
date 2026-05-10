@@ -18,9 +18,9 @@ struct BlueskyProfileView: View {
                 content(account: account, appPassword: appPassword)
             } else {
                 ContentUnavailableView(
-                    "Missing Credentials",
+                    loc("list.detail.missing_creds"),
                     systemImage: "key.slash",
-                    description: Text("This account no longer has a saved app password.")
+                    description: Text(loc("list.detail.missing_creds.desc"))
                 )
             }
         }
@@ -55,14 +55,16 @@ struct BlueskyProfileView: View {
                     .padding(.vertical, 6)
                 }
 
-                Section("Stats") {
-                    LabeledContent("Followers", value: statText(profile.followersCount))
-                    LabeledContent("Following", value: statText(profile.followsCount))
-                    LabeledContent("Posts", value: statText(profile.postsCount))
+                Section {
+                    LabeledContent(loc("profile.stats.followers"), value: statText(profile.followersCount))
+                    LabeledContent(loc("profile.stats.following"), value: statText(profile.followsCount))
+                    LabeledContent(loc("profile.stats.posts"), value: statText(profile.postsCount))
+                } header: {
+                    Text(verbatim: loc("profile.stats"))
                 }
 
                 if !isOwnProfile {
-                    Section("Moderation") {
+                    Section {
                     if let viewerState = profile.viewerState {
                         Toggle(isOn: Binding(
                             get: { viewerState.isBlocking },
@@ -76,9 +78,10 @@ struct BlueskyProfileView: View {
                                 }
                             }
                         )) {
-                            Label("Block", systemImage: "hand.raised")
+                            Label { Text(verbatim: loc("profile.block")) } icon: { Image(systemName: "hand.raised") }
                         }
                         .disabled(viewModel.isUpdatingModeration)
+                        .accessibilityHint(viewerState.isBlocking ? "Turns off block for this account" : "Blocks this account from interacting with you")
 
                         Toggle(isOn: Binding(
                             get: { viewerState.muted },
@@ -92,9 +95,10 @@ struct BlueskyProfileView: View {
                                 }
                             }
                         )) {
-                            Label("Mute", systemImage: "speaker.slash")
+                            Label { Text(verbatim: loc("profile.mute")) } icon: { Image(systemName: "speaker.slash") }
                         }
                         .disabled(viewModel.isUpdatingModeration)
+                        .accessibilityHint(viewerState.muted ? "Unmutes this account" : "Mutes this account so you no longer see their posts")
                     }
 
                     if let statusMessage = viewModel.statusMessage {
@@ -102,11 +106,13 @@ struct BlueskyProfileView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                } header: {
+                    Text(verbatim: loc("profile.moderation_section"))
                 }
                 }
 
                 if !isOwnProfile, !moderationMemberships.isEmpty {
-                    Section("Moderation Lists") {
+                    Section {
                         ForEach(moderationMemberships) { membership in
                             membershipButton(
                                 membership: membership,
@@ -114,11 +120,13 @@ struct BlueskyProfileView: View {
                                 appPassword: appPassword
                             )
                         }
+                    } header: {
+                        Text(verbatim: loc("profile.moderation_lists_section"))
                     }
                 }
 
                 if !isOwnProfile {
-                    Section("Actions") {
+                    Section {
                     if viewModel.isBlockingFollowers {
                         if let progress = viewModel.blockFollowersProgress {
                             BatchProgressCard(
@@ -139,56 +147,69 @@ struct BlueskyProfileView: View {
                                 )
                             }
                         } label: {
-                            Label("Block All Followers", systemImage: "hand.raised.slash")
+                            Label { Text(verbatim: loc("profile.block_all")) } icon: { Image(systemName: "hand.raised.slash") }
                         }
                         .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
+                        .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
                     }
 
                     if let list {
-                        Label("Member of \(list.name)", systemImage: "person.2.badge.gearshape")
+                        Label { Text(verbatim: loc("profile.member_of") + " \(list.name)") } icon: { Image(systemName: "person.2.badge.gearshape") }
                             .foregroundStyle(.secondary)
                     }
 
                     Button {
                         isShowingNote = true
                     } label: {
-                        Label(notesStore.note(for: profile.did).isEmpty ? "Add Note" : "Edit Note", systemImage: "note.text")
+                        Label { Text(verbatim: notesStore.note(for: profile.did).isEmpty ? loc("profile.add_note") : loc("profile.edit_note")) } icon: { Image(systemName: "note.text") }
                     }
+                    .accessibilityHint("Opens a note editor to record information about this account")
+                } header: {
+                    Text(verbatim: loc("profile.actions_section"))
                 }
                 }
 
                 if let profileURL = profile.profileURL {
                     Section {
                         Link(destination: profileURL) {
-                            Label("Open in Bluesky", systemImage: "arrow.up.right.square")
+                            Label { Text(verbatim: loc("profile.open_bluesky")) } icon: { Image(systemName: "arrow.up.right.square") }
                         }
+                        .accessibilityHint("Opens this Bluesky profile in your default browser")
                     }
                 }
 
-                Section("Account Info") {
-                    LabeledContent("Handle", value: profile.handle)
-                    LabeledContent("DID", value: profile.did)
+                Section {
+                    LabeledContent(loc("profile.stats.handle"), value: profile.handle)
+                    LabeledContent(loc("profile.stats.did"), value: profile.did)
                     if let createdAt = profile.createdAt {
-                        LabeledContent("Joined", value: createdAt.formatted(date: .abbreviated, time: .omitted))
+                        LabeledContent(loc("profile.stats.joined"), value: createdAt.formatted(date: .abbreviated, time: .omitted))
                     }
                     if !profile.labels.isEmpty {
-                        LabeledContent("Labels", value: profile.labels.joined(separator: ", "))
+                        LabeledContent(loc("profile.stats.labels"), value: profile.labels.joined(separator: ", "))
                     }
+                } header: {
+                    Text(verbatim: loc("profile.account_info"))
                 }
 
                 if !viewModel.handleHistory.isEmpty {
-                    Section("Handle History") {
+                    Section {
                         ForEach(viewModel.handleHistory) { entry in
                             HStack {
                                 Text(entry.handle)
                                     .font(.caption.monospaced())
                                 if entry.isCurrent {
-                                    Text("current")
+                                    Text(verbatim: loc("profile.current_badge"))
                                         .font(.caption2.weight(.semibold))
                                         .foregroundStyle(.green)
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 2)
-                                        .background(Color.green.opacity(0.12), in: Capsule())
+                                        .background {
+                                            if #available(iOS 26, *) {
+                                                Color.clear.glassEffect(.regular.tint(.green), in: .rect(cornerRadius: .infinity))
+                                            } else {
+                                                Color.clear.background(Color.green.opacity(0.12), in: Capsule())
+                                            }
+                                        }
                                 }
                                 Spacer()
                                 Text(entry.date.formatted(date: .abbreviated, time: .omitted))
@@ -196,15 +217,13 @@ struct BlueskyProfileView: View {
                                     .foregroundStyle(.tertiary)
                             }
                         }
+                    } header: {
+                        Text(verbatim: loc("profile.handle_history"))
                     }
                 }
             } else if viewModel.isLoading {
                 Section {
-                    HStack {
-                        ProgressView()
-                        Text("Loading profile")
-                            .foregroundStyle(.secondary)
-                    }
+                    SkeletonCard()
                 }
             }
 
@@ -298,7 +317,13 @@ struct BlueskyProfileView: View {
             .foregroundStyle(emphasized ? tint : Color.secondary)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background((emphasized ? tint : Color.secondary).opacity(0.12), in: Capsule())
+            .background {
+                if #available(iOS 26, *) {
+                    Color.clear.glassEffect(.regular.tint(emphasized ? tint : Color.secondary), in: .rect(cornerRadius: .infinity))
+                } else {
+                    Color.clear.background((emphasized ? tint : Color.secondary).opacity(0.12), in: Capsule())
+                }
+            }
     }
 
     private func membershipButton(
@@ -319,19 +344,20 @@ struct BlueskyProfileView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(membership.name)
-                    Text(membership.isMember ? "Already included" : "Tap to add")
+                    Text(verbatim: membership.isMember ? loc("profile.already_included") : loc("profile.tap_to_add"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                Text(membership.isMember ? "Remove" : "Add")
+                Text(verbatim: membership.isMember ? loc("profile.remove") : loc("profile.add"))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(membership.isMember ? .red : Color.skyPrimary)
             }
         }
         .disabled(viewModel.isUpdatingModeration)
+        .accessibilityHint(membership.isMember ? "Removes this profile from the list \(membership.name)" : "Adds this profile to the list \(membership.name)")
     }
 }
 

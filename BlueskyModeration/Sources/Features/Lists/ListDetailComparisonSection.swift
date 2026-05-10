@@ -17,22 +17,31 @@ extension ListDetailView {
 
         @State private var showingCompareHelp = false
 
+        private func bucketLocKey(_ bucket: ComparisonBucket) -> String {
+            switch bucket {
+            case .overlap: return "list.compare.bucket_overlap"
+            case .onlyInCurrent: return "list.compare.bucket_only_current"
+            case .onlyInOther: return "list.compare.bucket_only_other"
+            }
+        }
+
         var body: some View {
             DisclosureGroup {
                 if viewModel.isLoadingAvailableLists {
-                    LoadingPanel(message: "Loading your other lists\u{2026}")
+                    LoadingPanel(message: loc("list.compare.loading"))
                 } else if viewModel.availableLists.isEmpty {
                     EmptyStatePanel(
-                        title: "No Other Lists",
-                        message: "Create additional lists to use comparison and transfer tools."
+                        title: loc("list.compare.no_lists"),
+                        message: loc("list.compare.no_lists_desc")
                     )
                 } else {
-                    Picker("Compare With", selection: $selectedComparisonListID) {
-                        Text("Select a list").tag("")
+                    Picker(loc("list.compare.picker_label"), selection: $selectedComparisonListID) {
+                        Text(verbatim: loc("list.compare.select_list")).tag("")
                         ForEach(viewModel.availableLists) { list in
                             Text(list.name).tag(list.id)
                         }
                     }
+                    .accessibilityHint("Choose another list to compare members against")
 
                     Button {
                         if let comparisonList {
@@ -47,9 +56,10 @@ extension ListDetailView {
                             }
                         }
                     } label: {
-                        Label("Compare Lists", systemImage: "rectangle.split.3x1")
+                        Label { Text(verbatim: loc("list.compare.button")) } icon: { Image(systemName: "rectangle.split.3x1") }
                     }
                     .disabled(comparisonList == nil || viewModel.isComparingLists)
+                    .accessibilityHint("Calculates overlap and differences between the two lists")
 
                     Button {
                         if let comparisonList {
@@ -65,9 +75,29 @@ extension ListDetailView {
                             }
                         }
                     } label: {
-                        Label("Copy Selected Members", systemImage: "square.on.square")
+                        Label { Text(verbatim: loc("list.compare.copy")) } icon: { Image(systemName: "square.on.square") }
                     }
                     .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
+                    .accessibilityHint("Copies selected members to the other list without removing them from this list")
+
+                    Button {
+                        if let comparisonList {
+                            Task {
+                                await viewModel.transferSelectedMembers(
+                                    from: currentList,
+                                    to: comparisonList,
+                                    move: true,
+                                    account: account,
+                                    appPassword: appPassword,
+                                    using: blueskyClient
+                                )
+                            }
+                        }
+                    } label: {
+                        Label { Text(verbatim: loc("list.compare.move")) } icon: { Image(systemName: "arrow.right.square") }
+                    }
+                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
+                    .accessibilityHint("Moves selected members to the other list and removes them from this list")
 
                     Button {
                         if let comparisonList {
@@ -84,7 +114,7 @@ extension ListDetailView {
                             }
                         }
                     } label: {
-                        Label("Move Selected Members", systemImage: "arrow.right.square")
+                        Label { Text(verbatim: loc("list.compare.move")) } icon: { Image(systemName: "arrow.right.square") }
                     }
                     .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
 
@@ -99,7 +129,7 @@ extension ListDetailView {
                 }
             } label: {
                 HStack {
-                    Text("Compare and Transfer")
+                    Text(verbatim: loc("list.compare.title"))
                     Spacer()
                     Button {
                         showingCompareHelp = true
@@ -109,29 +139,32 @@ extension ListDetailView {
                             .foregroundStyle(Color.skyPrimary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Help with list comparison")
+                    .accessibilityHint("Explains the comparison buckets and available actions")
                 }
             }
             .sheet(isPresented: $showingCompareHelp) {
                 NavigationStack {
                     List {
                         HelpSection(
-                            title: "Understanding the buckets",
+                            title: loc("list.compare.help_bucket"),
                             bulletPoints: [
-                                "Overlap: members present in both lists.",
-                                "Only in current list: members unique to this list.",
-                                "Only in comparison list: members in the other list but not this one.",
-                                "Copy adds selected members from the compared list to this list without affecting the source.",
-                                "Move transfers selected members from this list to the other, removing them from this list."
+                                loc("list.compare.help_overlap"),
+                                loc("list.compare.help_only_current"),
+                                loc("list.compare.help_only_other"),
+                                loc("list.compare.help_copy"),
+                                loc("list.compare.help_move")
                             ]
                         )
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                     }
-                    .navigationTitle("Compare & Transfer Help")
+                    .navigationTitle(loc("list.compare.help_title"))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") { showingCompareHelp = false }
+                            Button(loc("actions.done")) { showingCompareHelp = false }
+                            .accessibilityHint("Closes the comparison help screen")
                         }
                     }
                 }
@@ -152,23 +185,25 @@ extension ListDetailView {
         private var comparisonToolbar: some View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Menu("Select Diff Bucket") {
+                    Menu(loc("list.compare.menu_bucket")) {
                         ForEach(ComparisonBucket.allCases, id: \.self) { bucket in
-                            Button(bucket.title) {
+                            Button(loc(bucketLocKey(bucket))) {
                                 viewModel.selectComparisonBucket(bucket)
                             }
                         }
                     }
+                    .accessibilityHint("Filters comparison results to a specific bucket: overlap, only in this list, or only in the other list")
 
-                    Button("Clear Diff Selection") {
+                    Button(loc("list.compare.clear_diff")) {
                         viewModel.clearComparisonSelection()
                     }
                     .disabled(viewModel.selectedComparisonActorDIDs.isEmpty)
+                    .accessibilityHint("Deselects all actors in the comparison results")
 
                     Spacer()
 
                     if !viewModel.selectedComparisonActorDIDs.isEmpty {
-                        Text("\(viewModel.selectedComparisonActorDIDs.count) selected")
+                        Text(verbatim: loc("list.members.selected_count").replacingOccurrences(of: "{count}", with: "\(viewModel.selectedComparisonActorDIDs.count)"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -185,14 +220,16 @@ extension ListDetailView {
                         syncSnapshot()
                     }
                 } label: {
-                    Label("Add Selected Diff Accounts Here", systemImage: "arrow.down.left.and.arrow.up.right")
+                    Label { Text(verbatim: loc("list.compare.add_here")) } icon: { Image(systemName: "arrow.down.left.and.arrow.up.right") }
                 }
                 .disabled(viewModel.selectedComparisonActorDIDs.isEmpty || viewModel.isPerformingBulkAction)
+                .accessibilityHint("Adds all selected comparison actors to this list")
 
                 if let diffExportFileURL {
                     ShareLink(item: diffExportFileURL) {
-                        Label("Export Diff CSV", systemImage: "square.and.arrow.up")
+                        Label { Text(verbatim: loc("list.compare.export_csv")) } icon: { Image(systemName: "square.and.arrow.up") }
                     }
+                    .accessibilityHint("Shares a CSV file with the comparison results")
                 }
             }
             .padding(.vertical, 4)
@@ -203,7 +240,7 @@ extension ListDetailView {
 
             return Group {
                 if !members.isEmpty {
-                    Section(bucket.title) {
+                    Section {
                         ForEach(members) { member in
                             Button {
                                 viewModel.toggleComparisonSelection(for: member.actor.did)
@@ -220,7 +257,10 @@ extension ListDetailView {
                                     ? "Deselect \(member.actor.handle)"
                                     : "Select \(member.actor.handle)"
                             )
+                            .accessibilityHint("Toggles this actor for bulk add or removal actions")
                         }
+                    } header: {
+                        Text(verbatim: loc(bucketLocKey(bucket)))
                     }
                 }
             }

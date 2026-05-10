@@ -31,9 +31,14 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     private let requestExecutor: BlueskyRequestExecuting
     private let sessionService: BlueskySessionServicing
 
+    private static var pinnedSession: URLSession = {
+        let delegate = PinnedURLSessionDelegate()
+        return URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+    }()
+
     init(
         baseURL: URL = URL(string: "https://bsky.social")!,
-        session: URLSession = .shared,
+        session: URLSession = LiveBlueskyClient.pinnedSession,
         keychain: KeychainServicing = KeychainService(),
         requestExecutor: BlueskyRequestExecuting? = nil,
         sessionService: BlueskySessionServicing? = nil

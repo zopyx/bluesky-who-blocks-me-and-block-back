@@ -16,7 +16,7 @@ struct NoteSheet: View {
         NavigationStack {
             List {
                 Section {
-                    TextField("Add a private note about \(profile.handle)", text: $text, axis: .vertical)
+                    TextField(loc("note.placeholder").replacingOccurrences(of: "{handle}", with: profile.handle), text: $text)
                         .lineLimit(5...20)
                 }
                 if !text.isEmpty {
@@ -25,15 +25,17 @@ struct NoteSheet: View {
                     }
                 }
             }
-            .navigationTitle("Profile Note")
+            .navigationTitle(loc("note.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(loc("note.cancel")) { dismiss() }
+                    .accessibilityHint("Discards the note and dismisses") }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(loc("note.save")) {
                         notesStore.setNote(text, for: profile.did)
                         dismiss()
                     }
+                    .accessibilityHint("Saves the note for this profile")
                 }
             }
         }

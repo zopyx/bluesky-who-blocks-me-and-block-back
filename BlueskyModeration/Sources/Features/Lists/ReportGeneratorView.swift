@@ -9,29 +9,40 @@ struct ReportGeneratorView: View {
     var body: some View {
         List {
             Section {
-                Toggle("Include operation stats", isOn: $includeStats)
+                Toggle(isOn: $includeStats) {
+                    Text(verbatim: loc("report.include_stats"))
+                }
+                .accessibilityHint("Toggles whether to include statistics in the report")
             }
 
             if !reportText.isEmpty {
-                Section("Preview") {
+                Section {
                     Text(reportText).font(.caption.monospaced())
+                } header: {
+                    Text(verbatim: loc("report.preview"))
                 }
 
                 Section {
-                    ShareLink(item: reportText, subject: Text("Moderation Report")) {
-                        Label("Share Report", systemImage: "square.and.arrow.up")
+                    ShareLink(item: reportText, subject: Text(loc("report.subject"))) {
+                        Label {
+                            Text(verbatim: loc("report.share"))
+                        } icon: {
+                            Image(systemName: "square.and.arrow.up")
+                        }
                     }
+                    .accessibilityHint("Shares the generated report")
                 }
             }
 
             Section {
-                Button("Generate Report") {
+                Button(loc("report.generate")) {
                     generateReport()
                 }
+                .accessibilityHint("Generates the moderation report")
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Moderation Report")
+        .navigationTitle(loc("report.title"))
     }
 
     private func generateReport() {

@@ -4,25 +4,29 @@ struct ProfileInspectorView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = ProfileInspectorViewModel()
+    @State private var isShowingQuickAccountSwitcher = false
+    @State private var isShowingAccountManagement = false
 
     var body: some View {
         NavigationStack {
             List {
-                Section("Lookup") {
-                    TextField("Handle or DID", text: $viewModel.query)
+                Section {
+                    TextField(loc("profile.search.placeholder"), text: $viewModel.query)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .accessibilityLabel("Search Bluesky by handle or DID")
+                        .accessibilityHint("Type a handle or DID to search for a Bluesky account")
 
                     if viewModel.isSearching {
                         HStack {
                             ProgressView()
-                            Text("Searching")
+                            Text(verbatim: localizationManager.localized("profile.searching"))
                                 .foregroundStyle(.secondary)
                         }
                     } else if !viewModel.query.isEmpty && viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
-                        Text("Type at least 2 characters to search by handle or DID.")
+                        Text(verbatim: localizationManager.localized("profile.search.hint"))
                             .foregroundStyle(.secondary)
                     } else if !viewModel.searchResults.isEmpty {
                         ForEach(viewModel.searchResults) { actor in
@@ -39,9 +43,10 @@ struct ProfileInspectorView: View {
                                 BlueskyActorRow(actor: actor)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityHint(localizationManager.localized("profile.result.hint"))
                         }
                     } else if !viewModel.query.isEmpty && !viewModel.isSearching {
-                        Text("No matching profiles found.")
+                        Text(verbatim: localizationManager.localized("profile.search.no_results"))
                             .foregroundStyle(.secondary)
                     }
 
@@ -57,29 +62,39 @@ struct ProfileInspectorView: View {
                         if viewModel.isLoading {
                             HStack {
                                 ProgressView()
-                                Text("Inspecting")
+                                Text(verbatim: localizationManager.localized("profile.inspecting"))
                             }
                         } else {
-                            Label("Inspect Profile", systemImage: "magnifyingglass")
+                            Label {
+                                Text(verbatim: localizationManager.localized("profile.inspect"))
+                            } icon: {
+                                Image(systemName: "magnifyingglass")
+                            }
                         }
                     }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isLoading)
-                    .accessibilityLabel("Inspect Bluesky profile")
+                    .accessibilityLabel(localizationManager.localized("profile.inspect.label"))
+                    .accessibilityHint(localizationManager.localized("profile.inspect.hint"))
 
                     Button {
                         workspaceStore.saveProfileSearch(viewModel.query)
                     } label: {
-                        Label("Save Search", systemImage: "bookmark")
-                    }
+                        Label {
+                            Text(verbatim: localizationManager.localized("profile.save_search"))
+                        } icon: {
+                            Image(systemName: "bookmark")
+                        }
+                        }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityLabel("Save current search query")
+                    .accessibilityHint("Saves this search for quick access later")
 
                     if let activeAccount = accountStore.activeAccount {
-                        Text("Using \(activeAccount.handle) for authenticated lookup.")
+                        Text(verbatim: localizationManager.localized("profile.using_account").replacingOccurrences(of: "{handle}", with: activeAccount.handle))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("Add and select an account first.")
+                        Text(verbatim: localizationManager.localized("profile.add_account_first"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -99,7 +114,7 @@ struct ProfileInspectorView: View {
                 }
 
                 if !workspaceStore.savedSearches.isEmpty {
-                    Section("Saved Searches") {
+                    Section {
                         ForEach(workspaceStore.savedSearches) { search in
                             Button {
                                 viewModel.query = search.query
@@ -121,11 +136,13 @@ struct ProfileInspectorView: View {
                                 }
                             }
                         }
+                    } header: {
+                        Text(verbatim: localizationManager.localized("profile.saved_searches"))
                     }
                 }
 
                 if !workspaceStore.recentSearches.isEmpty {
-                    Section("Recent Searches") {
+                    Section {
                         ForEach(workspaceStore.recentSearches) { search in
                             Button {
                                 viewModel.query = search.query
@@ -141,11 +158,13 @@ struct ProfileInspectorView: View {
                             .accessibilityLabel("Load saved search for \(search.query)")
                             .buttonStyle(.plain)
                         }
+                    } header: {
+                        Text(verbatim: localizationManager.localized("profile.recent_searches"))
                     }
                 }
 
                 if let inspection = viewModel.inspection {
-                    Section("Profile") {
+                    Section {
                         VStack(alignment: .leading, spacing: 10) {
                             Text(inspection.profile.title)
                                 .font(.title3.weight(.semibold))
@@ -164,15 +183,17 @@ struct ProfileInspectorView: View {
                         .padding(.vertical, 4)
                     }
 
-                    Section("Stats") {
-                        LabeledContent("Followers", value: countText(inspection.profile.followersCount))
-                        LabeledContent("Following", value: countText(inspection.profile.followsCount))
-                        LabeledContent("Posts", value: countText(inspection.profile.postsCount))
-                        LabeledContent("Lists", value: countText(inspection.profile.listsCount))
-                        LabeledContent("Starter Packs", value: countText(inspection.profile.starterPacksCount))
+                    Section {
+                        LabeledContent(loc("profile.stats.followers"), value: countText(inspection.profile.followersCount))
+                        LabeledContent(loc("profile.stats.following"), value: countText(inspection.profile.followsCount))
+                        LabeledContent(loc("profile.stats.posts"), value: countText(inspection.profile.postsCount))
+                        LabeledContent(loc("profile.stats.lists"), value: countText(inspection.profile.listsCount))
+                        LabeledContent(loc("profile.stats.starter_packs"), value: countText(inspection.profile.starterPacksCount))
+                    } header: {
+                        Text(verbatim: loc("profile.stats"))
                     }
 
-                    Section("Moderation Actions") {
+                    Section {
                         NavigationLink {
                             BlueskyProfileView(
                                 member: BlueskyListMember(
@@ -187,22 +208,31 @@ struct ProfileInspectorView: View {
                                 list: nil
                             )
                         } label: {
-                            Label("Open Moderation Controls", systemImage: "slider.horizontal.3")
+                            Label {
+                                Text(verbatim: loc("profile.open_controls"))
+                            } icon: {
+                                Image(systemName: "slider.horizontal.3")
+                            }
                         }
-                        .accessibilityLabel("Open moderation controls for this profile")
+                        .accessibilityLabel(loc("profile.open_controls.label"))
+                        .accessibilityHint(loc("profile.open_controls.hint"))
+                    } header: {
+                        Text(verbatim: loc("profile.moderation_actions"))
                     }
 
                     if !inspection.profile.labels.isEmpty {
-                        Section("Labels") {
+                        Section {
                             ForEach(inspection.profile.labels, id: \.self) { label in
                                 Text(label)
                             }
+                        } header: {
+                            Text(verbatim: loc("profile.labels_section"))
                         }
                     }
 
-                    Section("Your Lists") {
+                    Section {
                         if inspection.listMemberships.isEmpty {
-                            Text("No owned lists available for membership comparison.")
+                            Text(verbatim: loc("profile.no_lists"))
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(inspection.listMemberships) { item in
@@ -214,17 +244,19 @@ struct ProfileInspectorView: View {
                                             .foregroundStyle(.secondary)
                                     }
                                     Spacer()
-                                    Text(item.isMember ? "Member" : "Not In List")
+                                    Text(item.isMember ? loc("profile.member_status") : loc("profile.not_in_list_status"))
                                         .font(.caption.weight(.semibold))
                                         .foregroundStyle(item.isMember ? .green : .secondary)
                                 }
                             }
                         }
+                    } header: {
+                        Text(verbatim: loc("profile.your_lists_section"))
                     }
 
-                    Section("Your Starter Packs") {
+                    Section {
                         if inspection.starterPackMemberships.isEmpty {
-                            Text("No owned starter packs available for membership comparison.")
+                            Text(verbatim: loc("profile.no_starter_packs"))
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(inspection.starterPackMemberships) { item in
@@ -232,32 +264,55 @@ struct ProfileInspectorView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(item.name)
                                         if let joined = item.joinedAllTimeCount {
-                                            Text("Joined all-time: \(joined)")
+                                            Text(verbatim: loc("profile.joined_all_time").replacingOccurrences(of: "{count}", with: "\(joined)"))
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
                                         }
                                     }
                                     Spacer()
-                                    Text(item.isMember ? "Included" : "Not Included")
+                                    Text(item.isMember ? loc("profile.included_status") : loc("profile.not_included_status"))
                                         .font(.caption.weight(.semibold))
                                         .foregroundStyle(item.isMember ? .green : .secondary)
                                 }
                             }
                         }
+                    } header: {
+                        Text(verbatim: loc("profile.your_starter_packs_section"))
                     }
 
                     if let profileURL = inspection.profile.profileURL {
-                        Section("Open") {
+                        Section {
                             Link(destination: profileURL) {
-                                Label("Open in Bluesky", systemImage: "arrow.up.right.square")
+                                Label {
+                                    Text(verbatim: loc("profile.open_bluesky"))
+                                } icon: {
+                                    Image(systemName: "arrow.up.right.square")
+                                }
                             }
-                            .accessibilityLabel("Open profile in Bluesky app or website")
+                            .accessibilityLabel(loc("profile.open_bluesky.label"))
+                            .accessibilityHint(loc("profile.open_bluesky.hint"))
+                        } header: {
+                            Text(verbatim: loc("profile.open_section"))
                         }
                     }
                 }
             }
-            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-            .navigationTitle("Profile")
+            .navigationTitle(loc("profile.title"))
+            .toolbar {
+                accountSwitcherToolbar(isPresented: $isShowingQuickAccountSwitcher, accountStore: accountStore, localizationManager: localizationManager)
+            }
+            .sheet(isPresented: $isShowingQuickAccountSwitcher) {
+                AccountQuickSwitcherSheet(
+                    isPresented: $isShowingQuickAccountSwitcher,
+                    onManageAccounts: openAccountManagement
+                )
+                .environmentObject(accountStore)
+            }
+            .sheet(isPresented: $isShowingAccountManagement) {
+                AccountSwitcherSheet(isPresented: $isShowingAccountManagement)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
             .task {
                 if viewModel.query.isEmpty {
                     viewModel.query = workspaceStore.lastProfileQuery
@@ -297,6 +352,13 @@ struct ProfileInspectorView: View {
             return "\(value)"
         }
         return "-"
+    }
+
+    private func openAccountManagement() {
+        isShowingQuickAccountSwitcher = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            isShowingAccountManagement = true
+        }
     }
 }
 

@@ -9,6 +9,7 @@ final class AppDependencies: ObservableObject {
     let actionPresetStore: ActionPresetStore
     let profileNotesStore: ProfileNotesStore
     let blueskyClient: LiveBlueskyClient
+    let localizationManager: LocalizationManager
 
     init() {
         let requestExecutor = BlueskyRequestExecutor()
@@ -25,5 +26,6 @@ final class AppDependencies: ObservableObject {
             requestExecutor: requestExecutor,
             sessionService: sessionService
         )
+        self.localizationManager = LocalizationManager.shared
     }
 }
