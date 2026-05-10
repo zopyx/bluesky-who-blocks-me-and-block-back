@@ -21,12 +21,23 @@ final class LocalizationManager: ObservableObject {
         ("it", "Italiano"),
         ("ja", "日本語"),
         ("zh", "中文"),
+        ("es", "Español"),
+        ("pt", "Português"),
+        ("ko", "한국어"),
+        ("ru", "Русский"),
+        ("ar", "العربية"),
+        ("nl", "Nederlands"),
+        ("pl", "Polski"),
+        ("tr", "Türkçe"),
+        ("th", "ไทย"),
+        ("vi", "Tiếng Việt"),
     ]
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: "selectedLanguage")
         let preferred = Locale.current.language.languageCode?.identifier
-        self.currentLanguage = saved ?? (preferred != nil && ["en","de","fr","it","ja","zh"].contains(preferred!) ? preferred! : "en")
+        let allCodes = supportedLanguages.map(\.code)
+        self.currentLanguage = saved ?? (preferred != nil && allCodes.contains(preferred!) ? preferred! : "en")
         loadAll()
         loadCurrentBundle()
     }
@@ -49,7 +60,8 @@ final class LocalizationManager: ObservableObject {
     }
 
     private func loadAll() {
-        for lang in ["en", "de", "fr", "it", "ja", "zh"] {
+        let allCodes = supportedLanguages.map(\.code)
+        for lang in allCodes {
             guard let url = Bundle.main.url(forResource: lang, withExtension: "json"),
                   let data = try? Data(contentsOf: url),
                   let dict = try? JSONDecoder().decode([String: String].self, from: data)
