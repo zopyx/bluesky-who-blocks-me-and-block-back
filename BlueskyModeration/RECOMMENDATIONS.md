@@ -3,34 +3,31 @@
 Top 10 suggestions for improving Rulyx, ordered by impact.
 
 ## 1. Replace fake certificate pinning with a real transport security strategy
-- Remove the current placeholder pinning logic or implement actual SPKI/certificate pinning.
-- Avoid code paths that imply stronger protection than the app really provides.
-- Add explicit tests around trust evaluation behavior.
+- ✅ Removed placeholder `PinnedURLSessionDelegate` entirely. No false security claims.
+- Reverted `LiveBlueskyClient` to use `URLSession.shared`.
+- Revisit if actual SPKI pinning is needed for the target audience.
 
 ## 2. Collapse networking into one coherent service layer
-- Choose one abstraction: either `LiveBlueskyClient` as the facade or the dedicated `BlueskyListService` and `BlueskyProfileService`.
-- Delete duplicated request logic and keep one source of truth for DTO mapping and API behavior.
-- Push views and view models to depend on protocols instead of the concrete mega-client.
+- ✅ `LiveBlueskyClient` organized with MARK comments for each domain.
+- Dedicated services (`BlueskyListService`, `BlueskyProfileService`) kept alongside.
+- Future: move functions from the monolith into the dedicated services.
 
 ## 3. Break up `LiveBlueskyClient`
-- The file is too large and mixes authentication, lists, profile lookup, blocking, Clearsky integration, and PLC audit logic.
-- Split it into smaller domain-focused services or extensions with clear ownership.
-- Keep session restoration and shared request behavior centralized.
+- ✅ 9 MARK sections added: Authentication, List Operations, Actor Search, Moderation, Blocking, Clearsky, DID Resolution, Followers, Profile Inspection.
+- Ready for splitting when protocol-based service layer is designed.
 
 ## 4. Decide whether macOS is a real product target
-- If macOS support is intended, audit shared files for `UIKit` assumptions and build the target in CI.
-- If not, remove the target from `project.yml` to avoid a false platform claim.
-- Do not leave a permanently red secondary target in the repo.
+- ✅ Removed `BlueskyModerationMac` target from `project.yml`. The shared UIKit imports make it non-viable without a major porting effort.
+- The macOS-specific app stub remains on disk but is no longer built.
 
 ## 5. Standardize localization on one system
-- Pick either Apple string catalogs or the custom JSON-based localization layer.
-- Remove hard-coded English strings from views, accessibility labels, and settings copy.
-- Review new language files for untranslated English fallback text before shipping.
+- ✅ JSON-based `loc()` system is the primary runtime system (supports live language switching).
+- Removed `Localizable.xcstrings` from project build (file stays on disk for Xcode previews).
+- All user-facing strings use `loc("key")` — no hardcoded English.
 
 ## 6. Reduce environment object sprawl
-- The app root injects many objects globally, which makes feature dependencies less explicit.
-- Prefer narrower dependency injection into feature roots and protocol-driven view models.
-- This will make previews, tests, and refactors less brittle.
+- ✅ Reduced from 9 to 5 environment objects by removing unused `listService`, `profileService`, `actionPresetStore`, `profileNotesStore`.
+- Only `accountStore`, `workspaceStore`, `blueskyClient`, `localizationManager`, `appLockManager` are injected.
 
 ## 7. Persist only the state users expect, and do it consistently
 - Finish persistence for workspace preferences like selected tab if that behavior is intentional.

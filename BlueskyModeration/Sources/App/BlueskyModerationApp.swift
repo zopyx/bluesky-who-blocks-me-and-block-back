@@ -15,11 +15,7 @@ struct BlueskyModerationApp: App {
                 } else {
                     RootView()
                         .environmentObject(deps.accountStore)
-                        .environmentObject(deps.listService)
-                        .environmentObject(deps.profileService)
                         .environmentObject(deps.workspaceStore)
-                        .environmentObject(deps.actionPresetStore)
-                        .environmentObject(deps.profileNotesStore)
                         .environmentObject(deps.blueskyClient)
                         .environmentObject(deps.localizationManager)
                         .environmentObject(appLockManager)
