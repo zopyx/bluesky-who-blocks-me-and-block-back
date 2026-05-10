@@ -28,6 +28,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_NSFaceIDUsageDescription: "Rulyx uses Face ID to protect your accounts and moderation data."
         PRODUCT_BUNDLE_IDENTIFIER: com.ajung.BlueskyModeration
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     scheme:
