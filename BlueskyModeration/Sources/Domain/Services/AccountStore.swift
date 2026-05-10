@@ -121,6 +121,11 @@ final class AccountStore: ObservableObject {
         persist()
     }
 
+    func moveAccount(from source: IndexSet, to destination: Int) {
+        accounts.move(fromOffsets: source, toOffset: destination)
+        persist()
+    }
+
     func appPassword(for account: AppAccount) -> String? {
         try? keychain.read(service: passwordService, account: account.id.uuidString)
     }

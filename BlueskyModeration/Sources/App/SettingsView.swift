@@ -2,18 +2,18 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @AppStorage("debugMode") private var debugMode = false
     @State private var isShowingClearCacheConfirmation = false
     @State private var cacheStatusMessage: String?
 
     var body: some View {
         NavigationStack {
             List {
-                Section("Status") {
-                    LabeledContent("Build Stage", value: "Release Candidate")
-                    LabeledContent("Data Source", value: "Live Bluesky API")
-                }
-
                 Section("Preferences") {
+                    Toggle(isOn: $debugMode) {
+                        Label("Debug", systemImage: "wrench.adjustable")
+                    }
+
                     Button(role: .destructive) {
                         isShowingClearCacheConfirmation = true
                     } label: {
@@ -25,12 +25,6 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                }
-
-                Section("Data Classification") {
-                    LabeledContent("Account Data", value: "Stored Locally")
-                    LabeledContent("Bluesky API", value: "Live Read/Write")
-                    LabeledContent("Audit History", value: "Local Only")
                 }
             }
             .navigationTitle("Settings")

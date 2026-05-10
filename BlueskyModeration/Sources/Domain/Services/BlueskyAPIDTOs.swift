@@ -23,6 +23,7 @@ struct ListView: Decodable {
     let description: String?
     let purpose: ListPurpose
     let listItemCount: Int?
+    let avatar: String?
 }
 
 struct ListViewBasic: Decodable {
@@ -30,6 +31,7 @@ struct ListViewBasic: Decodable {
     let name: String
     let purpose: ListPurpose
     let listItemCount: Int?
+    let avatar: String?
 }
 
 struct ListWithMembership: Decodable {
@@ -60,11 +62,42 @@ struct ActorView: Decodable {
     let displayName: String?
     let avatar: String?
     let createdAt: String?
+    let viewer: ProfileViewerState?
 }
 
 struct GetBlocksResponse: Decodable {
     let cursor: String?
     let blocks: [ActorView]
+}
+
+struct GetProfilesResponse: Decodable {
+    let profiles: [ProfileViewDetailed]
+}
+
+struct ClearskyBlocklistResponse: Decodable {
+    let data: ClearskyBlocklistData
+}
+
+struct ClearskyBlocklistData: Decodable {
+    let blocklist: [ClearskyBlocklistEntry]
+}
+
+struct ClearskyBlocklistEntry: Decodable {
+    let did: String
+    let blockedDate: String
+
+    enum CodingKeys: String, CodingKey {
+        case did
+        case blockedDate = "blocked_date"
+    }
+}
+
+struct ClearskyBlocklistTotalResponse: Decodable {
+    let data: ClearskyBlocklistTotalData
+}
+
+struct ClearskyBlocklistTotalData: Decodable {
+    let count: Int
 }
 
 struct GetFollowersResponse: Decodable {

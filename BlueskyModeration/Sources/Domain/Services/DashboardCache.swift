@@ -4,6 +4,7 @@ struct DashboardCacheData: Codable {
     let lists: [BlueskyList]
     let profile: BlueskyProfile?
     let blockingCount: Int
+    let blockedByCount: Int
 }
 
 enum DashboardCache {

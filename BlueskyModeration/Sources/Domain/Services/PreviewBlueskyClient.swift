@@ -369,6 +369,22 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         ]
     }
 
+    override func fetchBlockedByActors(
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        try await Task.sleep(for: .milliseconds(80))
+        return []
+    }
+
+    override func fetchBlockingCount(for account: AppAccount) async throws -> Int {
+        2
+    }
+
+    override func fetchBlockedByCount(for account: AppAccount) async throws -> Int {
+        0
+    }
+
     override func blockActor(
         did actorDID: String,
         account: AppAccount,

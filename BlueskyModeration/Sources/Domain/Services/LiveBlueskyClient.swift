@@ -93,7 +93,8 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                 name: item.name,
                 description: item.description ?? item.purpose.displayTitle,
                 memberCount: item.listItemCount,
-                kind: item.purpose.kind
+                kind: item.purpose.kind,
+                avatarURL: URL(string: item.avatar ?? "")
             )
         }
     }
@@ -530,36 +531,144 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         account: AppAccount,
         appPassword: String?
     ) async throws -> [BlueskyActor] {
-        var all: [BlueskyActor] = []
-        var cursor: String?
+        try await fetchClearskyActors(account: account, endpoint: "blocklist")
+    }
+
+    func fetchBlockedByActors(
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> [BlueskyActor] {
+        try await fetchClearskyActors(account: account, endpoint: "single-blocklist")
+    }
+
+    func fetchBlockingCount(for account: AppAccount) async throws -> Int {
+        try await fetchClearskyCount(account: account, endpoint: "blocklist")
+    }
+
+    func fetchBlockedByCount(for account: AppAccount) async throws -> Int {
+        try await fetchClearskyCount(account: account, endpoint: "single-blocklist")
+    }
+
+    private func resolveAccountDID(_ account: AppAccount) async throws -> String {
+        if let did = account.did { return did }
+        return try await resolveHandleToDID(handle: account.handle)
+    }
+
+    private func fetchClearskyActors(account: AppAccount, endpoint: String) async throws -> [BlueskyActor] {
+        let actorDID = try await resolveAccountDID(account)
+
+        var allDIDs = Set<String>()
+        var page = 1
         repeat {
-            let response: GetBlocksResponse = try await sessionService.performAuthenticatedRequest(
-                account: account,
-                appPassword: appPassword
-            ) { authSession in
-                var queryItems = [URLQueryItem(name: "limit", value: "100")]
-                if let cursor {
-                    queryItems.append(URLQueryItem(name: "cursor", value: cursor))
-                }
-                return try await requestExecutor.send(
-                    path: "app.bsky.graph.getBlocks",
-                    method: "GET",
-                    queryItems: queryItems,
-                    accessToken: authSession.accessJWT,
-                    hostURL: authSession.pdsURL
-                )
+            let urlString = page == 1
+                ? "https://public.api.clearsky.services/api/v1/anon/\(endpoint)/\(actorDID)"
+                : "https://public.api.clearsky.services/api/v1/anon/\(endpoint)/\(actorDID)/\(page)"
+            guard let url = URL(string: urlString) else { throw BlueskyAPIError.invalidURL }
+            var request = URLRequest(url: url)
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+            request.timeoutInterval = 30
+            let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+                throw BlueskyAPIError.invalidResponse
             }
-            all.append(contentsOf: response.blocks.map {
-                BlueskyActor(
-                    did: $0.did,
-                    handle: $0.handle,
-                    displayName: $0.displayName,
-                    avatarURL: URL(string: $0.avatar ?? "")
-                )
-            })
-            cursor = response.cursor
-        } while cursor != nil
-        return all
+            let decoded = try JSONDecoder().decode(ClearskyBlocklistResponse.self, from: data)
+            let entries = decoded.data.blocklist
+            for entry in entries {
+                allDIDs.insert(entry.did)
+            }
+            if entries.count < 100 { break }
+            page += 1
+        } while true
+
+        return try await resolveProfiles(dids: Array(allDIDs).sorted())
+    }
+
+    private func fetchClearskyCount(account: AppAccount, endpoint: String) async throws -> Int {
+        let actorDID = try await resolveAccountDID(account)
+        let urlString = "https://public.api.clearsky.services/api/v1/anon/\(endpoint)/total/\(actorDID)"
+        guard let url = URL(string: urlString) else { throw BlueskyAPIError.invalidURL }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 30
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        let decoded = try JSONDecoder().decode(ClearskyBlocklistTotalResponse.self, from: data)
+        return decoded.data.count
+    }
+
+    private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
+        let urlSession = session
+        return try await withThrowingTaskGroup(of: [BlueskyActor].self) { group in
+            var offset = 0
+            while offset < dids.count {
+                let chunk = dids[offset..<min(offset + 25, dids.count)]
+                offset += 25
+                group.addTask {
+                    try await Self.fetchProfileBatch(dids: Array(chunk), session: urlSession)
+                }
+            }
+            var actors: [BlueskyActor] = []
+            for try await batch in group {
+                actors.append(contentsOf: batch)
+            }
+            return actors
+        }
+    }
+
+    private static func fetchProfileBatch(dids: [String], session: URLSession) async throws -> [BlueskyActor] {
+        let actorsParam = dids.map { URLQueryItem(name: "actors", value: $0) }
+        guard let profilesURL = URL(string: "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfiles") else {
+            throw BlueskyAPIError.invalidURL
+        }
+        var components = URLComponents(url: profilesURL, resolvingAgainstBaseURL: false)!
+        components.queryItems = actorsParam
+        guard let finalURL = components.url else { throw BlueskyAPIError.invalidURL }
+        var req = URLRequest(url: finalURL)
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        req.timeoutInterval = 30
+        let (data, response) = try await session.data(for: req)
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        let decoded = try JSONDecoder().decode(GetProfilesResponse.self, from: data)
+        return decoded.profiles.map {
+            BlueskyActor(
+                did: $0.did,
+                handle: $0.handle,
+                displayName: $0.displayName,
+                avatarURL: URL(string: $0.avatar ?? "")
+            )
+        }
+    }
+
+    private func resolveHandleToDID(handle: String) async throws -> String {
+        guard let url = URL(string: "https://public.api.clearsky.services/api/v1/anon/get-did/\(handle)") else {
+            throw BlueskyAPIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 30
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        struct ClearskyDIDResponse: Decodable {
+            let data: ClearskyDIDData
+        }
+        struct ClearskyDIDData: Decodable {
+            let didIdentifier: String
+            enum CodingKeys: String, CodingKey {
+                case didIdentifier = "did_identifier"
+            }
+        }
+        let decoded = try JSONDecoder().decode(ClearskyDIDResponse.self, from: data)
+        return decoded.data.didIdentifier
     }
 
     func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {

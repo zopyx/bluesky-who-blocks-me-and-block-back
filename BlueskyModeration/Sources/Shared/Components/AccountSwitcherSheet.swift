@@ -13,15 +13,16 @@ struct AccountSwitcherSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                if accountStore.accounts.isEmpty {
-                    ContentUnavailableView(
-                        "No Accounts",
-                        systemImage: "person.crop.circle.badge.plus",
-                        description: Text("Add your first Bluesky account to begin.")
-                    )
-                } else {
-                    Section("Saved Accounts") {
-                        ForEach(accountStore.accounts) { account in
+                Group {
+                    if accountStore.accounts.isEmpty {
+                        ContentUnavailableView(
+                            "No Accounts",
+                            systemImage: "person.crop.circle.badge.plus",
+                            description: Text("Add your first Bluesky account to begin.")
+                        )
+                    } else {
+                        Section("Saved Accounts") {
+                            ForEach(accountStore.accounts) { account in
                             Button {
                                 accountStore.setActiveAccount(account)
                                 isPresented = false
@@ -32,24 +33,12 @@ struct AccountSwitcherSheet: View {
                                 )
                             }
                             .buttonStyle(.plain)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            .contextMenu {
                                 Button(role: .destructive) {
                                     accountStore.removeAccount(account, client: blueskyClient)
                                 } label: {
                                     Label("Remove", systemImage: "trash")
                                 }
-                                .accessibilityHint("This action cannot be undone.")
-                            }
-                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button {
-                                    accountStore.setActiveAccount(account)
-                                    isPresented = false
-                                } label: {
-                                    Label("Set Active", systemImage: "checkmark.circle")
-                                }
-                                .tint(.skyPrimary)
-                            }
-                            .contextMenu {
                                 Button {
                                     editLabelText = account.label ?? ""
                                     editingLabelAccount = account
@@ -59,20 +48,16 @@ struct AccountSwitcherSheet: View {
                             }
                         }
                     }
+                    }
                 }
 
-                Section("Security") {
-                    Label("App passwords are stored in the Keychain.", systemImage: "lock.shield")
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .navigationTitle("Accounts")
+                .navigationTitle("Accounts")
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await accountStore.refreshAccountProfiles(using: blueskyClient)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isPresentingAddAccount = true
                     } label: {
@@ -137,6 +122,7 @@ struct AccountSwitcherSheet: View {
                     }
                 }
                 .presentationDetents([.medium])
+            }
             }
         }
         .presentationDetents([.large])

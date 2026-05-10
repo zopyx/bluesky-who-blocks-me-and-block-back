@@ -18,6 +18,10 @@ struct AccountSummaryCard: View {
             }
 
             Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
         .padding(16)
         .background(
@@ -30,7 +34,6 @@ struct AccountSummaryCard: View {
                     )
                 )
         )
-        .padding(.horizontal)
     }
 
     @ViewBuilder

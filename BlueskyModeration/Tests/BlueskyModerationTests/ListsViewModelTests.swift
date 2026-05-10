@@ -19,6 +19,7 @@ final class ListsViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.listsByKind.isEmpty)
         XCTAssertNil(viewModel.activeProfile)
         XCTAssertEqual(viewModel.blockingCount, 0)
+        XCTAssertEqual(viewModel.blockedByCount, 0)
         XCTAssertNil(viewModel.errorMessage)
     }
 
@@ -104,8 +105,12 @@ private final class MockListsClient: LiveBlueskyClient {
         makeProfile(did: actorDID, handle: account.handle)
     }
 
-    override func fetchBlockedActors(account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] {
+    override func fetchBlockingCount(for account: AppAccount) async throws -> Int {
         if shouldFailBlocking { throw BlueskyAPIError.server("Failed") }
-        return blockedActors
+        return blockedActors.count
+    }
+
+    override func fetchBlockedByCount(for account: AppAccount) async throws -> Int {
+        return 0
     }
 }

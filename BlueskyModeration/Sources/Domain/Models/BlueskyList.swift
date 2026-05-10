@@ -38,8 +38,9 @@ struct BlueskyList: Identifiable, Hashable, Sendable, Codable {
     var description: String
     let memberCount: Int?
     let kind: Kind
+    var avatarURL: URL? = nil
 
     enum CodingKeys: String, CodingKey {
-        case id, name, description, memberCount, kind
+        case id, name, description, memberCount, kind, avatarURL
     }
 }

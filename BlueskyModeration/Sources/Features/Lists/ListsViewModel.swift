@@ -5,6 +5,7 @@ final class ListsViewModel: ObservableObject {
     @Published private(set) var listsByKind: [BlueskyList.Kind: [BlueskyList]] = [:]
     @Published private(set) var activeProfile: BlueskyProfile?
     @Published private(set) var blockingCount = 0
+    @Published private(set) var blockedByCount = 0
     @Published private(set) var isLoading = false
     @Published private(set) var isFromCache = false
     @Published var errorMessage: String?
@@ -18,6 +19,7 @@ final class ListsViewModel: ObservableObject {
             listsByKind = [:]
             activeProfile = nil
             blockingCount = 0
+            blockedByCount = 0
             errorMessage = nil
             return
         }
@@ -52,10 +54,15 @@ final class ListsViewModel: ObservableObject {
         }
 
         do {
-            let blocked = try await client.fetchBlockedActors(account: account, appPassword: appPassword)
-            blockingCount = blocked.count
+            blockingCount = try await client.fetchBlockingCount(for: account)
         } catch {
-            AppLogger.moderation.debug("Failed to fetch blocked actors: \(error.localizedDescription, privacy: .public)")
+            AppLogger.moderation.debug("Failed to fetch blocking count: \(error.localizedDescription, privacy: .public)")
+        }
+
+        do {
+            blockedByCount = try await client.fetchBlockedByCount(for: account)
+        } catch {
+            AppLogger.moderation.debug("Failed to fetch blocked-by count: \(error.localizedDescription, privacy: .public)")
         }
 
         persistCache(forKey: cacheKey)
@@ -67,13 +74,15 @@ final class ListsViewModel: ObservableObject {
         listsByKind = Dictionary(grouping: cached.lists, by: \.kind)
         activeProfile = cached.profile
         blockingCount = cached.blockingCount
+        blockedByCount = cached.blockedByCount
     }
 
     private func persistCache(forKey key: String) {
         let data = DashboardCacheData(
             lists: Array(listsByKind.values.flatMap { $0 }),
             profile: activeProfile,
-            blockingCount: blockingCount
+            blockingCount: blockingCount,
+            blockedByCount: blockedByCount
         )
         DashboardCache.save(data, forKey: key)
     }

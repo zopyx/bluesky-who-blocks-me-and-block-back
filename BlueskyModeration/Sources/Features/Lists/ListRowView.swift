@@ -2,18 +2,31 @@ import SwiftUI
 
 struct ListRowView: View {
     let list: BlueskyList
-    @ScaledMetric private var iconSize = 30.0
+    @ScaledMetric private var iconSize = 36
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: list.kind.symbolName)
-                .font(.headline)
-                .foregroundStyle(list.kind == .moderation ? .orange : .skyPrimary)
-                .frame(width: iconSize)
+        HStack(spacing: 14) {
+            if let avatarURL = list.avatarURL {
+                AsyncImage(url: avatarURL) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    listIcon
+                }
+                .frame(width: iconSize, height: iconSize)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.separator, lineWidth: 0.5)
+                }
+            } else {
+                listIcon
+            }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(list.name)
-                    .font(.headline)
+                    .font(.headline.weight(.semibold))
                 Text(list.description)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -22,24 +35,30 @@ struct ListRowView: View {
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(countText)
-                    .font(.headline.monospacedDigit())
-                    .foregroundStyle(.primary)
-                Text("members")
-                    .font(.caption)
+            if let memberCount = list.memberCount {
+                Text("\(memberCount)")
+                    .font(.callout.monospacedDigit().weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(.secondary.opacity(0.1))
+                    )
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 
-    private var countText: String {
-        if let memberCount = list.memberCount {
-            return "\(memberCount)"
+    private var listIcon: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(list.kind == .moderation ? Color.orange.opacity(0.12) : Color.skyPrimary.opacity(0.12))
+                .frame(width: iconSize, height: iconSize)
+            Image(systemName: list.kind.symbolName)
+                .font(.headline)
+                .foregroundStyle(list.kind == .moderation ? .orange : .skyPrimary)
         }
-
-        return "-"
     }
 }
 

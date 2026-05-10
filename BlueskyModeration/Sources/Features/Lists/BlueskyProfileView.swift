@@ -24,7 +24,7 @@ struct BlueskyProfileView: View {
                 )
             }
         }
-        .navigationTitle(member.actor.title)
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
 
         }

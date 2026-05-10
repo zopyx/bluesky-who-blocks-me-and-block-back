@@ -4,12 +4,14 @@ enum RelationshipMode: String, CaseIterable {
     case followers
     case following
     case blocking
+    case blockedBy
 
     var title: String {
         switch self {
         case .followers: return "My followers"
         case .following: return "My followings"
         case .blocking: return "Blocking"
+        case .blockedBy: return "Blocked by"
         }
     }
 
@@ -23,6 +25,7 @@ struct RelationshipsView: View {
     let initialCount: Int?
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @AppStorage("debugMode") private var debugMode = false
     @State private var actors: [BlueskyActor] = []
     @State private var isLoading = true
     @State private var isRefreshing = false
@@ -54,6 +57,11 @@ struct RelationshipsView: View {
                 }
             } else {
                 List {
+                    Section {
+                        Text(mode.titled(isLoading ? (initialCount ?? 0) : actors.count))
+                            .font(.title2.weight(.bold))
+                    }
+
                     if !actors.isEmpty {
                         Section {
                             TextField("Search \(mode.rawValue.lowercased())", text: $searchQuery)
@@ -81,34 +89,36 @@ struct RelationshipsView: View {
                                     list: nil
                                 )
                             } label: {
-                                HStack(spacing: 10) {
-                                    VStack(spacing: 4) {
-                                        avatarView(for: actor)
-                                        if actor.isNew {
-                                            Text("New")
-                                                .font(.caption2.weight(.semibold))
-                                                .foregroundStyle(.orange)
-                                                .padding(.horizontal, 6)
-                                                .padding(.vertical, 2)
-                                                .background(Color.orange.opacity(0.12), in: Capsule())
-                                        }
-                                    }
+                                HStack(spacing: 8) {
+                                    avatarView(for: actor)
 
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(actor.title)
-                                            .font(.headline)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        HStack(spacing: 6) {
+                                            Text(actor.title)
+                                                .font(.subheadline.weight(.semibold))
+                                            if actor.isNew {
+                                                Text("New")
+                                                    .font(.caption2.weight(.semibold))
+                                                    .foregroundStyle(.orange)
+                                                    .padding(.horizontal, 5)
+                                                    .padding(.vertical, 1)
+                                                    .background(Color.orange.opacity(0.12), in: Capsule())
+                                            }
+                                        }
                                         Text(actor.handle)
-                                            .font(.subheadline)
+                                            .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
 
                                     Spacer()
 
-                                    Text("\(index + 1)")
-                                        .font(.caption)
-                                        .foregroundStyle(.tertiary)
+                                    if debugMode {
+                                        Text("\(index + 1)")
+                                            .font(.caption2)
+                                            .foregroundStyle(.tertiary)
+                                    }
                                 }
-                                .padding(.vertical, 4)
+                                .padding(.vertical, 2)
                             }
                             .contextMenu {
                                 Button(role: .destructive) {
@@ -145,7 +155,8 @@ struct RelationshipsView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle(mode.titled(isLoading ? (initialCount ?? actors.count) : actors.count))
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if !actors.isEmpty {
@@ -209,7 +220,7 @@ struct RelationshipsView: View {
         }
     }
 
-    @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 40
+    @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 30
 
     @ViewBuilder
     private func avatarView(for actor: BlueskyActor) -> some View {
@@ -307,6 +318,8 @@ struct RelationshipsView: View {
                 result = try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
             case .blocking:
                 result = try await blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
+            case .blockedBy:
+                result = try await blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
             }
             actors = result
             isLoading = false

@@ -32,7 +32,7 @@ struct ListDetailView: View {
 
     var body: some View {
         rootContent
-            .navigationTitle(currentList.name)
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbarContent)
             .sheet(isPresented: $isShowingEditSheet, content: editSheetContent)
@@ -270,6 +270,19 @@ struct ListDetailView: View {
     @ViewBuilder
     private func content(account: AppAccount, appPassword: String) -> some View {
         List {
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(currentList.name)
+                        .font(.title2.weight(.bold))
+                    if !currentList.description.isEmpty, currentList.description != currentList.name {
+                        Text(currentList.description)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
             if let batchProgress = viewModel.batchProgress {
                 Section("Bulk Operation") {
                     BatchProgressCard(

@@ -33,10 +33,18 @@ struct InfoView: View {
                 }
             }
             .background(background)
-            .navigationTitle("RULYX")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Image("RulyxLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 28)
+                }
+            }
         }
     }
 
@@ -59,9 +67,10 @@ struct InfoView: View {
                 .padding(14)
                 .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
 
-            Text("RULYX")
-                .font(.title2.weight(.bold))
-                .foregroundStyle(.white)
+            Image("RulyxLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 32)
 
             Text("Bluesky moderation made easy")
                 .font(.subheadline)
@@ -222,6 +231,30 @@ struct InfoView: View {
             }
 
             legalRow(icon: "doc.text.magnifyingglass", title: "License", value: "MIT — see LICENSE file")
+
+            legalDivider
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Third-Party Services")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+
+                Link(destination: URL(string: "https://clearsky.app")!) {
+                    legalRow(icon: "cloud", title: "ClearSky", value: "clearsky.app", link: true)
+                }
+
+                Link(destination: URL(string: "https://github.com/ClearskyApp06/clearskyservices")!) {
+                    legalRow(icon: "chevron.left.forwardslash.chevron.right", title: "ClearSky GitHub", value: "github.com/ClearskyApp06", link: true)
+                }
+
+                Text("Blocking and blocked-by data is provided by ClearSky. ClearSky indexes block records from the Bluesky firehose and makes them available via a public API. No authentication is required.")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.55))
+                    .padding(.leading, 50)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
 
             legalDivider
 
