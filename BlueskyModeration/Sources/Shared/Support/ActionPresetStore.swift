@@ -22,6 +22,7 @@ struct ActionPreset: Identifiable, Codable, Hashable {
 
 @MainActor
 final class ActionPresetStore: ObservableObject {
+    static let shared = ActionPresetStore()
     @Published private(set) var presets: [ActionPreset] = []
 
     private let defaults: UserDefaults

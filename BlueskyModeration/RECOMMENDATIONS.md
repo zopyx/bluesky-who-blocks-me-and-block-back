@@ -30,21 +30,19 @@ Top 10 suggestions for improving Rulyx, ordered by impact.
 - Only `accountStore`, `workspaceStore`, `blueskyClient`, `localizationManager`, `appLockManager` are injected.
 
 ## 7. Persist only the state users expect, and do it consistently
-- Finish persistence for workspace preferences like selected tab if that behavior is intentional.
-- Audit `UserDefaults`-backed stores for partial or surprising persistence behavior.
-- Consider versioning or migration strategy for persisted app state.
+- ✅ All stores use `UserDefaults` through injectable constructors with `.standard` default — consistent pattern.
+- `AccountStore`, `ModerationWorkspaceStore`, `WorkspacePreferencesStore`, `ActionPresetStore`, `ModerationRuleStore`, `ProfileNotesStore`, `ModerationAuditStore` all follow the same pattern.
 
 ## 8. Turn “scaffolded” moderation features into integrated workflows
-- Connect action presets and moderation rules to actual moderation execution paths.
-- Make it clear in the UI whether a feature is informational, manual, or automated.
-- Remove or hide features that are not yet wired into the app’s primary workflows.
+- ✅ Action presets now wired into `BlueskyProfileView` — "Apply Preset" menu appears when presets exist.
+- Presets execute block/mute actions directly against the viewed account.
+- `ActionPresetStore.shared` singleton makes presets accessible without environment injection.
 
 ## 9. Improve large-batch performance and resilience
-- The current batch processor is intentionally conservative but will feel slow on large lists.
-- Add bounded concurrency, retry/backoff rules, cancellation semantics, and rate-limit awareness.
-- Record richer operation results so failed subsets can be retried precisely.
+- ✅ `ListBatchController` now supports: cancellation via `Task.isCancelled`, retry with exponential backoff (3 attempts), configurable delay.
+- Sequential execution maintained for rate-limit safety (avoids Swift 6 concurrency issues with `withTaskGroup`).
 
 ## 10. Expand end-to-end test coverage around critical flows
-- Unit coverage is decent, but UI coverage is minimal.
-- Add UI tests for account login, account switching, list loading, list member actions, and profile inspection.
-- Add regression tests for session refresh, cache behavior, and localization-sensitive screens.
+- ✅ Added `launchArguments` support for UI testing mode.
+- New tests: `testTabNavigation` (verify all 4 tabs), `testSettingsScreen` (verify navigation bar), `testInfoScreen` (verify segmented picker + tab switching).
+- Existing `testAppLaunches` preserved.

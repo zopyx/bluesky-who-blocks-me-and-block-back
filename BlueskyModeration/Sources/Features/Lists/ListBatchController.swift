@@ -2,6 +2,12 @@ import Foundation
 
 @MainActor
 final class ListBatchController {
+    private let baseDelay: UInt64
+
+    init(baseDelay: UInt64 = 300_000_000) {
+        self.baseDelay = baseDelay
+    }
+
     func performBatch(
         title: String,
         actors: [BlueskyActor],
@@ -15,6 +21,8 @@ final class ListBatchController {
         var failures: [ListBulkActionResult.Failure] = []
 
         for (index, actor) in actors.enumerated() {
+            guard !Task.isCancelled else { break }
+
             onProgress?(
                 BatchProgress(
                     title: title,
@@ -25,11 +33,23 @@ final class ListBatchController {
             )
             onActorStart?(actor)
 
-            do {
-                try await action(actor)
-                succeededActors.append(actor)
-            } catch {
-                failures.append(.init(actor: actor, message: error.localizedDescription))
+            // Attempt with retry
+            var lastError: Error?
+            for _ in 0..<3 {
+                guard !Task.isCancelled else { break }
+                do {
+                    try await action(actor)
+                    succeededActors.append(actor)
+                    lastError = nil
+                    break
+                } catch {
+                    lastError = error
+                    try? await Task.sleep(for: .nanoseconds(baseDelay))
+                }
+            }
+
+            if let lastError {
+                failures.append(.init(actor: actor, message: lastError.localizedDescription))
             }
 
             onActorComplete?(actor)
@@ -43,7 +63,7 @@ final class ListBatchController {
             )
 
             if index < actors.count - 1 {
-                try? await Task.sleep(for: .milliseconds(300))
+                try? await Task.sleep(for: .nanoseconds(baseDelay))
             }
         }
 

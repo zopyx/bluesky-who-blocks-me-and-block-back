@@ -151,6 +151,26 @@ struct BlueskyProfileView: View {
                         }
                         .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
                         .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
+
+                    if !ActionPresetStore.shared.presets.isEmpty {
+                        Menu {
+                            ForEach(ActionPresetStore.shared.presets) { preset in
+                                Button(preset.name) {
+                                    Task {
+                                        if preset.shouldBlock {
+                                            await viewModel.toggleBlock(account: account, appPassword: appPassword, using: blueskyClient)
+                                        }
+                                        if preset.shouldMute {
+                                            await viewModel.toggleMute(account: account, appPassword: appPassword, using: blueskyClient)
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label("Apply Preset", systemImage: "square.2.layers.3d")
+                        }
+                        .accessibilityHint("Applies a saved action preset to this account")
+                    }
                     }
 
                     if let list {
