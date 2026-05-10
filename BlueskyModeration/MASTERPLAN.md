@@ -1,6 +1,6 @@
 # Master Plan — BlueskyModeration (Rulyx)
 
-**Updated Score: 8.7/10** (+0.3) — Expert panel review across 7 domains with top-5 improvements per area.
+**Updated Score: 9.0/10** (+0.3) — Expert panel review across 7 domains with top-5 improvements per area.
 
 ---
 
