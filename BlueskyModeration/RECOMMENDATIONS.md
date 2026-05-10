@@ -1,48 +1,53 @@
 # Recommendations
 
-Top 10 suggestions for improving Rulyx, ordered by impact.
+Top 10 suggestions for improving Rulyx, updated to match the current repository state.
 
-## 1. Replace fake certificate pinning with a real transport security strategy
-- ✅ Removed placeholder `PinnedURLSessionDelegate` entirely. No false security claims.
-- Reverted `LiveBlueskyClient` to use `URLSession.shared`.
-- Revisit if actual SPKI pinning is needed for the target audience.
+## 1. Replace the current trust delegate with a real security posture
+- The request executor still contains a `PinningDelegate`, but it is not doing real certificate pinning.
+- Either implement actual SPKI/certificate pinning correctly or remove the custom trust delegate and rely on standard TLS.
+- Add tests that prove the chosen transport behavior.
 
-## 2. Collapse networking into one coherent service layer
-- ✅ `LiveBlueskyClient` organized with MARK comments for each domain.
-- Dedicated services (`BlueskyListService`, `BlueskyProfileService`) kept alongside.
-- Future: move functions from the monolith into the dedicated services.
+## 2. Collapse the app onto one networking architecture
+- `AppDependencies` still creates `BlueskyListService` and `BlueskyProfileService`, but the feature layer mostly talks to `LiveBlueskyClient`.
+- Pick one primary abstraction and make it the real source of truth.
+- Remove duplicate API mapping and request logic to reduce drift and maintenance cost.
 
 ## 3. Break up `LiveBlueskyClient`
-- ✅ 9 MARK sections added: Authentication, List Operations, Actor Search, Moderation, Blocking, Clearsky, DID Resolution, Followers, Profile Inspection.
-- Ready for splitting when protocol-based service layer is designed.
+- The client is still a large multi-role class handling sessions, lists, profiles, moderation actions, Clearsky access, and PLC history.
+- Split it into smaller services or domain-specific facades behind protocols.
+- Keep authentication/session recovery centralized while moving feature behavior out.
 
-## 4. Decide whether macOS is a real product target
-- ✅ Removed `BlueskyModerationMac` target from `project.yml`. The shared UIKit imports make it non-viable without a major porting effort.
-- The macOS-specific app stub remains on disk but is no longer built.
+## 4. Finish dependency cleanup in the app root
+- The iOS app root is leaner now, which is good.
+- The next step is removing dependency objects that are still constructed but not injected or not needed by the active composition model.
+- This will make app startup wiring clearer and reduce architectural ambiguity.
 
-## 5. Standardize localization on one system
-- ✅ JSON-based `loc()` system is the primary runtime system (supports live language switching).
-- Removed `Localizable.xcstrings` from project build (file stays on disk for Xcode previews).
-- All user-facing strings use `loc("key")` — no hardcoded English.
+## 5. Standardize localization and eliminate hard-coded English UI copy
+- The app has broad localization support, but many visible strings and accessibility labels are still hard-coded in English.
+- Move remaining strings into one localization system consistently.
+- Review new language bundles for untranslated fallback content before release.
 
-## 6. Reduce environment object sprawl
-- ✅ Reduced from 9 to 5 environment objects by removing unused `listService`, `profileService`, `actionPresetStore`, `profileNotesStore`.
-- Only `accountStore`, `workspaceStore`, `blueskyClient`, `localizationManager`, `appLockManager` are injected.
+## 6. Persist workspace behavior consistently
+- `lastProfileQuery` persists, but `selectedTab` still does not.
+- Audit all user-facing state for consistency between “session-only” and “remembered” behavior.
+- Make persistence rules explicit so the UX feels intentional.
 
-## 7. Persist only the state users expect, and do it consistently
-- ✅ All stores use `UserDefaults` through injectable constructors with `.standard` default — consistent pattern.
-- `AccountStore`, `ModerationWorkspaceStore`, `WorkspacePreferencesStore`, `ActionPresetStore`, `ModerationRuleStore`, `ProfileNotesStore`, `ModerationAuditStore` all follow the same pattern.
+## 7. Reduce view complexity in the largest screens
+- `ListsView`, `ListDetailView`, `RelationshipsView`, `ProfileInspectorView`, and `BlueskyProfileView` are still large and state-heavy.
+- Continue extracting presentation logic, sheet handling, and async workflow orchestration into smaller units.
+- This will lower regression risk in the highest-change screens.
 
-## 8. Turn “scaffolded” moderation features into integrated workflows
-- ✅ Action presets now wired into `BlueskyProfileView` — "Apply Preset" menu appears when presets exist.
-- Presets execute block/mute actions directly against the viewed account.
-- `ActionPresetStore.shared` singleton makes presets accessible without environment injection.
+## 8. Strengthen bulk-action performance and control
+- The queue and batch flow are usable, but execution is still conservative and mostly serial.
+- Add bounded concurrency, better cancellation semantics, and more precise retry handling for large moderation jobs.
+- Preserve safety, but improve throughput for real operator workloads.
 
-## 9. Improve large-batch performance and resilience
-- ✅ `ListBatchController` now supports: cancellation via `Task.isCancelled`, retry with exponential backoff (3 attempts), configurable delay.
-- Sequential execution maintained for rate-limit safety (avoids Swift 6 concurrency issues with `withTaskGroup`).
+## 9. Expand end-to-end test coverage around critical workflows
+- Unit coverage is good, and UI smoke coverage has improved.
+- Add UI tests for account creation, account switching, list loading, member add/remove flows, import flows, and profile moderation actions.
+- Focus on the paths most likely to break from UI or state-management changes.
 
-## 10. Expand end-to-end test coverage around critical flows
-- ✅ Added `launchArguments` support for UI testing mode.
-- New tests: `testTabNavigation` (verify all 4 tabs), `testSettingsScreen` (verify navigation bar), `testInfoScreen` (verify segmented picker + tab switching).
-- Existing `testAppLaunches` preserved.
+## 10. Clarify which “advanced” features are core workflows
+- Presets, rules, notes, reports, snapshots, and background queues all exist, but not all feel equally integrated into the main user journey.
+- Decide which of these are first-class product features and deepen those workflows.
+- Hide, defer, or simplify capabilities that remain peripheral to the core moderation experience.
