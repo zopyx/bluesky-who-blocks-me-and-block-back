@@ -20,7 +20,8 @@ struct PagedActorSearch {
 
 @MainActor
 protocol BlueskyAuthenticating {
-    func authenticate(handle: String, appPassword: String, entrywayURL: URL?) async throws -> BlueskySession
+    // MARK: - Authentication & Session
+func authenticate(handle: String, appPassword: String, entrywayURL: URL?) async throws -> BlueskySession
     func persistSession(_ session: BlueskySession, for account: AppAccount) async throws
     func deletePersistedSession(for account: AppAccount) throws
 }
@@ -31,14 +32,9 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     private let requestExecutor: BlueskyRequestExecuting
     private let sessionService: BlueskySessionServicing
 
-    private static var pinnedSession: URLSession = {
-        let delegate = PinnedURLSessionDelegate()
-        return URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-    }()
-
     init(
         baseURL: URL = URL(string: "https://bsky.social")!,
-        session: URLSession = LiveBlueskyClient.pinnedSession,
+        session: URLSession = .shared,
         keychain: KeychainServicing = KeychainService(),
         requestExecutor: BlueskyRequestExecuting? = nil,
         sessionService: BlueskySessionServicing? = nil
@@ -59,7 +55,8 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         sessionService.clearSessionCache()
     }
 
-    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
+    // MARK: - Authentication & Session
+func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
         try await sessionService.authenticate(handle: handle, appPassword: appPassword, entrywayURL: entrywayURL)
     }
 
@@ -75,7 +72,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         await sessionService.restoreSessions(for: accounts)
     }
 
-    func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
+    
+// MARK: - List Operations
+
+func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
         let response: GetListsResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
             appPassword: appPassword
@@ -178,7 +178,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         )
     }
 
-    func searchActors(
+    
+// MARK: - Actor Search & Moderation
+
+func searchActors(
         query: String,
         account: AppAccount,
         appPassword: String?
@@ -532,7 +535,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         )
     }
 
-    func fetchBlockedActors(
+    
+// MARK: - Blocking & Profile
+
+func fetchBlockedActors(
         account: AppAccount,
         appPassword: String?
     ) async throws -> [BlueskyActor] {
@@ -554,7 +560,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         try await fetchClearskyCount(account: account, endpoint: "single-blocklist")
     }
 
-    private func resolveAccountDID(_ account: AppAccount) async throws -> String {
+    
+// MARK: - Clearsky Integration
+
+private func resolveAccountDID(_ account: AppAccount) async throws -> String {
         if let did = account.did { return did }
         return try await resolveHandleToDID(handle: account.handle)
     }
@@ -605,7 +614,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         return decoded.data.count
     }
 
-    private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
+    
+// MARK: - DID Resolution
+
+private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
         let urlSession = session
         return try await withThrowingTaskGroup(of: [BlueskyActor].self) { group in
             var offset = 0
@@ -676,7 +688,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         return decoded.data.didIdentifier
     }
 
-    func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
+    
+// MARK: - PLC Audit
+
+func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
         guard let url = URL(string: "https://plc.directory/\(did)/log/audit") else {
             throw BlueskyAPIError.invalidURL
         }
@@ -689,7 +704,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         return try JSONDecoder().decode([PLCAuditLogEntry].self, from: data)
     }
 
-    func fetchFollowers(
+    
+// MARK: - Followers / Following
+
+func fetchFollowers(
         actor actorDID: String,
         account: AppAccount,
         appPassword: String?
@@ -817,7 +835,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         )
     }
 
-    func inspectProfile(
+    
+// MARK: - Profile Inspection
+
+func inspectProfile(
         query: String,
         account: AppAccount,
         appPassword: String?
