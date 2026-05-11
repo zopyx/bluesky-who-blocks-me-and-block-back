@@ -5,13 +5,13 @@ struct RootView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var isShowingQuickAccountSwitcher = false
     @State private var isShowingAccountManagement = false
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            TabView(selection: $workspaceStore.selectedTab) {
+        TabView(selection: $workspaceStore.selectedTab) {
             ListsView()
                 .tag(WorkspaceTab.moderation)
                 .tabItem {
@@ -53,40 +53,36 @@ struct RootView: View {
                 }
         }
         .tint(.skyPrimary)
-
-        if let activeAccount = accountStore.activeAccount {
-            Button {
-                isShowingQuickAccountSwitcher = true
-            } label: {
-                HStack(spacing: 8) {
-                    accountAvatarView(for: activeAccount)
-                    Text(activeAccount.displayName)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
-                        .foregroundStyle(.primary)
-                    Image(systemName: "chevron.up")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.leading, 6)
-                .padding(.trailing, 12)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial, in: Capsule())
-                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        .overlay(alignment: .topLeading) {
+            if horizontalSizeClass == .compact, let activeAccount = accountStore.activeAccount {
+                accountSwitcherButton(for: activeAccount)
+                    .padding(.leading, 16)
+                    .padding(.top, 8)
+                    .sheet(isPresented: $isShowingQuickAccountSwitcher) {
+                        AccountQuickSwitcherSheet(
+                            isPresented: $isShowingQuickAccountSwitcher,
+                            onManageAccounts: openAccountManagement
+                        )
+                        .environmentObject(accountStore)
+                    }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(localizationManager.localized("account.switcher.label"))
-            .accessibilityHint(localizationManager.localized("account.switcher.hint"))
-            .padding(.leading, 16)
-            .padding(.top, 8)
         }
-        }
-        .sheet(isPresented: $isShowingQuickAccountSwitcher) {
-            AccountQuickSwitcherSheet(
-                isPresented: $isShowingQuickAccountSwitcher,
-                onManageAccounts: openAccountManagement
-            )
-            .environmentObject(accountStore)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if horizontalSizeClass == .regular, let activeAccount = accountStore.activeAccount {
+                HStack {
+                    accountSwitcherButton(for: activeAccount)
+                        .popover(isPresented: $isShowingQuickAccountSwitcher) {
+                            iPadAccountSwitcher(isPresented: $isShowingQuickAccountSwitcher)
+                                .environmentObject(accountStore)
+                                .environmentObject(blueskyClient)
+                        }
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+                .background(.clear)
+            }
         }
         .sheet(isPresented: $isShowingAccountManagement) {
             AccountSwitcherSheet(isPresented: $isShowingAccountManagement)
@@ -101,10 +97,10 @@ struct RootView: View {
                             Image(systemName: "checklist.checked")
                                 .font(.system(size: 48))
                                 .foregroundStyle(Color.skyPrimary)
-                    Image("RulyxLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 36)
+                            Image("RulyxLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 36)
                             Text(verbatim: localizationManager.localized("onboarding.title"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -155,6 +151,31 @@ struct RootView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             isShowingAccountManagement = true
         }
+    }
+
+    private func accountSwitcherButton(for account: AppAccount) -> some View {
+        Button {
+            isShowingQuickAccountSwitcher = true
+        } label: {
+            HStack(spacing: 8) {
+                accountAvatarView(for: account)
+                Text(account.displayName)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .foregroundStyle(.primary)
+                Image(systemName: "chevron.up")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.leading, 6)
+            .padding(.trailing, 12)
+            .padding(.vertical, 6)
+            .background(.ultraThinMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localizationManager.localized("account.switcher.label"))
+        .accessibilityHint(localizationManager.localized("account.switcher.hint"))
     }
 
     @ViewBuilder

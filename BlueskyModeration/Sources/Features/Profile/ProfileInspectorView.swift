@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProfileInspectorView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
@@ -299,7 +300,9 @@ struct ProfileInspectorView: View {
             }
             .navigationTitle(loc("profile.title"))
             .toolbar {
-                accountSwitcherToolbar(isPresented: $isShowingQuickAccountSwitcher, accountStore: accountStore, localizationManager: localizationManager)
+                if horizontalSizeClass == .compact {
+                    accountSwitcherToolbar(isPresented: $isShowingQuickAccountSwitcher, accountStore: accountStore, localizationManager: localizationManager)
+                }
             }
             .sheet(isPresented: $isShowingQuickAccountSwitcher) {
                 AccountQuickSwitcherSheet(

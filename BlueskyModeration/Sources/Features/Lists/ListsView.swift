@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ListsView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
@@ -234,7 +235,7 @@ struct ListsView: View {
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    if let activeAccount = accountStore.activeAccount {
+                    if horizontalSizeClass == .compact, let activeAccount = accountStore.activeAccount {
                         Button {
                             isShowingQuickAccountSwitcher = true
                         } label: {
