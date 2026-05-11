@@ -10,7 +10,8 @@ struct RootView: View {
     @State private var isShowingAccountManagement = false
 
     var body: some View {
-        TabView(selection: $workspaceStore.selectedTab) {
+        ZStack(alignment: .topLeading) {
+            TabView(selection: $workspaceStore.selectedTab) {
             ListsView()
                 .tag(WorkspaceTab.moderation)
                 .tabItem {
@@ -52,35 +53,33 @@ struct RootView: View {
                 }
         }
         .tint(.skyPrimary)
-        .overlay(alignment: .topLeading) {
-            if let activeAccount = accountStore.activeAccount {
-                Button {
-                    isShowingQuickAccountSwitcher = true
-                } label: {
-                    HStack(spacing: 8) {
-                        accountAvatarView(for: activeAccount)
 
-                        Text(activeAccount.displayName)
-                            .font(.subheadline.weight(.semibold))
-                            .lineLimit(1)
-                            .foregroundStyle(.primary)
-
-                        Image(systemName: "chevron.up")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.leading, 6)
-                    .padding(.trailing, 12)
-                    .padding(.vertical, 6)
-                    .background(.ultraThinMaterial, in: Capsule())
-                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+        if let activeAccount = accountStore.activeAccount {
+            Button {
+                isShowingQuickAccountSwitcher = true
+            } label: {
+                HStack(spacing: 8) {
+                    accountAvatarView(for: activeAccount)
+                    Text(activeAccount.displayName)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                        .foregroundStyle(.primary)
+                    Image(systemName: "chevron.up")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(localizationManager.localized("account.switcher.label"))
-                .accessibilityHint(localizationManager.localized("account.switcher.hint"))
-                .padding(.leading, 16)
-                .padding(.top, 8)
+                .padding(.leading, 6)
+                .padding(.trailing, 12)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: Capsule())
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localizationManager.localized("account.switcher.label"))
+            .accessibilityHint(localizationManager.localized("account.switcher.hint"))
+            .padding(.leading, 16)
+            .padding(.top, 8)
+        }
         }
         .sheet(isPresented: $isShowingQuickAccountSwitcher) {
             AccountQuickSwitcherSheet(
