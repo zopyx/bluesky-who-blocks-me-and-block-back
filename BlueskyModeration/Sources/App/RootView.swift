@@ -22,16 +22,6 @@ struct RootView: View {
                     }
                 }
 
-            ProfileInspectorView()
-                .tag(WorkspaceTab.profile)
-                .tabItem {
-                    Label {
-                        Text(localizationManager.localized("tab.profile"))
-                    } icon: {
-                        Image(systemName: "person.text.rectangle")
-                    }
-                }
-
             SettingsView()
                 .tag(WorkspaceTab.settings)
                 .tabItem {
