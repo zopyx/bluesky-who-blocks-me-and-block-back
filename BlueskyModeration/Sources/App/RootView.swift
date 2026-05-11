@@ -6,6 +6,8 @@ struct RootView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @EnvironmentObject private var localizationManager: LocalizationManager
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @State private var isShowingQuickAccountSwitcher = false
+    @State private var isShowingAccountManagement = false
 
     var body: some View {
         TabView(selection: $workspaceStore.selectedTab) {
@@ -50,6 +52,48 @@ struct RootView: View {
                 }
         }
         .tint(.skyPrimary)
+        .overlay(alignment: .topLeading) {
+            if let activeAccount = accountStore.activeAccount {
+                Button {
+                    isShowingQuickAccountSwitcher = true
+                } label: {
+                    HStack(spacing: 8) {
+                        accountAvatarView(for: activeAccount)
+
+                        Text(activeAccount.displayName)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                            .foregroundStyle(.primary)
+
+                        Image(systemName: "chevron.up")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.leading, 6)
+                    .padding(.trailing, 12)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(localizationManager.localized("account.switcher.label"))
+                .accessibilityHint(localizationManager.localized("account.switcher.hint"))
+                .padding(.leading, 16)
+                .padding(.top, 8)
+            }
+        }
+        .sheet(isPresented: $isShowingQuickAccountSwitcher) {
+            AccountQuickSwitcherSheet(
+                isPresented: $isShowingQuickAccountSwitcher,
+                onManageAccounts: openAccountManagement
+            )
+            .environmentObject(accountStore)
+        }
+        .sheet(isPresented: $isShowingAccountManagement) {
+            AccountSwitcherSheet(isPresented: $isShowingAccountManagement)
+                .environmentObject(accountStore)
+                .environmentObject(blueskyClient)
+        }
         .sheet(isPresented: .init(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = !$0 })) {
             NavigationStack {
                 ScrollView {
@@ -103,6 +147,32 @@ struct RootView: View {
                     }
                 }
             }
+        }
+    }
+
+    @MainActor
+    private func openAccountManagement() {
+        isShowingQuickAccountSwitcher = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            isShowingAccountManagement = true
+        }
+    }
+
+    @ViewBuilder
+    private func accountAvatarView(for account: AppAccount) -> some View {
+        let avatarSize: CGFloat = 28
+        if let avatarURL = account.avatarURL {
+            AsyncImage(url: avatarURL) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Circle().fill(Color.skyPrimary)
+                    .overlay { Text(account.displayName.prefix(1).uppercased()).font(.caption.weight(.bold)).foregroundStyle(.white) }
+            }
+            .frame(width: avatarSize, height: avatarSize)
+            .clipShape(Circle())
+        } else {
+            Circle().fill(Color.skyPrimary).frame(width: avatarSize, height: avatarSize)
+                .overlay { Text(account.displayName.prefix(1).uppercased()).font(.caption.weight(.bold)).foregroundStyle(.white) }
         }
     }
 }
