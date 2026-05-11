@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ListsView: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
@@ -16,7 +15,6 @@ struct ListsView: View {
     @State private var showBlocking = false
     @State private var showBlockedBy = false
     @State private var isShowingBulkLookup = false
-    @State private var isShowingQuickAccountSwitcher = false
     @State private var isShowingAccountManagement = false
 
     var body: some View {
@@ -234,30 +232,6 @@ struct ListsView: View {
             .navigationTitle("")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if horizontalSizeClass == .compact, let activeAccount = accountStore.activeAccount {
-                        Button {
-                            isShowingQuickAccountSwitcher = true
-                        } label: {
-                            HStack(spacing: 8) {
-                                accountAvatarView()
-
-                                Text(activeAccount.displayName)
-                                    .font(.subheadline.weight(.semibold))
-                                    .lineLimit(1)
-                                    .foregroundStyle(.primary)
-
-                                Image(systemName: "chevron.up")
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(localizationManager.localized("account.switcher.label"))
-                        .accessibilityHint(localizationManager.localized("account.switcher.hint"))
-                    }
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task {
@@ -305,12 +279,6 @@ struct ListsView: View {
                 .environmentObject(accountStore)
                 .environmentObject(blueskyClient)
             }
-            .sheet(isPresented: $isShowingQuickAccountSwitcher) {
-                AccountQuickSwitcherSheet(isPresented: $isShowingQuickAccountSwitcher) {
-                    openAccountManagement()
-                }
-                .environmentObject(accountStore)
-            }
             .sheet(isPresented: $isShowingAccountManagement) {
                 NavigationStack {
                     AccountSwitcherSheet(isPresented: $isShowingAccountManagement)
@@ -321,7 +289,7 @@ struct ListsView: View {
             .task(id: accountStore.activeAccountID) {
                 await reload()
             }
-
+            .preferredColorScheme(.dark)
         }
     }
 
@@ -388,13 +356,6 @@ struct ListsView: View {
 
     private func openAccountManagement() {
         isShowingAccountManagement = true
-    }
-
-    @ViewBuilder
-    private func accountAvatarView() -> some View {
-        if let account = accountStore.activeAccount {
-            self.accountAvatarView(for: account)
-        }
     }
 }
 
