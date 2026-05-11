@@ -149,4 +149,49 @@ final class ViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertFalse(viewModel.isSearching)
     }
+
+    // MARK: - ListDetailViewModel
+
+    func testListDetailViewModelInitialState() {
+        let viewModel = ListDetailViewModel()
+
+        XCTAssertTrue(viewModel.members.isEmpty)
+        XCTAssertTrue(viewModel.filteredMembers.isEmpty)
+        XCTAssertTrue(viewModel.searchResults.isEmpty)
+        XCTAssertNil(viewModel.comparisonReport)
+        XCTAssertNil(viewModel.importPreview)
+        XCTAssertFalse(viewModel.isLoadingMembers)
+        XCTAssertFalse(viewModel.isLoadingMoreMembers)
+        XCTAssertFalse(viewModel.hasMoreMembers)
+        XCTAssertFalse(viewModel.isPerformingBulkAction)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.membersErrorMessage)
+        XCTAssertNil(viewModel.searchErrorMessage)
+        XCTAssertNil(viewModel.bulkActionResult)
+        XCTAssertTrue(viewModel.selectedMemberIDs.isEmpty)
+        XCTAssertTrue(viewModel.selectedSearchActorIDs.isEmpty)
+    }
+
+    func testListDetailViewModelToggleSelection() {
+        let viewModel = ListDetailViewModel()
+        let did = "did:plc:test"
+
+        XCTAssertFalse(viewModel.selectedComparisonActorDIDs.contains(did))
+
+        viewModel.toggleComparisonSelection(for: did)
+        XCTAssertTrue(viewModel.selectedComparisonActorDIDs.contains(did))
+
+        viewModel.toggleComparisonSelection(for: did)
+        XCTAssertFalse(viewModel.selectedComparisonActorDIDs.contains(did))
+    }
+
+    func testListMembersControllerCanBeCreated() {
+        let controller = ListMembersController()
+        XCTAssertNotNil(controller)
+    }
+
+    func testListDiffControllerCanBeCreated() {
+        let controller = ListDiffController()
+        XCTAssertNotNil(controller)
+    }
 }

@@ -534,5 +534,18 @@
     "templates.new_reports": "Neue Meldungen",
     "templates.new_reports_desc": "Konten zur Überprüfung einreihen",
     "templates.emergency_block": "Notfall-Block",
-    "templates.emergency_block_desc": "Schnellaktions-Blockliste"
+    "templates.emergency_block_desc": "Schnellaktions-Blockliste",
+    "settings.icloud": "iCloud",
+    "settings.icloud.sync": "iCloud Sync",
+    "settings.icloud.enabled_footer": "Account handles and labels sync across your devices. App passwords stay on each device for security.",
+    "settings.icloud.disabled_footer": "Enable to keep your account configuration consistent across devices.",
+    "settings.security": "Security",
+    "settings.biometric_lock": "{biometric} Lock",
+    "settings.auto_lock": "Auto-Lock",
+    "settings.auto_lock.immediately": "Immediately",
+    "settings.auto_lock.1min": "1 minute",
+    "settings.auto_lock.5min": "5 minutes",
+    "settings.auto_lock.15min": "15 minutes",
+    "settings.auto_lock.30min": "30 minutes",
+    "settings.biometric_footer": "Lock the app with {biometric} when it goes to the background."
 }

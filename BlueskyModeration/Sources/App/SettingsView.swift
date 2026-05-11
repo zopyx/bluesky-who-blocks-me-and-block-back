@@ -68,15 +68,15 @@ struct SettingsView: View {
                 Section {
                     Toggle(isOn: $iCloudSync.isEnabled) {
                         Label {
-                            Text("iCloud Sync")
+                            Text(localizationManager.localized("settings.icloud.sync"))
                         } icon: {
                             Image(systemName: "icloud")
                         }
                     }
                 } header: {
-                    Text("iCloud")
+                    Text(localizationManager.localized("settings.icloud"))
                 } footer: {
-                    Text(iCloudSync.isEnabled ? "Account handles and labels sync across your devices. App passwords stay on each device for security." : "Enable to keep your account configuration consistent across devices.")
+                    Text(localizationManager.localized(iCloudSync.isEnabled ? "settings.icloud.enabled_footer" : "settings.icloud.disabled_footer"))
                 }
 
                 if appLockManager.isBiometricsAvailable {
