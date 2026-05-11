@@ -19,6 +19,7 @@ struct BlueskyModerationApp: App {
                         .environmentObject(deps.blueskyClient)
                         .environmentObject(deps.localizationManager)
                         .environmentObject(appLockManager)
+                        .environmentObject(iCloudAccountSync.shared)
                 }
             }
             .animation(UIAccessibility.isReduceMotionEnabled ? nil : .default, value: appLockManager.isLocked)

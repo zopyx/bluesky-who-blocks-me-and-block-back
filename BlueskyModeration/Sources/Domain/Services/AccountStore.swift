@@ -35,6 +35,14 @@ final class AccountStore: ObservableObject {
         }
 
         load()
+        NotificationCenter.default.addObserver(
+            forName: .iCloudAccountsReceived,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let entries = notification.object as? [[String: String]] else { return }
+            self?.mergeCloudAccounts(entries)
+        }
     }
 
     func addAccount(
@@ -198,6 +206,36 @@ final class AccountStore: ObservableObject {
             defaults.set(activeAccountID?.uuidString, forKey: activeAccountKey)
         } catch {
             errorMessage = "Failed to save accounts."
+        }
+        iCloudAccountSync.shared.pushAccounts(accounts)
+    }
+
+    private func mergeCloudAccounts(_ entries: [[String: String]]) {
+        for entry in entries {
+            guard let idString = entry["id"], let id = UUID(uuidString: idString),
+                  let handle = entry["handle"] else { continue }
+            let displayName = entry["displayName"] ?? handle
+            let did = entry["did"]
+            let label = entry["label"].flatMap { $0.isEmpty ? nil : $0 }
+            let pdsURL = entry["pdsURL"].flatMap { $0.isEmpty ? nil : URL(string: $0) }
+            let entrywayURL = entry["entrywayURL"].flatMap { $0.isEmpty ? nil : URL(string: $0) }
+
+            if !accounts.contains(where: { $0.id == id }) {
+                let account = AppAccount(
+                    id: id, handle: handle, displayName: displayName,
+                    did: did, pdsURL: pdsURL, entrywayURL: entrywayURL,
+                    label: label
+                )
+                accounts.append(account)
+                persist()
+            } else if let index = accounts.firstIndex(where: { $0.id == id }) {
+                var updated = accounts[index]
+                if label != updated.label {
+                    updated.label = label
+                    accounts[index] = updated
+                    persist()
+                }
+            }
         }
     }
 }

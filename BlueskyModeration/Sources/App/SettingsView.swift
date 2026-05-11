@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var appLockManager: AppLockManager
+    @EnvironmentObject private var iCloudSync: iCloudAccountSync
     @AppStorage("debugMode") private var debugMode = false
     @State private var isShowingClearCacheConfirmation = false
     @State private var cacheStatusMessage: String?
@@ -62,6 +63,20 @@ struct SettingsView: View {
                     }
                 } header: {
                     Text(localizationManager.localized("settings.preferences"))
+                }
+
+                Section {
+                    Toggle(isOn: $iCloudSync.isEnabled) {
+                        Label {
+                            Text("iCloud Sync")
+                        } icon: {
+                            Image(systemName: "icloud")
+                        }
+                    }
+                } header: {
+                    Text("iCloud")
+                } footer: {
+                    Text(iCloudSync.isEnabled ? "Account handles and labels sync across your devices. App passwords stay on each device for security." : "Enable to keep your account configuration consistent across devices.")
                 }
 
                 if appLockManager.isBiometricsAvailable {
