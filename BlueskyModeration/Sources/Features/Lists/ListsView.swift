@@ -84,7 +84,7 @@ struct ListsView: View {
                                 } label: {
                                     relationshipRow(
                                         icon: "person.3",
-                                        label: "Followers",
+                                        label: loc("lists.followers"),
                                         count: viewModel.activeProfile?.followersCount ?? 0
                                     )
                                 }
@@ -95,7 +95,7 @@ struct ListsView: View {
                                 } label: {
                                     relationshipRow(
                                         icon: "person.3.fill",
-                                        label: "Following",
+                                        label: loc("lists.following"),
                                         count: viewModel.activeProfile?.followsCount ?? 0
                                     )
                                 }
@@ -106,7 +106,7 @@ struct ListsView: View {
                                 } label: {
                                     relationshipRow(
                                         icon: "hand.raised",
-                                        label: "Blocking",
+                                        label: loc("lists.blocking"),
                                         count: viewModel.blockingCount
                                     )
                                 }
@@ -117,14 +117,14 @@ struct ListsView: View {
                                 } label: {
                                     relationshipRow(
                                         icon: "hand.raised.slash",
-                                        label: "Blocked by",
+                                        label: loc("lists.blocked_by"),
                                         count: viewModel.blockedByCount
                                     )
                                 }
                                 .buttonStyle(.plain)
                             }
                         } header: {
-                            Text("Relationships")
+                            Text(loc("lists.relationships"))
                         }
                         .navigationDestination(isPresented: $showFollowers) {
                             RelationshipsView(mode: .followers, initialCount: viewModel.activeProfile?.followersCount)
@@ -168,7 +168,7 @@ struct ListsView: View {
                                         Image(systemName: "plus.circle.fill")
                                             .font(.title3)
                                             .foregroundStyle(.tertiary)
-                                        Text("Create first moderation list")
+                                        Text(loc("lists.create_first_mod"))
                                             .font(.subheadline)
                                             .foregroundStyle(.tertiary)
                                         Spacer()
@@ -177,7 +177,7 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            sectionHeader(title: "Moderation Lists", icon: "checklist.checked", kind: .moderation)
+                            sectionHeader(title: loc("lists.moderation_lists"), icon: "checklist.checked", kind: .moderation)
                         }
 
                         Section {
@@ -201,7 +201,7 @@ struct ListsView: View {
                                         Image(systemName: "plus.circle.fill")
                                             .font(.title3)
                                             .foregroundStyle(.tertiary)
-                                        Text("Create first list")
+                                        Text(loc("lists.create_first"))
                                             .font(.subheadline)
                                             .foregroundStyle(.tertiary)
                                         Spacer()
@@ -210,7 +210,7 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            sectionHeader(title: "Lists", icon: "list.bullet", kind: .regular)
+                            sectionHeader(title: loc("lists.lists"), icon: "list.bullet", kind: .regular)
                         }
 
                         if let errorMessage = viewModel.errorMessage {

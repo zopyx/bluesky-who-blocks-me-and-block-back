@@ -27,7 +27,7 @@ struct ActorSearchResultRow: View {
                     ProgressView()
                         .frame(width: 24, height: 24)
                 } else {
-                    Text("Add")
+                    Text(loc("actor_search.add"))
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)

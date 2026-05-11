@@ -100,6 +100,7 @@ struct AddAccountView: View {
                                 client: blueskyClient
                             )
                             if added {
+                                await accountStore.refreshAccountProfiles(using: blueskyClient)
                                 dismiss()
                             }
                         }

@@ -55,7 +55,7 @@ struct ErrorRetryBanner: View {
             }
 
             Button(action: retry) {
-                Label("Retry", systemImage: "arrow.clockwise")
+                Label(loc("actions.retry"), systemImage: "arrow.clockwise")
             }
             .buttonStyle(.bordered)
             .glassBorderedButton()

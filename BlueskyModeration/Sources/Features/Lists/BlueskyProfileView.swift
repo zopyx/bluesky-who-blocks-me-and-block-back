@@ -111,17 +111,39 @@ struct BlueskyProfileView: View {
                 }
                 }
 
-                if !isOwnProfile, !moderationMemberships.isEmpty {
+                if !isOwnProfile, !viewModel.listMemberships.isEmpty {
+                    let sortedMemberships = viewModel.listMemberships.sorted { $0.kind == .moderation && $1.kind != .moderation }
                     Section {
-                        ForEach(moderationMemberships) { membership in
-                            membershipButton(
-                                membership: membership,
-                                account: account,
-                                appPassword: appPassword
-                            )
+                        ForEach(sortedMemberships) { membership in
+                            Toggle(isOn: Binding(
+                                get: { membership.isMember },
+                                set: { _ in
+                                    Task {
+                                        await viewModel.toggleListMembership(
+                                            membership,
+                                            account: account,
+                                            appPassword: appPassword,
+                                            using: blueskyClient
+                                        )
+                                    }
+                                }
+                            )) {
+                                HStack(spacing: 8) {
+                                    Text(membership.name)
+                                    if membership.kind == .moderation {
+                                        Text(verbatim: loc("profile.moderation_section"))
+                                            .font(.caption2.weight(.semibold))
+                                            .foregroundStyle(Color.skyPrimary)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.skyPrimary.opacity(0.12), in: Capsule())
+                                    }
+                                }
+                            }
+                            .disabled(viewModel.isUpdatingModeration)
                         }
                     } header: {
-                        Text(verbatim: loc("profile.moderation_lists_section"))
+                        Text(verbatim: loc("lists.lists"))
                     }
                 }
 
@@ -137,7 +159,7 @@ struct BlueskyProfileView: View {
                             )
                         }
                     } else {
-                        Button {
+                        Button(role: .destructive) {
                             Task {
                                 await viewModel.blockAllFollowers(
                                     account: account,
@@ -151,6 +173,9 @@ struct BlueskyProfileView: View {
                         }
                         .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
                         .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
+                        Text(verbatim: loc("profile.block_all_warning"))
+                            .font(.caption)
+                            .foregroundStyle(.red)
 
                     if !ActionPresetStore.shared.presets.isEmpty {
                         Menu {
@@ -167,7 +192,7 @@ struct BlueskyProfileView: View {
                                 }
                             }
                         } label: {
-                            Label("Apply Preset", systemImage: "square.2.layers.3d")
+                            Label(loc("profile.apply_preset"), systemImage: "square.2.layers.3d")
                         }
                         .accessibilityHint("Applies a saved action preset to this account")
                     }
@@ -323,14 +348,6 @@ struct BlueskyProfileView: View {
         return activeAccount.did != nil && profile.did == activeAccount.did
     }
 
-    private var moderationMemberships: [ProfileListMembership] {
-        let moderationLists = viewModel.listMemberships.filter { $0.kind == .moderation }
-        if moderationLists.isEmpty {
-            return viewModel.listMemberships
-        }
-        return moderationLists
-    }
-
     private func statusChip(title: String, tint: Color, emphasized: Bool) -> some View {
         Text(title)
             .font(.caption.weight(.semibold))
@@ -346,39 +363,6 @@ struct BlueskyProfileView: View {
             }
     }
 
-    private func membershipButton(
-        membership: ProfileListMembership,
-        account: AppAccount,
-        appPassword: String
-    ) -> some View {
-        Button {
-            Task {
-                await viewModel.toggleListMembership(
-                    membership,
-                    account: account,
-                    appPassword: appPassword,
-                    using: blueskyClient
-                )
-            }
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(membership.name)
-                    Text(verbatim: membership.isMember ? loc("profile.already_included") : loc("profile.tap_to_add"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Text(verbatim: membership.isMember ? loc("profile.remove") : loc("profile.add"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(membership.isMember ? .red : Color.skyPrimary)
-            }
-        }
-        .disabled(viewModel.isUpdatingModeration)
-        .accessibilityHint(membership.isMember ? "Removes this profile from the list \(membership.name)" : "Adds this profile to the list \(membership.name)")
-    }
 }
 
 #Preview {

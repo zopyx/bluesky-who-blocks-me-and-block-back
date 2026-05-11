@@ -6,6 +6,7 @@ struct AccountSwitcherSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @State private var isPresentingAddAccount = false
     @State private var editingLabelAccount: AppAccount?
     @State private var editLabelText = ""
@@ -26,6 +27,7 @@ struct AccountSwitcherSheet: View {
                                 let generator = UISelectionFeedbackGenerator()
                                 generator.prepare()
                                 accountStore.setActiveAccount(account)
+                                workspaceStore.selectedTab = .moderation
                                 generator.selectionChanged()
                                 dismiss()
                             } label: {

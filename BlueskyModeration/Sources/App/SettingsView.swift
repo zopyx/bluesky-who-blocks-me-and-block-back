@@ -83,26 +83,26 @@ struct SettingsView: View {
                     Section {
                         Toggle(isOn: $appLockManager.isEnabled) {
                             Label {
-                                Text("\(appLockManager.biometricLabel) Lock")
+                                Text(loc("settings.biometric_lock").replacingOccurrences(of: "{biometric}", with: appLockManager.biometricLabel))
                             } icon: {
                                 Image(systemName: biometricIcon)
                             }
                         }
 
                         if appLockManager.isEnabled {
-                            Picker("Auto-Lock", selection: $appLockManager.timeoutMinutes) {
-                                Text("Immediately").tag(0)
-                                Text("1 minute").tag(1)
-                                Text("5 minutes").tag(5)
-                                Text("15 minutes").tag(15)
-                                Text("30 minutes").tag(30)
+                            Picker(loc("settings.auto_lock"), selection: $appLockManager.timeoutMinutes) {
+                                Text(loc("settings.auto_lock.immediately")).tag(0)
+                                Text(loc("settings.auto_lock.1min")).tag(1)
+                                Text(loc("settings.auto_lock.5min")).tag(5)
+                                Text(loc("settings.auto_lock.15min")).tag(15)
+                                Text(loc("settings.auto_lock.30min")).tag(30)
                             }
                         }
                     } header: {
-                        Text("Security")
+                        Text(loc("settings.security"))
                     } footer: {
                         if appLockManager.isEnabled {
-                            Text("Lock the app with \(appLockManager.biometricLabel) when it goes to the background.")
+                            Text(loc("settings.biometric_footer").replacingOccurrences(of: "{biometric}", with: appLockManager.biometricLabel))
                         }
                     }
                 }
@@ -115,7 +115,7 @@ struct SettingsView: View {
             ) {
                 Button(localizationManager.localized("settings.clear_cache"), role: .destructive) {
                     blueskyClient.clearCache()
-                    cacheStatusMessage = "Local cache cleared."
+                    cacheStatusMessage = loc("settings.cache_cleared")
                 }
                 Button(localizationManager.localized("settings.cancel"), role: .cancel) {}
             } message: {

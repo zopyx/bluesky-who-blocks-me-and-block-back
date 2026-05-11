@@ -44,9 +44,9 @@ struct ListTemplatesView: View {
             .accessibilityHint("Creates a new \(template.name) list from this template")
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("List Templates")
+        .navigationTitle(loc("list_templates.title"))
         .overlay {
-            if isCreating { ProgressView("Creating...") }
+            if isCreating { ProgressView(loc("list_templates.creating")) }
         }
     }
 

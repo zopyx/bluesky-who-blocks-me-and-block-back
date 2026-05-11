@@ -59,7 +59,7 @@ struct AccountRowView: View {
             Spacer()
 
             if isActive {
-                Text("Active")
+                Text(loc("account.active"))
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)

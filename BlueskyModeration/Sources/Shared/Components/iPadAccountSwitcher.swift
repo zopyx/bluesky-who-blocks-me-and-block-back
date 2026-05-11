@@ -5,6 +5,7 @@ struct iPadAccountSwitcher: View {
 
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
 
     @State private var isShowingAccountManagement = false
     @State private var isShowingAddAccount = false
@@ -152,6 +153,7 @@ struct iPadAccountSwitcher: View {
         let generator = UISelectionFeedbackGenerator()
         generator.prepare()
         accountStore.setActiveAccount(account)
+        workspaceStore.selectedTab = .moderation
         generator.selectionChanged()
         isPresented = false
     }

@@ -81,10 +81,10 @@ struct ImportPreviewSheet: View {
                     Text(verbatim: loc("list.import_preview.summary"))
                 }
 
-                previewSection("Ready to Import", items: preview.readyItems)
-                previewSection("Already in List", items: preview.alreadyPresentItems)
-                previewSection("Duplicate Entries", items: preview.duplicateItems)
-                previewSection("Unresolved", items: preview.unresolvedItems)
+                previewSection(loc("list.import_preview.ready"), items: preview.readyItems)
+                previewSection(loc("list.import_preview.already"), items: preview.alreadyPresentItems)
+                previewSection(loc("list.import_preview.duplicate"), items: preview.duplicateItems)
+                previewSection(loc("list.import_preview.unresolved"), items: preview.unresolvedItems)
 
                 if !isImporting {
                     Section {

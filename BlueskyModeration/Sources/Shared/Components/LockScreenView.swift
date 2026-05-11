@@ -25,7 +25,7 @@ struct LockScreenView: View {
                 Button {
                     Task { await appLockManager.authenticate() }
                 } label: {
-                    Label("Unlock", systemImage: icon)
+                    Label(loc("lock_screen.unlock"), systemImage: icon)
                         .font(.headline)
                         .frame(maxWidth: 200)
                         .padding()
@@ -48,17 +48,17 @@ struct LockScreenView: View {
 
     private var title: String {
         switch appLockManager.biometricType {
-        case .faceID: return "Use Face ID to Unlock"
-        case .touchID: return "Use Touch ID to Unlock"
-        default: return "App Locked"
+        case .faceID: return loc("lock_screen.face_id_title")
+        case .touchID: return loc("lock_screen.touch_id_title")
+        default: return loc("lock_screen.app_locked")
         }
     }
 
     private var subtitle: String {
         if appLockManager.isBiometricsAvailable {
-            return "Authenticate with \(appLockManager.biometricLabel) to access your accounts and moderation data."
+            return loc("lock_screen.biometric_subtitle").replacingOccurrences(of: "{biometric}", with: appLockManager.biometricLabel)
         } else {
-            return "Biometric authentication is not available on this device."
+            return loc("lock_screen.biometric_unavailable")
         }
     }
 }

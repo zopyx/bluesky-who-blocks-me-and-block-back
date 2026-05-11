@@ -18,6 +18,7 @@ struct BlueskyModerationApp: App {
                         .environmentObject(deps.workspaceStore)
                         .environmentObject(deps.blueskyClient)
                         .environmentObject(deps.localizationManager)
+                        .environmentObject(deps.profileNotesStore)
                         .environmentObject(appLockManager)
                         .environmentObject(iCloudAccountSync.shared)
                 }

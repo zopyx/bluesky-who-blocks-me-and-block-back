@@ -13,7 +13,7 @@ struct ModerationRulesView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(rule.name).font(.headline)
-                        Text("If \(rule.trigger.rawValue) → \(rule.action.rawValue)").font(.caption).foregroundStyle(.secondary)
+                        Text(loc("rules.rule_format").replacingOccurrences(of: "{trigger}", with: rule.trigger.rawValue).replacingOccurrences(of: "{action}", with: rule.action.rawValue)).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Toggle("", isOn: Binding(get: { rule.isEnabled }, set: { _ in store.toggle(rule) }))

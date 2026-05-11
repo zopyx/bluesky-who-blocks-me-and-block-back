@@ -173,12 +173,12 @@ extension ListDetailView {
 
         private func comparisonSummary(report: ListComparisonReport) -> some View {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Compared with \(report.otherList.name)")
+                Text(loc("list.compare.compared_with").replacingOccurrences(of: "{name}", with: report.otherList.name))
                     .font(.subheadline.weight(.semibold))
 
-                Text("Overlap: \(report.overlap.count)")
-                Text("Only in \(currentList.name): \(report.onlyInCurrent.count)")
-                Text("Only in \(report.otherList.name): \(report.onlyInOther.count)")
+                Text(loc("list.compare.overlap_count").replacingOccurrences(of: "{count}", with: "\(report.overlap.count)"))
+                Text(loc("list.compare.only_current").replacingOccurrences(of: "{name}", with: currentList.name).replacingOccurrences(of: "{count}", with: "\(report.onlyInCurrent.count)"))
+                Text(loc("list.compare.only_other").replacingOccurrences(of: "{name}", with: report.otherList.name).replacingOccurrences(of: "{count}", with: "\(report.onlyInOther.count)"))
             }
         }
 

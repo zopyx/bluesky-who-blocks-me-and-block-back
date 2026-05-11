@@ -7,6 +7,7 @@ struct AccountQuickSwitcherSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var accountStore: AccountStore
+    @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
 
     var body: some View {
         NavigationStack {
@@ -53,6 +54,7 @@ struct AccountQuickSwitcherSheet: View {
         let generator = UISelectionFeedbackGenerator()
         generator.prepare()
         accountStore.setActiveAccount(account)
+        workspaceStore.selectedTab = .moderation
         generator.selectionChanged()
         dismiss()
     }

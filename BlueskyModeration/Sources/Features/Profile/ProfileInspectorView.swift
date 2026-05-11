@@ -133,7 +133,7 @@ struct ProfileInspectorView: View {
                                 Button(role: .destructive) {
                                     workspaceStore.deleteSavedSearch(search)
                                 } label: {
-                                    Label("Delete", systemImage: "trash")
+                                    Label(loc("actions.delete"), systemImage: "trash")
                                 }
                             }
                         }

@@ -53,12 +53,12 @@ extension ListDetailView {
             if let snapshotSummary {
                 DisclosureGroup {
                     if let previousCaptureDate = snapshotSummary.previousCaptureDate {
-                        Text("Previous snapshot: \(previousCaptureDate.formatted(date: .abbreviated, time: .shortened))")
+                        Text(verbatim: loc("list.snapshot.previous").replacingOccurrences(of: "{date}", with: previousCaptureDate.formatted(date: .abbreviated, time: .shortened)))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("Current snapshot: \(snapshotSummary.currentCaptureDate.formatted(date: .abbreviated, time: .shortened))")
+                    Text(verbatim: loc("list.snapshot.current").replacingOccurrences(of: "{date}", with: snapshotSummary.currentCaptureDate.formatted(date: .abbreviated, time: .shortened)))
                         .font(.caption)
                         .foregroundStyle(.secondary)
 

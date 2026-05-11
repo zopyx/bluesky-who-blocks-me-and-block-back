@@ -38658,6 +38658,17 @@
         }
       }
     },
+    "profile.block_all_warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning: This will block every follower of this account. Use with caution."
+          }
+        }
+      }
+    },
     "profile.block_all" : {
       "extractionState" : "manual",
       "localizations" : {
