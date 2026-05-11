@@ -40,14 +40,6 @@ struct InfoView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Image("RulyxLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 28)
-                }
-            }
         }
         .preferredColorScheme(.dark)
     }
@@ -65,23 +57,17 @@ struct InfoView: View {
 
     private var heroCard: some View {
         VStack(spacing: 10) {
-            Image(systemName: "checklist.checked")
-                .font(.largeTitle)
-                .foregroundStyle(.white)
-                .padding(14)
-                .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
-
             Image("RulyxLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 32)
+                .frame(height: 64)
 
             Text(verbatim: localizationManager.localized("onboarding.title"))
-                .font(.subheadline)
+                .font(.body)
                 .foregroundStyle(.white.opacity(0.75))
 
             Text(verbatim: localizationManager.localized("info.powered_by"))
-                .font(.caption.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.80))
                 .multilineTextAlignment(.center)
         }
@@ -116,7 +102,7 @@ struct InfoView: View {
                 Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
             HStack(spacing: 14) {
                 Image(systemName: "chevron.left.forwardslash.chevron.right")
-                    .font(.title3)
+                    .font(.title)
                     .foregroundStyle(.white)
                     .frame(width: 40, height: 40)
                     .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
@@ -126,14 +112,14 @@ struct InfoView: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
                     Text(verbatim: localizationManager.localized("info.github_url"))
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.80))
                 }
 
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.55))
             }
             .padding(16)
@@ -146,7 +132,7 @@ struct InfoView: View {
     private var securityNote: some View {
         HStack(spacing: 12) {
             Image(systemName: "lock.shield")
-                .font(.title3)
+                .font(.title)
                 .foregroundStyle(Color.skyPrimary)
                 .frame(width: 40, height: 40)
                 .background(Color.skyPrimary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
@@ -156,7 +142,7 @@ struct InfoView: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
                 Text(verbatim: localizationManager.localized("info.keychain.desc"))
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.80))
             }
 
@@ -169,7 +155,7 @@ struct InfoView: View {
     // MARK: - Features Tab
 
     private var featuresTab: some View {
-        VStack(spacing: 12) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             featureCard(
                 icon: "checklist.checked",
                 color: .skyPrimary,
@@ -264,7 +250,7 @@ struct InfoView: View {
                 .accessibilityHint("Opens the ClearSky GitHub repository in your browser")
 
                 Text(verbatim: localizationManager.localized("info.clearsky.desc"))
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.80))
                     .padding(.leading, 50)
             }
@@ -294,10 +280,10 @@ struct InfoView: View {
     private func claimTile(icon: String, text: String, color: Color) -> some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.title)
                 .foregroundStyle(color)
             Text(text)
-                .font(.caption2.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.85))
         }
         .frame(maxWidth: .infinity, minHeight: 80)
@@ -327,13 +313,16 @@ struct InfoView: View {
                             .padding(.top, 7)
 
                         Text(item)
-                            .font(.subheadline)
+                            .font(.body)
                             .foregroundStyle(.white.opacity(0.80))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
+
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
     }
@@ -341,7 +330,7 @@ struct InfoView: View {
     private func legalRow(icon: String, title: String, value: String, link: Bool = false) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.subheadline)
+                .font(.body)
                 .foregroundStyle(Color.skyAccent)
                 .frame(width: 36, height: 36)
                 .background(Color.skyAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
@@ -351,7 +340,7 @@ struct InfoView: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
                 Text(value)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.80))
             }
 
@@ -359,7 +348,7 @@ struct InfoView: View {
 
             if link {
                 Image(systemName: "arrow.up.right")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.35))
             }
         }
@@ -376,11 +365,11 @@ struct InfoView: View {
     private func dataRow(label: String, value: String) -> some View {
         HStack {
             Text(label)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.80))
             Spacer()
             Text(value)
-                .font(.caption.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.85))
         }
     }

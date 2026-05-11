@@ -68,20 +68,41 @@ struct RootView: View {
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            if horizontalSizeClass == .regular, let activeAccount = accountStore.activeAccount {
+            if horizontalSizeClass == .regular {
                 HStack {
-                    accountSwitcherButton(for: activeAccount)
-                        .popover(isPresented: $isShowingQuickAccountSwitcher) {
-                            iPadAccountSwitcher(isPresented: $isShowingQuickAccountSwitcher)
-                                .environmentObject(accountStore)
-                                .environmentObject(blueskyClient)
+                    if let activeAccount = accountStore.activeAccount {
+                        accountSwitcherButton(for: activeAccount)
+                    } else {
+                        Button {
+                            isShowingAccountManagement = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "person.crop.circle.badge.plus")
+                                    .font(.subheadline)
+                                Text(loc("account.manage.add"))
+                                    .font(.subheadline.weight(.semibold))
+                            }
+                            .padding(.leading, 6)
+                            .padding(.trailing, 12)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
                         }
+                        .buttonStyle(.plain)
+                    }
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
                 .padding(.bottom, 4)
                 .background(.clear)
+                .sheet(isPresented: $isShowingQuickAccountSwitcher) {
+                    AccountQuickSwitcherSheet(
+                        isPresented: $isShowingQuickAccountSwitcher,
+                        onManageAccounts: openAccountManagement
+                    )
+                    .environmentObject(accountStore)
+                }
             }
         }
         .sheet(isPresented: $isShowingAccountManagement) {
@@ -163,9 +184,6 @@ struct RootView: View {
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                     .foregroundStyle(.primary)
-                Image(systemName: "chevron.up")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
             }
             .padding(.leading, 6)
             .padding(.trailing, 12)
