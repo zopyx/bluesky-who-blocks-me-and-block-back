@@ -23,7 +23,7 @@ struct AccountRowView: View {
                     if let label = account.label {
                         Text(label)
                             .font(.caption2.weight(.semibold))
-                            .foregroundStyle(Color.skyPrimary)
+                    .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background {
