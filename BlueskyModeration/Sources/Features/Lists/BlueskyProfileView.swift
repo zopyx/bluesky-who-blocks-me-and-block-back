@@ -10,6 +10,7 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var notesStore: ProfileNotesStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
     @State private var isShowingNote = false
+    @State private var isShowingAvatarPreview = false
 
     var body: some View {
         Group {
@@ -26,10 +27,36 @@ struct BlueskyProfileView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-
+        .overlay {
+            if isShowingAvatarPreview, let avatarURL = viewModel.profile?.avatarURL {
+                Color.black.opacity(0.9)
+                    .ignoresSafeArea()
+                    .onTapGesture { isShowingAvatarPreview = false }
+                    .overlay {
+                        AsyncImage(url: avatarURL) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding(40)
+                            } placeholder: {
+                                ProgressView()
+                                    .tint(.white)
+                            }
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            Button {
+                                isShowingAvatarPreview = false
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundStyle(.white.opacity(0.8))
+                                    .padding()
+                            }
+                        }
+                        .transition(.opacity.animation(.easeInOut))
+                }
+            }
         }
-
-    @ViewBuilder
     private func content(account: AppAccount, appPassword: String) -> some View {
         List {
             if let profile = viewModel.profile {
@@ -304,6 +331,9 @@ struct BlueskyProfileView: View {
 
     @ViewBuilder
     private func profileAvatar(for profile: BlueskyProfile) -> some View {
+        Button {
+            isShowingAvatarPreview = true
+        } label: {
         if let avatarURL = profile.avatarURL {
             AsyncImage(url: avatarURL) { image in
                 image
@@ -320,6 +350,7 @@ struct BlueskyProfileView: View {
             }
         } else {
             avatarPlaceholder(for: profile)
+        }
         }
     }
 
