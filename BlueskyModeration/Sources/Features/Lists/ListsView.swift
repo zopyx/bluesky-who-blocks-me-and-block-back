@@ -50,7 +50,6 @@ struct ListsView: View {
                                     presentationState.showFollowers = true
                                 } label: {
                                     relationshipRow(
-                                        icon: "person.3",
                                         label: loc("lists.followers"),
                                         count: viewModel.activeProfile?.followersCount ?? 0
                                     )
@@ -61,7 +60,6 @@ struct ListsView: View {
                                     presentationState.showFollowing = true
                                 } label: {
                                     relationshipRow(
-                                        icon: "person.3.fill",
                                         label: loc("lists.following"),
                                         count: viewModel.activeProfile?.followsCount ?? 0
                                     )
@@ -72,7 +70,6 @@ struct ListsView: View {
                                     presentationState.showBlocking = true
                                 } label: {
                                     relationshipRow(
-                                        icon: "hand.raised",
                                         label: loc("lists.blocking"),
                                         count: viewModel.blockingCount
                                     )
@@ -83,7 +80,6 @@ struct ListsView: View {
                                     presentationState.showBlockedBy = true
                                 } label: {
                                     relationshipRow(
-                                        icon: "hand.raised.slash",
                                         label: loc("lists.blocked_by"),
                                         count: viewModel.blockedByCount
                                     )
@@ -269,12 +265,8 @@ struct ListsView: View {
         )
     }
 
-    private func relationshipRow(icon: String, label: String, count: Int) -> some View {
+    private func relationshipRow(label: String, count: Int) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(Color.skyPrimary)
-                .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.subheadline)
