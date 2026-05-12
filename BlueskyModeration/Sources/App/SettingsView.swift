@@ -34,23 +34,6 @@ struct SettingsView: View {
                         }
                     }
                     .accessibilityHint("Changes the display language for the entire app")
-
-                    Button(role: .destructive) {
-                        isShowingClearCacheConfirmation = true
-                    } label: {
-                        Label {
-                            Text(localizationManager.localized("settings.clear_cache"))
-                        } icon: {
-                            Image(systemName: "trash")
-                        }
-                    }
-                    .accessibilityHint("Removes cached network data and images from the device")
-
-                    if let cacheStatusMessage {
-                        Text(cacheStatusMessage)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
                 } header: {
                     Text(localizationManager.localized("settings.preferences"))
                 }
@@ -92,6 +75,23 @@ struct SettingsView: View {
                         }
                     }
                     .accessibilityHint("Enables additional debugging tools and logging")
+
+                    Button(role: .destructive) {
+                        isShowingClearCacheConfirmation = true
+                    } label: {
+                        Label {
+                            Text(localizationManager.localized("settings.clear_cache"))
+                        } icon: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                    .accessibilityHint("Removes cached network data and images from the device")
+
+                    if let cacheStatusMessage {
+                        Text(cacheStatusMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 } header: {
                     Text(localizationManager.localized("settings.internal"))
                 }
