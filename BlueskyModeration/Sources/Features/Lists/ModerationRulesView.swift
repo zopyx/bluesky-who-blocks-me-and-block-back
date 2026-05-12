@@ -13,7 +13,7 @@ struct ModerationRulesView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(rule.name).font(.headline)
-                        Text(loc("rules.rule_format").replacingOccurrences(of: "{trigger}", with: rule.trigger.rawValue).replacingOccurrences(of: "{action}", with: rule.action.rawValue)).font(.caption).foregroundStyle(.secondary)
+                        Text(loc("rules.rule_format").replacingOccurrences(of: "{trigger}", with: triggerLocalized(rule.trigger)).replacingOccurrences(of: "{action}", with: actionLocalized(rule.action))).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Toggle("", isOn: Binding(get: { rule.isEnabled }, set: { _ in store.toggle(rule) }))
@@ -35,6 +35,27 @@ struct ModerationRulesView: View {
     }
 }
 
+@MainActor
+private func triggerLocalized(_ trigger: ModerationRule.Trigger) -> String {
+    switch trigger {
+    case .accountYoungerThan: loc("rules.trigger.account_younger_than")
+    case .followerCountBelow: loc("rules.trigger.follower_count_below")
+    case .followerCountAbove: loc("rules.trigger.follower_count_above")
+    case .handleContains: loc("rules.trigger.handle_contains")
+    case .hasLabel: loc("rules.trigger.has_label")
+    }
+}
+
+@MainActor
+private func actionLocalized(_ action: ModerationRule.Action) -> String {
+    switch action {
+    case .addToModList: loc("rules.action.add_to_mod_list")
+    case .block: loc("rules.action.block")
+    case .mute: loc("rules.action.mute")
+    case .report: loc("rules.action.report")
+    }
+}
+
 private struct EditRuleView: View {
     @ObservedObject var store: ModerationRuleStore
     @Environment(\.dismiss) private var dismiss
@@ -48,14 +69,14 @@ private struct EditRuleView: View {
             Form {
                 TextField(loc("rules.name_placeholder"), text: $name)
                 Picker(loc("rules.trigger"), selection: $trigger) {
-                    ForEach(ModerationRule.Trigger.allCases) { t in Text(t.rawValue).tag(t) }
+                    ForEach(ModerationRule.Trigger.allCases) { t in Text(triggerLocalized(t)).tag(t) }
                 }
                 .accessibilityHint("Choose what condition triggers this rule")
                 if trigger == .handleContains || trigger == .hasLabel {
                     TextField(loc("rules.value_placeholder"), text: $triggerValue)
                 }
                 Picker(loc("rules.action"), selection: $action) {
-                    ForEach(ModerationRule.Action.allCases) { a in Text(a.rawValue).tag(a) }
+                    ForEach(ModerationRule.Action.allCases) { a in Text(actionLocalized(a)).tag(a) }
                 }
                 .accessibilityHint("Choose what action to take when the rule triggers")
             }
