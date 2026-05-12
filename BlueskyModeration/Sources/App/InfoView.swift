@@ -375,15 +375,7 @@ struct InfoView: View {
 
     private var background: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.04, green: 0.06, blue: 0.11),
-                    Color(red: 0.06, green: 0.09, blue: 0.16),
-                    Color(red: 0.04, green: 0.11, blue: 0.19),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            Color(.systemBackground)
 
             Circle()
                 .fill(Color.skyPrimary.opacity(0.22))
