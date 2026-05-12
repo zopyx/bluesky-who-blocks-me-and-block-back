@@ -12,34 +12,37 @@ struct InfoView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                Picker(selection: $selectedTab) {
-                    ForEach(InfoTab.allCases, id: \.self) { tab in
-                        Text(verbatim: localizationManager.localized("info.\(tab.rawValue.lowercased())")).tag(tab)
-                    }
-                } label: {
-                    Text(verbatim: localizationManager.localized("info.section"))
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+            ZStack {
+                background
+                    .ignoresSafeArea()
 
-                ScrollView {
-                    Group {
-                        switch selectedTab {
-                        case .overview: overviewTab
-                        case .features: featuresTab
-                        case .legal: legalTab
+                VStack(spacing: 0) {
+                    Picker(selection: $selectedTab) {
+                        ForEach(InfoTab.allCases, id: \.self) { tab in
+                            Text(verbatim: localizationManager.localized("info.\(tab.rawValue.lowercased())")).tag(tab)
                         }
+                    } label: {
+                        Text(verbatim: localizationManager.localized("info.section"))
                     }
-                    .padding(16)
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+
+                    ScrollView {
+                        Group {
+                            switch selectedTab {
+                            case .overview: overviewTab
+                            case .features: featuresTab
+                            case .legal: legalTab
+                            }
+                        }
+                        .padding(16)
+                    }
                 }
             }
-            .background(background)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .preferredColorScheme(.dark)
     }

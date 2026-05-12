@@ -132,14 +132,13 @@ private final class PinningDelegate: NSObject, URLSessionDelegate {
             return
         }
 
-        var secResult = SecTrustResultType.invalid
-        let status = SecTrustEvaluate(serverTrust, &secResult)
-        guard status == errSecSuccess, secResult == .unspecified || secResult == .proceed else {
+        guard SecTrustEvaluateWithError(serverTrust, nil) else {
             completionHandler(.cancelAuthenticationChallenge, nil)
             return
         }
 
-        guard let leafCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+        guard let certificateChain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate],
+              let leafCertificate = certificateChain.first else {
             completionHandler(.cancelAuthenticationChallenge, nil)
             return
         }

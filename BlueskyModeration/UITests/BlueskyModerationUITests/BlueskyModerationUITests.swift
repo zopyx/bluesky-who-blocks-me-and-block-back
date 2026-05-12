@@ -124,4 +124,36 @@ final class BlueskyModerationUITests: XCTestCase {
         XCTAssertEqual(refreshButton.label, "Refresh lists",
                        "Refresh button should have correct accessibility label")
     }
+
+    // MARK: - InfoView Tab Switching Tests
+
+    /// Verifies that InfoView content appears correctly for each tab and switching
+    /// between tabs maintains a consistent view (no blank screens, no crashes).
+    func testInfoViewAllTabsShowContent() {
+        app.tabBars.firstMatch.buttons["Info"].tap()
+
+        // Overview tab should show key content
+        let overviewButton = app.buttons["Overview"]
+        XCTAssertTrue(overviewButton.waitForExistence(timeout: 3))
+
+        let titleText = app.staticTexts["Bluesky moderation made easy"]
+        XCTAssertTrue(titleText.exists, "Overview tab should show app title")
+
+        // Switch to Features tab
+        app.buttons["Features"].tap()
+        let featuresTitle = app.staticTexts["Lists & Members"]
+        XCTAssertTrue(featuresTitle.waitForExistence(timeout: 2),
+                      "Features tab should show list features content")
+
+        // Switch to Legal tab
+        app.buttons["Legal"].tap()
+        let legalAuthor = app.staticTexts["Andreas Jung"]
+        XCTAssertTrue(legalAuthor.waitForExistence(timeout: 2),
+                      "Legal tab should show author info")
+
+        // Switch back to Overview and verify content reappears
+        app.buttons["Overview"].tap()
+        XCTAssertTrue(titleText.waitForExistence(timeout: 2),
+                      "Overview content should reappear after switching back from Legal")
+    }
 }
