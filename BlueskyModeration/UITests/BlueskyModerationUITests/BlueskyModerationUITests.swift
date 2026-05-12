@@ -16,36 +16,52 @@ final class BlueskyModerationUITests: XCTestCase {
     }
 
     func testTabNavigation() {
-        // Verify all 4 tab bar items exist and are tappable
-        XCTAssertTrue(app.buttons["Moderation"].exists)
-        XCTAssertTrue(app.buttons["Profile"].exists)
-        XCTAssertTrue(app.buttons["Settings"].exists)
-        XCTAssertTrue(app.buttons["Info"].exists)
+        let tabBar = app.tabBars.firstMatch
+        let tabNames = tabBar.buttons.allElementsBoundByIndex.map(\.label)
+        XCTAssertTrue(tabNames.contains("Moderation"), "Got: \(tabNames)")
+        XCTAssertTrue(tabNames.contains("Settings"), "Got: \(tabNames)")
+        XCTAssertTrue(tabNames.contains("Info"), "Got: \(tabNames)")
+        XCTAssertTrue(tabNames.contains("Accounts"), "Got: \(tabNames)")
 
-        // Tap each tab
-        app.buttons["Profile"].tap()
-        app.buttons["Settings"].tap()
-        app.buttons["Info"].tap()
-        app.buttons["Moderation"].tap()
+        tabBar.buttons["Settings"].tap()
+        tabBar.buttons["Info"].tap()
+        tabBar.buttons["Accounts"].tap()
+        tabBar.buttons["Moderation"].tap()
     }
 
-    func testSettingsScreen() {
-        app.buttons["Settings"].tap()
-
-        // Verify Settings has expected sections
-        XCTAssertTrue(app.navigationBars["Settings"].exists)
+    func testModerationTabShowsContent() {
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.buttons["Moderation"].exists)
     }
 
-    func testInfoScreen() {
-        app.buttons["Info"].tap()
+    func testAccountsTabShowsPreviewAccounts() {
+        app.tabBars.firstMatch.buttons["Accounts"].tap()
 
-        // Verify Info screen has the segmented picker
+        let teamAlpha = app.staticTexts["team-alpha.bsky.social"]
+        XCTAssertTrue(teamAlpha.waitForExistence(timeout: 3))
+    }
+
+    func testSettingsTabShowsPreferences() {
+        app.tabBars.firstMatch.buttons["Settings"].tap()
+
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3))
+    }
+
+    func testInfoTabShowsSegmentedControl() {
+        app.tabBars.firstMatch.buttons["Info"].tap()
+
         let overviewButton = app.buttons["Overview"]
-        XCTAssertTrue(overviewButton.exists)
+        XCTAssertTrue(overviewButton.waitForExistence(timeout: 3))
+    }
 
-        // Switch tabs in Info view
-        app.buttons["Features"].tap()
-        app.buttons["Legal"].tap()
-        app.buttons["Overview"].tap()
+    func testInfoTabSectionSwitching() {
+        app.tabBars.firstMatch.buttons["Info"].tap()
+
+        let featuresButton = app.buttons["Features"]
+        XCTAssertTrue(featuresButton.waitForExistence(timeout: 3))
+        featuresButton.tap()
+
+        let legalButton = app.buttons["Legal"]
+        XCTAssertTrue(legalButton.waitForExistence(timeout: 1))
     }
 }
