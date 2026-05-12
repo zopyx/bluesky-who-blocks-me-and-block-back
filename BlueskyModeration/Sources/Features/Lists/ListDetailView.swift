@@ -22,7 +22,6 @@ struct ListDetailView: View {
     @State var cachedExportFileURL: URL?
     @State var cachedDiffExportFileURL: URL?
     @State private var isShowingDeleteConfirmation = false
-    @State private var isShowingSubscribe = false
     @State private var pendingBulkAction: ListBulkAction?
     @Environment(\.dismiss) private var dismiss
 
@@ -59,11 +58,6 @@ struct ListDetailView: View {
                         }
                     }
                 }
-            }
-            .sheet(isPresented: $isShowingSubscribe) {
-                SubscribeToListView(targetList: currentList)
-                    .environmentObject(accountStore)
-                    .environmentObject(blueskyClient)
             }
             .sheet(isPresented: $isShowingImportSheet, content: importSheetContent)
             .sheet(isPresented: importPreviewPresentedBinding, content: importPreviewSheetContent)
@@ -206,15 +200,6 @@ struct ListDetailView: View {
 
     @ToolbarContentBuilder
     private func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                isShowingSubscribe = true
-            } label: {
-                Label { Text(verbatim: loc("list.detail.subscribe")) } icon: { Image(systemName: "link.badge.plus") }
-            }
-            .accessibilityHint("Opens a sheet to subscribe to this list")
-        }
-
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 isShowingEditSheet = true
