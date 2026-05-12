@@ -104,6 +104,7 @@ final class MockSessionService: BlueskySessionServicing {
         operation: (BlueskySession) async throws -> Response
     ) async throws -> Response {
         if let onAuthenticatedRequest {
+            // swiftlint:disable:next force_cast
             return try await onAuthenticatedRequest(account, appPassword) as! Response
         }
         let session = sessionToReturn ?? BlueskySession(
@@ -129,6 +130,7 @@ struct MockRequestExecutor: BlueskyRequestExecuting {
         hostURL: URL?
     ) async throws -> Response {
         if let onSend {
+            // swiftlint:disable:next force_cast
             return try await onSend(path, method, queryItems, body, accessToken, hostURL) as! Response
         }
         throw BlueskyAPIError.invalidResponse

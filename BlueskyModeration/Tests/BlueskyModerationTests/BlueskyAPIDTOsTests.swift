@@ -87,9 +87,10 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     }
 
     func testListsWithMembershipResponseDecoding() throws {
-        let json = """
-        {"listsWithMembership": [{"list": {"uri": "at://list/1", "name": "Test List", "purpose": "app.bsky.graph.defs#curatelist", "listItemCount": 10}, "listItem": {"uri": "at://item/1", "subject": {"did": "did:plc:sub", "handle": "sub.bsky.social"}}}]}
-        """.data(using: .utf8)!
+        let jsonData = """
+        {"listsWithMembership":[{"list":{"uri":"at://list/1","name":"Test List","purpose":"app.bsky.graph.defs#curatelist","listItemCount":10},"listItem":{"uri":"at://item/1","subject":{"did":"did:plc:sub","handle":"sub.bsky.social"}}}]}
+        """
+        let json = jsonData.data(using: .utf8)!
         let result = try JSONDecoder().decode(ListsWithMembershipResponse.self, from: json)
         XCTAssertEqual(result.listsWithMembership.count, 1)
         XCTAssertEqual(result.listsWithMembership[0].list.name, "Test List")

@@ -172,6 +172,7 @@ struct RelationshipsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if !actors.isEmpty {
+                    // swiftlint:disable:next line_length
                     ShareLink(item: csvContent, subject: Text(loc("rel.export_subject").replacingOccurrences(of: "{mode}", with: modeLocalized)), message: Text(loc("rel.export_message").replacingOccurrences(of: "{mode}", with: modeLocalized.lowercased()))) {
                         Image(systemName: "square.and.arrow.up")
                     }

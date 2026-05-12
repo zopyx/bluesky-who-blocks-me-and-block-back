@@ -11,9 +11,11 @@ final class ListImportControllerTests: XCTestCase {
     }
 
     func testPreparePreviewClassifiesReadyItems() async throws {
+        // swiftlint:disable line_length
         let client = MockImportClient(profiles: [
             "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil),
         ])
+        // swiftlint:enable line_length
 
         let preview = try await controller.preparePreview(
             from: "alice.bsky.social",
@@ -29,9 +31,11 @@ final class ListImportControllerTests: XCTestCase {
     }
 
     func testPreparePreviewClassifiesAlreadyPresent() async throws {
+        // swiftlint:disable line_length
         let client = MockImportClient(profiles: [
             "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil),
         ])
+        // swiftlint:enable line_length
 
         let preview = try await controller.preparePreview(
             from: "alice.bsky.social",
@@ -47,9 +51,11 @@ final class ListImportControllerTests: XCTestCase {
     }
 
     func testPreparePreviewClassifiesDuplicates() async throws {
+        // swiftlint:disable line_length
         let client = MockImportClient(profiles: [
             "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil),
         ])
+        // swiftlint:enable line_length
 
         let preview = try await controller.preparePreview(
             from: "alice.bsky.social\nalice.bsky.social",

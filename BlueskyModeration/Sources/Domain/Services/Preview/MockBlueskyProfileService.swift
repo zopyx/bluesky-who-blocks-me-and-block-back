@@ -55,6 +55,7 @@ final class MockBlueskyProfileService: BlueskyProfileInspecting {
                 listsCount: 4, starterPacksCount: 2,
                 createdAt: .now.addingTimeInterval(-86400 * 500),
                 labels: ["bot", "spam"],
+                // swiftlint:disable:next line_length
                 viewerState: BlueskyViewerState(muted: false, blockedBy: false, isBlocking: true, blockingRecordURI: "at://did:plc:preview/app.bsky.graph.block/1", isFollowing: true, followsYou: false, mutedByListName: nil, blockingByListName: "Reply Filters")
             ),
             listMemberships: [

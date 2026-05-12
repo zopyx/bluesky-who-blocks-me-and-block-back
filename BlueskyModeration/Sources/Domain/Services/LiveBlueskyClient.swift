@@ -28,6 +28,7 @@ protocol BlueskyAuthenticating {
 }
 
 @MainActor
+// swiftlint:disable:next type_body_length
 class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListServicing, BlueskyProfileInspecting {
     private let session: URLSession
     private let requestExecutor: BlueskyRequestExecuting

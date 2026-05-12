@@ -285,6 +285,7 @@ extension ListDetailViewModel {
         bulkActionResult = result
     }
 
+    // swiftlint:disable:next function_body_length
     func retryFailures(
         from result: ListBulkActionResult,
         currentList: BlueskyList,

@@ -57,6 +57,7 @@ struct BlueskyProfileView: View {
         }
     }
 
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     private func content(account: AppAccount, appPassword: String) -> some View {
         List {
             if let profile = viewModel.profile {
