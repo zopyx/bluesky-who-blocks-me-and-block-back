@@ -41,7 +41,9 @@ final class AccountStore: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             guard let entries = notification.object as? [[String: String]] else { return }
-            self?.mergeCloudAccounts(entries)
+            Task { @MainActor [weak self] in
+                self?.mergeCloudAccounts(entries)
+            }
         }
     }
 

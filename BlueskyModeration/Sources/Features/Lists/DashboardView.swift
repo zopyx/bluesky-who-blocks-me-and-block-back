@@ -8,7 +8,6 @@ struct DashboardView: View {
     var body: some View {
         List {
             Section {
-                let totalLists = accountStore.accounts.reduce(0) { _, _ in 0 }
                 LabeledContent(loc("dashboard.accounts"), value: "\(accountStore.accounts.count)")
                 LabeledContent(loc("dashboard.total_ops"), value: "\(workspaceStore.operationLog.count)")
             } header: {

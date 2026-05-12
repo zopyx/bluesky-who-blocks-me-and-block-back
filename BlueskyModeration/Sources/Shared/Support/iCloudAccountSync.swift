@@ -20,7 +20,11 @@ final class iCloudAccountSync: ObservableObject {
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: store,
             queue: .main,
-            using: { [weak self] _ in self?.pullFromCloud() }
+            using: { [weak self] _ in
+                Task { @MainActor in
+                    self?.pullFromCloud()
+                }
+            }
         )
         store.synchronize()
     }
