@@ -18,7 +18,6 @@ struct RootView: View {
     var body: some View {
         TabView(selection: $workspaceStore.selectedTab) {
             ModerationSplitView()
-            ModerationSplitView()
                 .tag(WorkspaceTab.moderation)
                 .tabItem {
                     Label {
