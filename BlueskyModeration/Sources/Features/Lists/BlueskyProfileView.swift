@@ -208,8 +208,41 @@ struct BlueskyProfileView: View {
                 }
 
                 Section {
-                    LabeledContent(loc("profile.stats.handle"), value: profile.handle)
-                    LabeledContent(loc("profile.stats.did"), value: profile.did)
+                    LabeledContent {
+                        HStack(spacing: 4) {
+                            Text(profile.handle)
+                                .lineLimit(1)
+                            Button {
+                                UIPasteboard.general.string = profile.handle
+                                viewModel.statusMessage = "Handle copied"
+                            } label: {
+                                Image(systemName: "doc.on.doc")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.tertiary)
+                        }
+                    } label: {
+                        Text(loc("profile.stats.handle"))
+                    }
+                    LabeledContent {
+                        HStack(spacing: 4) {
+                            Text(profile.did)
+                                .lineLimit(1)
+                                .font(.caption.monospaced())
+                            Button {
+                                UIPasteboard.general.string = profile.did
+                                viewModel.statusMessage = "DID copied"
+                            } label: {
+                                Image(systemName: "doc.on.doc")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.tertiary)
+                        }
+                    } label: {
+                        Text(loc("profile.stats.did"))
+                    }
                     if let createdAt = profile.createdAt {
                         LabeledContent(loc("profile.stats.joined"), value: createdAt.formatted(date: .abbreviated, time: .omitted))
                     }
@@ -247,35 +280,6 @@ struct BlueskyProfileView: View {
 
                 if !isOwnProfile {
                     Section {
-                        if viewModel.isBlockingFollowers {
-                            if let progress = viewModel.blockFollowersProgress {
-                                BatchProgressCard(
-                                    title: progress.title,
-                                    completedCount: progress.completedCount,
-                                    totalCount: progress.totalCount,
-                                    currentHandle: progress.currentHandle
-                                )
-                            }
-                        } else {
-                            Button(role: .destructive) {
-                                Task {
-                                    await viewModel.blockAllFollowers(
-                                        account: account,
-                                        appPassword: appPassword,
-                                        using: blueskyClient,
-                                        queue: workspaceStore.actionQueue
-                                    )
-                                }
-                            } label: {
-                                Label { Text(verbatim: loc("profile.block_all")) } icon: { Image(systemName: "hand.raised.slash") }
-                            }
-                            .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
-                            .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
-                            Text(verbatim: loc("profile.block_all_warning"))
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                        }
-
                         if viewModel.isDownloadingImages {
                             if let progress = viewModel.downloadProgress {
                                 BatchProgressCard(
@@ -302,13 +306,59 @@ struct BlueskyProfileView: View {
                             }
                             .disabled(viewModel.isDownloadingImages)
 
-                            Text("Downloads up to 500 latest media files into a <handle> subfolder.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.down.circle")
+                                    .hidden()
+                                Text("Downloads up to 500 latest media files into a <handle> subfolder.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        if viewModel.isBlockingFollowers {
+                            if let progress = viewModel.blockFollowersProgress {
+                                BatchProgressCard(
+                                    title: progress.title,
+                                    completedCount: progress.completedCount,
+                                    totalCount: progress.totalCount,
+                                    currentHandle: progress.currentHandle
+                                )
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.blockAllFollowers(
+                                        account: account,
+                                        appPassword: appPassword,
+                                        using: blueskyClient,
+                                        queue: workspaceStore.actionQueue
+                                    )
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "hand.raised.slash")
+                                    Text(verbatim: loc("profile.block_all"))
+                                    Text("BETA")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(Capsule().fill(.orange))
+                                }
+                            }
+                            .disabled(true)
+                            .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
+                            HStack(spacing: 8) {
+                                Image(systemName: "hand.raised.slash")
+                                    .hidden()
+                                Text(verbatim: loc("profile.block_all_warning"))
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
                         }
 
                         if let list {
-                            Label { Text(verbatim: loc("profile.member_of") + " \(list.name)") } icon: { Image(systemName: "person.2.badge.gearshape") }
+                            Label { Text(verbatim: loc("profile.member_of").replacingOccurrences(of: "{list}", with: list.name)) } icon: { Image(systemName: "person.2.badge.gearshape") }
                                 .foregroundStyle(.secondary)
                         }
 
