@@ -29,12 +29,16 @@ struct InfoView: View {
                     .padding(.vertical, 12)
 
                     ScrollView {
-                        Group {
-                            switch selectedTab {
-                            case .overview: overviewTab
-                            case .features: featuresTab
-                            case .legal: legalTab
-                            }
+                        VStack(spacing: 16) {
+                            overviewTab
+                                .opacity(selectedTab == .overview ? 1 : 0)
+                                .frame(maxHeight: selectedTab == .overview ? .infinity : 0)
+                            featuresTab
+                                .opacity(selectedTab == .features ? 1 : 0)
+                                .frame(maxHeight: selectedTab == .features ? .infinity : 0)
+                            legalTab
+                                .opacity(selectedTab == .legal ? 1 : 0)
+                                .frame(maxHeight: selectedTab == .legal ? .infinity : 0)
                         }
                         .padding(16)
                     }
@@ -60,6 +64,10 @@ struct InfoView: View {
 
     private var heroCard: some View {
         VStack(spacing: 10) {
+            Text("RULYX")
+                .font(.largeTitle.weight(.heavy))
+                .foregroundStyle(.primary)
+
             Image("RulyxLogo")
                 .resizable()
                 .scaledToFit()
@@ -69,10 +77,6 @@ struct InfoView: View {
                 .font(.body)
                 .foregroundStyle(.secondary)
 
-            Text(verbatim: localizationManager.localized("info.powered_by"))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
@@ -158,7 +162,7 @@ struct InfoView: View {
     // MARK: - Features Tab
 
     private var featuresTab: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+        VStack(spacing: 12) {
             featureCard(
                 icon: "checklist.checked",
                 color: .skyPrimary,
@@ -220,13 +224,13 @@ struct InfoView: View {
             .accessibilityHint(loc("info.website.hint"))
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
-                legalRow(icon: "doc.text", title: localizationManager.localized("info.legal.imprint"), value: "py-consultant.com/imprint-privacy.html", link: true)
+                legalRow(icon: "doc.text", title: localizationManager.localized("info.legal.imprint"), link: true)
             }
             .accessibilityLabel(loc("info.imprint.label"))
             .accessibilityHint(loc("info.imprint.hint"))
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
-                legalRow(icon: "hand.raised", title: localizationManager.localized("info.legal.privacy"), value: "py-consultant.com/imprint-privacy.html", link: true)
+                legalRow(icon: "hand.raised", title: localizationManager.localized("info.legal.privacy"), link: true)
             }
             .accessibilityLabel(loc("info.privacy.label"))
             .accessibilityHint(loc("info.privacy.hint"))
@@ -330,7 +334,7 @@ struct InfoView: View {
         .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
     }
 
-    private func legalRow(icon: String, title: String, value: String, link: Bool = false) -> some View {
+    private func legalRow(icon: String, title: String, value: String? = nil, link: Bool = false) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.body)
@@ -342,9 +346,11 @@ struct InfoView: View {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                Text(value)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if let value {
+                    Text(value)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer()

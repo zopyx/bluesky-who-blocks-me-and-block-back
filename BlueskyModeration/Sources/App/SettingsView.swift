@@ -4,7 +4,6 @@ struct SettingsView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var appLockManager: AppLockManager
-    @EnvironmentObject private var iCloudSync: iCloudAccountSync
     @AppStorage("debugMode") private var debugMode = false
     @State private var isShowingClearCacheConfirmation = false
     @State private var cacheStatusMessage: String?
@@ -13,15 +12,6 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section {
-                    Toggle(isOn: $debugMode) {
-                        Label {
-                            Text(localizationManager.localized("settings.debug"))
-                        } icon: {
-                            Image(systemName: "wrench.adjustable")
-                        }
-                    }
-                    .accessibilityHint("Enables additional debugging tools and logging")
-
                     Picker(selection: Binding(
                         get: { localizationManager.currentLanguage },
                         set: { localizationManager.currentLanguage = $0 }
@@ -65,20 +55,6 @@ struct SettingsView: View {
                     Text(localizationManager.localized("settings.preferences"))
                 }
 
-                Section {
-                    Toggle(isOn: $iCloudSync.isEnabled) {
-                        Label {
-                            Text(localizationManager.localized("settings.icloud.sync"))
-                        } icon: {
-                            Image(systemName: "icloud")
-                        }
-                    }
-                } header: {
-                    Text(localizationManager.localized("settings.icloud"))
-                } footer: {
-                    Text(localizationManager.localized(iCloudSync.isEnabled ? "settings.icloud.enabled_footer" : "settings.icloud.disabled_footer"))
-                }
-
                 if appLockManager.isBiometricsAvailable {
                     Section {
                         Toggle(isOn: $appLockManager.isEnabled) {
@@ -105,6 +81,19 @@ struct SettingsView: View {
                             Text(loc("settings.biometric_footer").replacingOccurrences(of: "{biometric}", with: appLockManager.biometricLabel))
                         }
                     }
+                }
+
+                Section {
+                    Toggle(isOn: $debugMode) {
+                        Label {
+                            Text(localizationManager.localized("settings.debug"))
+                        } icon: {
+                            Image(systemName: "wrench.adjustable")
+                        }
+                    }
+                    .accessibilityHint("Enables additional debugging tools and logging")
+                } header: {
+                    Text(localizationManager.localized("settings.internal"))
                 }
             }
             .navigationTitle(localizationManager.localized("settings.title"))

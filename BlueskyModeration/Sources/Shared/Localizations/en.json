@@ -561,6 +561,7 @@
     "settings.auto_lock.30min": "30 minutes",
     "settings.biometric_footer": "Lock the app with {biometric} when it goes to the background.",
     "actions.retry": "Retry",
+    "settings.internal": "Internal",
     "settings.cache_cleared": "Local cache cleared.",
     "lock_screen.unlock": "Unlock",
     "lock_screen.face_id_title": "Use Face ID to Unlock",
