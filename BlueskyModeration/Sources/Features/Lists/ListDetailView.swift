@@ -36,7 +36,30 @@ struct ListDetailView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbarContent)
-            .sheet(isPresented: $isShowingEditSheet, content: editSheetContent)
+            .sheet(isPresented: $isShowingEditSheet) {
+                if let account = accountStore.activeAccount,
+                   let appPassword = accountStore.appPassword(for: account) {
+                    EditListMetadataSheet(
+                        list: currentList,
+                        isSaving: viewModel.isUpdatingMetadata
+                    ) { title, description in
+                        Task {
+                            if let updatedList = await viewModel.updateMetadata(
+                                for: currentList,
+                                title: title,
+                                description: description,
+                                account: account,
+                                appPassword: appPassword,
+                                using: blueskyClient
+                            ) {
+                                currentList = updatedList
+                                onListUpdated?(updatedList)
+                                isShowingEditSheet = false
+                            }
+                        }
+                    }
+                }
+            }
             .sheet(isPresented: $isShowingSubscribe) {
                 SubscribeToListView(targetList: currentList)
                     .environmentObject(accountStore)
@@ -208,32 +231,6 @@ struct ListDetailView: View {
                 Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
             }
             .accessibilityHint("Deletes this list permanently")
-        }
-    }
-
-    @ViewBuilder
-    private func editSheetContent() -> some View {
-        if let account = accountStore.activeAccount,
-           let appPassword = accountStore.appPassword(for: account) {
-            EditListMetadataSheet(
-                list: currentList,
-                isSaving: viewModel.isUpdatingMetadata
-            ) { title, description in
-                Task {
-                    if let updatedList = await viewModel.updateMetadata(
-                        for: currentList,
-                        title: title,
-                        description: description,
-                        account: account,
-                        appPassword: appPassword,
-                        using: blueskyClient
-                    ) {
-                        currentList = updatedList
-                        onListUpdated?(updatedList)
-                        isShowingEditSheet = false
-                    }
-                }
-            }
         }
     }
 
