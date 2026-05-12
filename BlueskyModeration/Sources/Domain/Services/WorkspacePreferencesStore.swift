@@ -2,6 +2,7 @@ import Foundation
 
 enum WorkspaceTab: Hashable {
     case moderation
+    case account
     case settings
     case info
 }
