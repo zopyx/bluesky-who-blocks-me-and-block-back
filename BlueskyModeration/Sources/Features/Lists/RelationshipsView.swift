@@ -36,6 +36,10 @@ struct RelationshipsView: View {
     @State private var isShowingListPicker = false
     @State private var isShowingBlockConfirm = false
     @State private var actorToBlock: BlueskyActor?
+    @State private var shareFileURL: URL?
+    @State private var isExporting = false
+    @State private var exportProgressMessage: String?
+    @State private var exportProgressFraction: Double?
 
     private var filteredActors: [BlueskyActor] {
         let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -171,27 +175,73 @@ struct RelationshipsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if !actors.isEmpty {
-                    // swiftlint:disable:next line_length
-                    ShareLink(item: csvContent, subject: Text(loc("rel.export_subject").replacingOccurrences(of: "{mode}", with: modeLocalized)), message: Text(loc("rel.export_message").replacingOccurrences(of: "{mode}", with: modeLocalized.lowercased()))) {
-                        Image(systemName: "square.and.arrow.up")
-                    }
-                    .accessibilityHint("Shares a CSV export of these accounts")
-                }
-            }
+                HStack(spacing: 16) {
+                    if !actors.isEmpty {
+                        Menu {
+                            Button {
+                                isExporting = true
+                                Task { await exportAll(format: .csv) }
+                            } label: {
+                                Label { Text(verbatim: loc("list.search.export_csv_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                            }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                if isLoading && actors.isEmpty {
-                    ProgressView()
-                } else if isRefreshing {
-                    ProgressView()
-                } else {
-                    Button {
-                        Task { await refresh() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
+                            Button {
+                                isExporting = true
+                                Task { await exportAll(format: .json) }
+                            } label: {
+                                Label { Text(verbatim: loc("list.search.export_json_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                            }
+
+                            Button {
+                                isExporting = true
+                                Task { await exportAll(format: .xlsx) }
+                            } label: {
+                                Label("Export All to Excel", systemImage: "tablecells")
+                            }
+
+                            Button {
+                                isExporting = true
+                                Task { await exportAll(format: .ods) }
+                            } label: {
+                                Label("Export All to ODS", systemImage: "doc.text")
+                            }
+                        } label: {
+                            if isExporting {
+                                HStack(spacing: 6) {
+                                    if let fraction = exportProgressFraction {
+                                        ProgressView(value: fraction)
+                                            .frame(width: 40)
+                                            .scaleEffect(x: 1, y: 0.6)
+                                    } else {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                    }
+                                    if let msg = exportProgressMessage {
+                                        Text(msg)
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            } else {
+                                Image(systemName: "square.and.arrow.up")
+                            }
+                        }
+                        .disabled(isExporting)
                     }
-                    .accessibilityHint("Reloads this list from Bluesky")
+
+                    if isLoading && actors.isEmpty {
+                        ProgressView()
+                    } else if isRefreshing {
+                        ProgressView()
+                    } else {
+                        Button {
+                            Task { await refresh() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .accessibilityHint("Reloads this list from Bluesky")
+                        .disabled(isExporting)
+                    }
                 }
             }
         }
@@ -234,6 +284,11 @@ struct RelationshipsView: View {
                     .environmentObject(blueskyClient)
             }
         }
+        .sheet(isPresented: .init(get: { shareFileURL != nil }, set: { if !$0 { shareFileURL = nil } })) {
+            if let url = shareFileURL {
+                ShareSheet(activityItems: [url])
+            }
+        }
     }
 
     @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 30
@@ -270,17 +325,98 @@ struct RelationshipsView: View {
             }
     }
 
-    private var csvContent: String {
-        let header = "handle,did,display_name,created_at"
+    private func exportAll(format: ExportFormat) async {
+        let sanitizedName = mode.rawValue
+
+        let dids = actors.map(\.did)
+        let totalBatches = (dids.count + 24) / 25
+        exportProgressFraction = 0
+        let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
+            Task { @MainActor in
+                exportProgressFraction = Double(current) / Double(total)
+                exportProgressMessage = "Processing... \(current)/\(total)"
+            }
+        }) ?? [:]
+
+        exportProgressMessage = "Processing..."
+
+        let data: Data
+
+        switch format {
+        case .csv:
+            let csv = generateCSV(from: actors, stats: stats)
+            data = Data(csv.utf8)
+        case .json:
+            data = generateJSON(from: actors, stats: stats)
+        case .xlsx, .ods:
+            let headers = ["handle", "did", "display_name", "created_at", "followers", "following", "posts", "description"]
+            let rows = actors.map { actor in
+                let s = stats[actor.did]
+                return [
+                    actor.handle,
+                    actor.did,
+                    actor.displayName ?? "",
+                    actor.createdAt?.ISO8601Format() ?? "",
+                    "\(s?.followers ?? 0)",
+                    "\(s?.following ?? 0)",
+                    "\(s?.posts ?? 0)",
+                    s?.description ?? "",
+                ]
+            }
+            if format == .xlsx {
+                guard let xlsx = SpreadsheetExport.generateXLSX(headers: headers, rows: rows) else {
+                    isExporting = false; exportProgressMessage = nil; return
+                }
+                data = xlsx
+            } else {
+                guard let ods = SpreadsheetExport.generateODS(headers: headers, rows: rows) else {
+                    isExporting = false; exportProgressMessage = nil; return
+                }
+                data = ods
+            }
+        }
+
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(sanitizedName)-full-export.\(format.rawValue)")
+        try? data.write(to: url, options: .atomic)
+        isExporting = false
+        exportProgressMessage = nil
+        shareFileURL = url
+    }
+
+    private func generateCSV(from actors: [BlueskyActor], stats: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]) -> String {
+        let header = "handle,did,display_name,created_at,followers,following,posts,description"
         let rows = actors.map { actor in
-            [
+            let s = stats[actor.did]
+            return [
                 actor.handle.csvField,
                 actor.did.csvField,
                 (actor.displayName ?? "").csvField,
                 (actor.createdAt?.ISO8601Format() ?? "").csvField,
+                "\(s?.followers ?? 0)",
+                "\(s?.following ?? 0)",
+                "\(s?.posts ?? 0)",
+                (s?.description ?? "").csvField,
             ].joined(separator: ",")
         }
         return ([header] + rows).joined(separator: "\n")
+    }
+
+    private func generateJSON(from actors: [BlueskyActor], stats: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]) -> Data {
+        let objects = actors.map { actor in
+            let s = stats[actor.did]
+            return [
+                "handle": actor.handle,
+                "did": actor.did,
+                "display_name": actor.displayName ?? "",
+                "created_at": actor.createdAt?.ISO8601Format() ?? "",
+                "description": s?.description ?? "",
+                "followers": s?.followers ?? 0,
+                "following": s?.following ?? 0,
+                "posts": s?.posts ?? 0,
+            ] as [String: Any]
+        }
+        return (try? JSONSerialization.data(withJSONObject: objects, options: [.prettyPrinted, .sortedKeys])) ?? Data()
     }
 
     private var cacheKey: String? {
@@ -352,6 +488,20 @@ struct RelationshipsView: View {
             }
         }
     }
+}
+
+private enum ExportFormat: String, CaseIterable {
+    case csv, json, xlsx, ods
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 struct ListPickerSheet: View {

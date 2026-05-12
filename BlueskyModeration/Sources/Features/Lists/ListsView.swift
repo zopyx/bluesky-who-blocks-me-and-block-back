@@ -7,6 +7,13 @@ struct ListsView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = ListsViewModel()
     @State private var presentationState = PresentationState()
+    @State private var exportFormat: ExportFormat?
+    @State private var isShowingListPicker = false
+    @State private var shareFileURL: URL?
+    @State private var isExporting = false
+    @State private var exportProgressMessage: String?
+    @State private var exportProgressFraction: Double?
+    @State private var showShareSheet = false
 
     var body: some View {
         NavigationStack {
@@ -195,16 +202,86 @@ struct ListsView: View {
             .navigationTitle("")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Task {
-                            await reload()
+                ToolbarItem(placement: .topBarLeading) {
+                    let hasLists = viewModel.listsByKind.values.contains { !$0.isEmpty }
+                    if hasLists {
+                        Menu {
+                            Button {
+                                presentationState.createListKind = .moderation
+                                presentationState.isShowingCreateList = true
+                            } label: {
+                                Label("New Moderation List", systemImage: "hand.raised")
+                            }
+
+                            Button {
+                                presentationState.createListKind = .regular
+                                presentationState.isShowingCreateList = true
+                            } label: {
+                                Label("New Regular List", systemImage: "list.bullet")
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.body.weight(.semibold))
                         }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
                     }
-                    .accessibilityLabel(loc("lists.refresh.label"))
-                    .disabled(accountStore.activeAccount == nil)
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: 16) {
+                        Menu {
+                            Button {
+                                exportFormat = .csv
+                                isShowingListPicker = true
+                            } label: {
+                                Label { Text(verbatim: loc("list.search.export_csv_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                            }
+
+                            Button {
+                                exportFormat = .json
+                                isShowingListPicker = true
+                            } label: {
+                                Label { Text(verbatim: loc("list.search.export_json_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                            }
+
+                            Button {
+                                exportFormat = .xlsx
+                                isShowingListPicker = true
+                            } label: {
+                                Label("Export All to Excel", systemImage: "tablecells")
+                            }
+
+                            Button {
+                                exportFormat = .ods
+                                isShowingListPicker = true
+                            } label: {
+                                Label("Export All to ODS", systemImage: "doc.text")
+                            }
+                        } label: {
+                            if isExporting {
+                                HStack(spacing: 6) {
+                                    if let fraction = exportProgressFraction {
+                                        ProgressView(value: fraction)
+                                            .frame(width: 40)
+                                            .scaleEffect(x: 1, y: 0.6)
+                                    } else {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                    }
+                                }
+                            } else {
+                                Image(systemName: "square.and.arrow.up")
+                            }
+                        }
+                        .disabled(accountStore.activeAccount == nil || isExporting)
+
+                        Button {
+                            Task { await reload() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .accessibilityLabel(loc("lists.refresh.label"))
+                        .disabled(accountStore.activeAccount == nil || isExporting)
+                    }
                 }
             }
             .sheet(isPresented: $presentationState.isShowingAccountPicker) {
@@ -242,6 +319,9 @@ struct ListsView: View {
                 }
                 .environmentObject(accountStore)
                 .environmentObject(blueskyClient)
+            }
+            .sheet(isPresented: $isShowingListPicker) {
+                exportListPickerSheet
             }
             .sheet(isPresented: $presentationState.isShowingAccountManagement) {
                 NavigationStack {
@@ -301,6 +381,219 @@ struct ListsView: View {
     private func openAccountManagement() {
         presentationState.isShowingAccountManagement = true
     }
+
+    private var exportListPickerSheet: some View {
+        NavigationStack {
+            let lists = allListsWithMembers
+            List {
+                if lists.isEmpty {
+                    ContentUnavailableView(
+                        loc("lists.export.no_members"),
+                        systemImage: "square.and.arrow.up",
+                        description: Text(verbatim: loc("lists.export.no_members_desc"))
+                    )
+                }
+                ForEach(lists) { list in
+                    Button {
+                        Task { await performExport(list: list) }
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(list.name)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                if let count = list.memberCount {
+                                    Text("\(count) members")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            if isExporting {
+                                ProgressView()
+                            } else {
+                                Image(systemName: "square.and.arrow.up")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .disabled(isExporting)
+                }
+
+                if let msg = exportProgressMessage {
+                    HStack(spacing: 8) {
+                        if let fraction = exportProgressFraction {
+                            ProgressView(value: fraction)
+                                .frame(width: 60)
+                        } else {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                        Text(msg)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 8)
+                }
+            }
+            .navigationTitle(loc("lists.export.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(loc("actions.cancel")) { isShowingListPicker = false }
+                        .disabled(isExporting)
+                }
+            }
+            .sheet(isPresented: $showShareSheet, onDismiss: {
+                isShowingListPicker = false
+                isExporting = false
+                shareFileURL = nil
+                exportProgressMessage = nil
+                exportProgressFraction = nil
+            }) {
+                if let url = shareFileURL {
+                    ShareSheet(activityItems: [url])
+                }
+            }
+            .onChange(of: shareFileURL) { _, url in
+                if url != nil { showShareSheet = true }
+            }
+        }
+    }
+
+    private var allListsWithMembers: [BlueskyList] {
+        viewModel.listsByKind.values
+            .flatMap { $0 }
+            .filter { ($0.memberCount ?? 0) > 0 }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    private func performExport(list: BlueskyList) async {
+        guard let account = accountStore.activeAccount,
+              let appPassword = accountStore.appPassword(for: account),
+              let format = exportFormat else { return }
+
+        isExporting = true
+
+        exportProgressMessage = "Processing..."
+        let members: [BlueskyListMember]
+        do {
+            members = try await blueskyClient.fetchListMembers(list: list, account: account, appPassword: appPassword)
+        } catch {
+            isExporting = false
+            exportProgressMessage = nil
+            viewModel.errorMessage = AppError.userMessage(from: error)
+            return
+        }
+
+        guard !members.isEmpty else {
+            isExporting = false
+            exportProgressMessage = nil
+            return
+        }
+
+        let dids = members.map(\.actor.did)
+        let totalBatches = (dids.count + 24) / 25
+        exportProgressFraction = 0
+        let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
+            Task { @MainActor in
+                exportProgressFraction = Double(current) / Double(total)
+                exportProgressMessage = "Processing... \(current)/\(total)"
+            }
+        }) ?? [:]
+
+        exportProgressMessage = "Processing..."
+
+        let sanitizedName = list.name.lowercased().replacingOccurrences(of: " ", with: "-")
+        let fileName = "\(sanitizedName)-full-export.\(format.rawValue)"
+        let data: Data
+
+        switch format {
+        case .csv:
+            let csv = generateCSV(from: members, stats: stats)
+            data = Data(csv.utf8)
+        case .json:
+            data = generateJSON(from: members, stats: stats)
+        case .xlsx, .ods:
+            let headers = ["handle", "did", "display_name", "followers", "following", "posts", "description"]
+            let rows = members.map { member in
+                let s = stats[member.actor.did]
+                return [
+                    member.actor.handle,
+                    member.actor.did,
+                    member.actor.displayName ?? "",
+                    "\(s?.followers ?? 0)",
+                    "\(s?.following ?? 0)",
+                    "\(s?.posts ?? 0)",
+                    s?.description ?? "",
+                ]
+            }
+            if format == .xlsx {
+                guard let xlsx = SpreadsheetExport.generateXLSX(headers: headers, rows: rows) else {
+                    isExporting = false; exportProgressMessage = nil; return
+                }
+                data = xlsx
+            } else {
+                guard let ods = SpreadsheetExport.generateODS(headers: headers, rows: rows) else {
+                    isExporting = false; exportProgressMessage = nil; return
+                }
+                data = ods
+            }
+        }
+
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        try? data.write(to: url, options: .atomic)
+        exportProgressFraction = nil
+        exportProgressMessage = "Done"
+        shareFileURL = url
+    }
+
+    private func generateCSV(from members: [BlueskyListMember], stats: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]) -> String {
+        let header = "handle,did,display_name,followers,following,posts,description"
+        let rows = members.map { member in
+            let s = stats[member.actor.did]
+            return [
+                member.actor.handle.csvField,
+                member.actor.did.csvField,
+                (member.actor.displayName ?? "").csvField,
+                "\(s?.followers ?? 0)",
+                "\(s?.following ?? 0)",
+                "\(s?.posts ?? 0)",
+                (s?.description ?? "").csvField,
+            ].joined(separator: ",")
+        }
+        return ([header] + rows).joined(separator: "\n")
+    }
+
+    private func generateJSON(from members: [BlueskyListMember], stats: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]) -> Data {
+        let objects = members.map { member in
+            let s = stats[member.actor.did]
+            return [
+                "handle": member.actor.handle,
+                "did": member.actor.did,
+                "display_name": member.actor.displayName ?? "",
+                "description": s?.description ?? "",
+                "followers": s?.followers ?? 0,
+                "following": s?.following ?? 0,
+                "posts": s?.posts ?? 0,
+            ] as [String: Any]
+        }
+        return (try? JSONSerialization.data(withJSONObject: objects, options: [.prettyPrinted, .sortedKeys])) ?? Data()
+    }
+}
+
+private enum ExportFormat: String, CaseIterable {
+    case csv, json, xlsx, ods
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 #Preview {

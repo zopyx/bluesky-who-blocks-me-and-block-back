@@ -86,6 +86,69 @@ final class BlueskyProfileViewModel: ObservableObject {
         }
     }
 
+    @Published var isDownloadingImages = false
+    @Published var downloadProgress: (currentBatch: Int, totalBatches: Int, totalImages: Int)?
+
+    func downloadLatestImages(to directory: URL, account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        guard let profile else { return }
+
+        isDownloadingImages = true
+        defer { isDownloadingImages = false }
+
+        let targetDir = directory.appendingPathComponent(profile.handle, isDirectory: true)
+        try? FileManager.default.createDirectory(at: targetDir, withIntermediateDirectories: true)
+
+        var allImageURLs: [String] = []
+        var cursor: String?
+
+        while allImageURLs.count < 500 {
+            do {
+                let page = try await client.fetchAuthorFeed(did: profile.did, cursor: cursor, account: account, appPassword: appPassword)
+                for feedPost in page.feed {
+                    guard let images = feedPost.post.embed?.images else { continue }
+                    for img in images where allImageURLs.count < 500 {
+                        allImageURLs.append(img.fullsize)
+                    }
+                }
+                guard let nextCursor = page.cursor else { break }
+                cursor = nextCursor
+            } catch {
+                break
+            }
+        }
+
+        guard !allImageURLs.isEmpty else {
+            statusMessage = "No images found in recent posts."
+            return
+        }
+
+        let totalBatches = (allImageURLs.count + 9) / 10
+
+        for batchStart in stride(from: 0, to: allImageURLs.count, by: 10) {
+            let batch = Array(allImageURLs[batchStart ..< min(batchStart + 10, allImageURLs.count)])
+            let batchIndex = (batchStart / 10) + 1
+            downloadProgress = (batchIndex, totalBatches, allImageURLs.count)
+
+            let urls = batch.compactMap { URL(string: $0) }
+            await withTaskGroup(of: (Int, Data?).self) { group in
+                for (i, url) in urls.enumerated() {
+                    group.addTask {
+                        let data = try? Data(contentsOf: url)
+                        return (batchStart + i, data)
+                    }
+                }
+                for await (index, data) in group {
+                    guard let data else { continue }
+                    let ext = allImageURLs[index].hasSuffix(".png") ? "png" : "jpg"
+                    let fileURL = targetDir.appendingPathComponent("image-\(index + 1).\(ext)")
+                    try? data.write(to: fileURL)
+                }
+            }
+        }
+
+        statusMessage = "Downloaded \(allImageURLs.count) images to \(profile.handle)/."
+    }
+
     func toggleBlock(
         account: AppAccount,
         appPassword: String,

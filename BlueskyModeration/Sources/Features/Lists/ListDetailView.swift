@@ -15,6 +15,10 @@ struct ListDetailView: View {
     @State var comparisonState = ComparisonState()
     @State var exportState = ExportState()
     @State private var isShowingDeleteConfirmation = false
+    @State private var shareFileURL: URL?
+    @State private var isExporting = false
+    @State private var exportProgressMessage: String?
+    @State private var exportProgressFraction: Double?
     @Environment(\.dismiss) private var dismiss
 
     init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
@@ -59,6 +63,11 @@ struct ListDetailView: View {
                 allowedContentTypes: [.plainText, .commaSeparatedText]
             ) { result in
                 handleImportedFile(result)
+            }
+            .sheet(isPresented: .init(get: { shareFileURL != nil }, set: { if !$0 { shareFileURL = nil } })) {
+                if let url = shareFileURL {
+                    ShareSheet(activityItems: [url])
+                }
             }
             .alert(loc("list.detail.alert_title"), isPresented: .constant(viewModel.errorMessage != nil), actions: {
                 Button(loc("actions.ok")) {
@@ -172,6 +181,15 @@ struct ListDetailView: View {
     @ToolbarContentBuilder
     private func toolbarContent() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
+            Button(role: .destructive) {
+                isShowingDeleteConfirmation = true
+            } label: {
+                Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
+            }
+            .accessibilityHint("Deletes this list permanently")
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 importState.isShowingEditSheet = true
             } label: {
@@ -181,12 +199,69 @@ struct ListDetailView: View {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button(role: .destructive) {
-                isShowingDeleteConfirmation = true
-            } label: {
-                Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
+            HStack(spacing: 16) {
+                Menu {
+                    Button {
+                        isExporting = true
+                        Task { await exportList(format: .csv) }
+                    } label: {
+                        Label { Text(verbatim: loc("list.search.export_csv_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                    }
+
+                    Button {
+                        isExporting = true
+                        Task { await exportList(format: .json) }
+                    } label: {
+                        Label { Text(verbatim: loc("list.search.export_json_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                    }
+
+                    Button {
+                        isExporting = true
+                        Task { await exportList(format: .xlsx) }
+                    } label: {
+                        Label("Export All to Excel", systemImage: "tablecells")
+                    }
+
+                    Button {
+                        isExporting = true
+                        Task { await exportList(format: .ods) }
+                    } label: {
+                        Label("Export All to ODS", systemImage: "doc.text")
+                    }
+                } label: {
+                    if isExporting {
+                        HStack(spacing: 6) {
+                            if let fraction = exportProgressFraction {
+                                ProgressView(value: fraction)
+                                    .frame(width: 40)
+                                    .scaleEffect(x: 1, y: 0.6)
+                            } else {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            }
+                            if let msg = exportProgressMessage {
+                                Text(msg)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    } else {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+                .disabled(isExporting)
+
+                Button {
+                    Task {
+                        guard let account = accountStore.activeAccount,
+                              let appPassword = accountStore.appPassword(for: account) else { return }
+                        await reloadListContext(account: account, appPassword: appPassword)
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .disabled(isExporting || accountStore.activeAccount == nil)
             }
-            .accessibilityHint("Deletes this list permanently")
         }
     }
 
@@ -358,4 +433,133 @@ struct ListDetailView: View {
             }
         )
     }
+
+    private func exportList(format: ExportFormat) async {
+        guard let account = accountStore.activeAccount,
+              let appPassword = accountStore.appPassword(for: account) else {
+            isExporting = false
+            return
+        }
+
+        exportProgressMessage = "Processing..."
+        let members: [BlueskyListMember]
+        do {
+            members = try await blueskyClient.fetchListMembers(list: currentList, account: account, appPassword: appPassword)
+        } catch {
+            viewModel.errorMessage = AppError.userMessage(from: error)
+            isExporting = false
+            exportProgressMessage = nil
+            return
+        }
+
+        guard !members.isEmpty else {
+            isExporting = false
+            exportProgressMessage = nil
+            return
+        }
+
+        let dids = members.map(\.actor.did)
+        let totalBatches = (dids.count + 24) / 25
+        exportProgressFraction = 0
+        let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
+            Task { @MainActor in
+                exportProgressFraction = Double(current) / Double(total)
+                exportProgressMessage = "Processing... \(current)/\(total)"
+            }
+        }) ?? [:]
+
+        exportProgressMessage = "Processing..."
+
+        let sanitizedName = currentList.name.lowercased().replacingOccurrences(of: " ", with: "-")
+        let data: Data
+
+        switch format {
+        case .csv:
+            let csv = generateCSV(from: members, stats: stats)
+            data = Data(csv.utf8)
+        case .json:
+            data = generateJSON(from: members, stats: stats)
+        case .xlsx, .ods:
+            let headers = ["handle", "did", "display_name", "followers", "following", "posts", "description"]
+            let rows = members.map { member in
+                let s = stats[member.actor.did]
+                return [
+                    member.actor.handle,
+                    member.actor.did,
+                    member.actor.displayName ?? "",
+                    "\(s?.followers ?? 0)",
+                    "\(s?.following ?? 0)",
+                    "\(s?.posts ?? 0)",
+                    s?.description ?? "",
+                ]
+            }
+            if format == .xlsx {
+                guard let xlsx = SpreadsheetExport.generateXLSX(headers: headers, rows: rows) else {
+                    isExporting = false; exportProgressMessage = nil; return
+                }
+                data = xlsx
+            } else {
+                guard let ods = SpreadsheetExport.generateODS(headers: headers, rows: rows) else {
+                    isExporting = false; exportProgressMessage = nil; return
+                }
+                data = ods
+            }
+        }
+
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(sanitizedName)-full-export.\(format.rawValue)")
+        try? data.write(to: url, options: .atomic)
+        isExporting = false
+        exportProgressMessage = nil
+        shareFileURL = url
+    }
+
+    private func generateCSV(from members: [BlueskyListMember], stats: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]) -> String {
+        let header = "handle,did,display_name,followers,following,posts,description"
+        let rows = members.map { member in
+            let s = stats[member.actor.did]
+            return [
+                member.actor.handle.csvField,
+                member.actor.did.csvField,
+                (member.actor.displayName ?? "").csvField,
+                "\(s?.followers ?? 0)",
+                "\(s?.following ?? 0)",
+                "\(s?.posts ?? 0)",
+                (s?.description ?? "").csvField,
+            ].joined(separator: ",")
+        }
+        return ([header] + rows).joined(separator: "\n")
+    }
+
+    private func generateJSON(from members: [BlueskyListMember], stats: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]) -> Data {
+        let objects = members.map { member in
+            let s = stats[member.actor.did]
+            return [
+                "handle": member.actor.handle,
+                "did": member.actor.did,
+                "display_name": member.actor.displayName ?? "",
+                "description": s?.description ?? "",
+                "followers": s?.followers ?? 0,
+                "following": s?.following ?? 0,
+                "posts": s?.posts ?? 0,
+            ] as [String: Any]
+        }
+        return (try? JSONSerialization.data(withJSONObject: objects, options: [.prettyPrinted, .sortedKeys])) ?? Data()
+    }
+}
+
+extension ListDetailView {
+    enum ExportFormat: String, CaseIterable {
+        case csv, json, xlsx, ods
+    }
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

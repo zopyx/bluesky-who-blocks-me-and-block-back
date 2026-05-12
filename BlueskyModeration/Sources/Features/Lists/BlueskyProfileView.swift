@@ -9,6 +9,8 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
     @State private var isShowingAvatarPreview = false
+    @State private var isShowingFolderPicker = false
+    @State private var selectedDownloadFolder: URL?
 
     var body: some View {
         Group {
@@ -53,6 +55,27 @@ struct BlueskyProfileView: View {
                         }
                     }
                     .transition(.opacity.animation(UIAccessibility.isReduceMotionEnabled ? nil : .easeInOut))
+            }
+        }
+        .onChange(of: selectedDownloadFolder) { _, url in
+            guard let url else { return }
+            let acc = accountStore.activeAccount
+            let pw = acc.flatMap { accountStore.appPassword(for: $0) }
+            guard let account = acc, let appPassword = pw else { return }
+            guard url.startAccessingSecurityScopedResource() else { return }
+            Task {
+                await viewModel.downloadLatestImages(
+                    to: url,
+                    account: account,
+                    appPassword: appPassword,
+                    using: blueskyClient
+                )
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+        .sheet(isPresented: $isShowingFolderPicker) {
+            FolderPicker { url in
+                selectedDownloadFolder = url
             }
         }
     }
@@ -206,16 +229,10 @@ struct BlueskyProfileView: View {
                                 if entry.isCurrent {
                                     Text(verbatim: loc("profile.current_badge"))
                                         .font(.caption2.weight(.semibold))
-                                        .foregroundStyle(.green)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background {
-                                            if #available(iOS 26, *) {
-                                                Color.clear.glassEffect(.regular.tint(.green), in: .rect(cornerRadius: .infinity))
-                                            } else {
-                                                Color.clear.background(Color.green.opacity(0.12), in: Capsule())
-                                            }
-                                        }
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Capsule().fill(.green))
                                 }
                                 Spacer()
                                 Text(entry.date.formatted(date: .abbreviated, time: .omitted))
@@ -257,6 +274,37 @@ struct BlueskyProfileView: View {
                             Text(verbatim: loc("profile.block_all_warning"))
                                 .font(.caption)
                                 .foregroundStyle(.red)
+                        }
+
+                        if viewModel.isDownloadingImages {
+                            if let progress = viewModel.downloadProgress {
+                                BatchProgressCard(
+                                    title: "Downloading images",
+                                    completedCount: progress.currentBatch,
+                                    totalCount: progress.totalBatches,
+                                    currentHandle: "\(progress.totalImages) images"
+                                )
+                            }
+                        } else {
+                            Button {
+                                isShowingFolderPicker = true
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "arrow.down.circle")
+                                    Text("Download images")
+                                    Text("BETA")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(Capsule().fill(.orange))
+                                }
+                            }
+                            .disabled(viewModel.isDownloadingImages)
+
+                            Text("Downloads up to 500 latest media files into a <handle> subfolder.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
 
                         if let list {
@@ -359,6 +407,31 @@ struct BlueskyProfileView: View {
                     Color.clear.background((emphasized ? tint : Color.secondary).opacity(0.12), in: Capsule())
                 }
             }
+    }
+}
+
+private struct FolderPicker: UIViewControllerRepresentable {
+    let onPick: (URL) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_: UIDocumentPickerViewController, context _: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onPick: onPick)
+    }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL) -> Void
+        init(onPick: @escaping (URL) -> Void) { self.onPick = onPick }
+        func documentPicker(_: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let url = urls.first else { return }
+            onPick(url)
+        }
     }
 }
 

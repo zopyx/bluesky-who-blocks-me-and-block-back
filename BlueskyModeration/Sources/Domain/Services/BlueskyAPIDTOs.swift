@@ -361,3 +361,28 @@ enum ListPurpose: String, Decodable {
         }
     }
 }
+
+// MARK: - Feed / Author Feed (for image download)
+
+struct GetAuthorFeedResponse: Decodable {
+    let cursor: String?
+    let feed: [FeedViewPost]
+}
+
+struct FeedViewPost: Decodable {
+    let post: PostView
+}
+
+struct PostView: Decodable {
+    let uri: String
+    let embed: EmbedView?
+}
+
+struct EmbedView: Decodable {
+    let images: [EmbedImageItem]?
+}
+
+struct EmbedImageItem: Decodable {
+    let fullsize: String
+    let alt: String?
+}

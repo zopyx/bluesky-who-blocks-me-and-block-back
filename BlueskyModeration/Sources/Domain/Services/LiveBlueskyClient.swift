@@ -482,6 +482,44 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    nonisolated static func fetchProfileStats(dids: [String], onProgress: (@Sendable (Int, Int) -> Void)? = nil) async throws -> [String: (followers: Int, following: Int, posts: Int, description: String)] {
+        var result: [String: (followers: Int, following: Int, posts: Int, description: String)] = [:]
+        let session = URLSession.shared
+        let totalBatches = (dids.count + 24) / 25
+        var batchIndex = 0
+
+        for offset in stride(from: 0, to: dids.count, by: 25) {
+            batchIndex += 1
+            onProgress?(batchIndex, totalBatches)
+            let chunk = Array(dids[offset ..< min(offset + 25, dids.count)])
+            let actorsParam = chunk.map { URLQueryItem(name: "actors", value: $0) }
+            guard let profilesURL = URL(string: "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfiles") else {
+                throw BlueskyAPIError.invalidURL
+            }
+            var components = URLComponents(url: profilesURL, resolvingAgainstBaseURL: false)!
+            components.queryItems = actorsParam
+            guard let finalURL = components.url else { throw BlueskyAPIError.invalidURL }
+            var req = URLRequest(url: finalURL)
+            req.setValue("application/json", forHTTPHeaderField: "Accept")
+            req.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
+            req.timeoutInterval = 30
+            let (data, response) = try await session.data(for: req)
+            guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
+                throw BlueskyAPIError.invalidResponse
+            }
+            let decoded = try JSONDecoder().decode(GetProfilesResponse.self, from: data)
+            for profile in decoded.profiles {
+                result[profile.did] = (
+                    followers: profile.followersCount ?? 0,
+                    following: profile.followsCount ?? 0,
+                    posts: profile.postsCount ?? 0,
+                    description: profile.description ?? ""
+                )
+            }
+        }
+        return result
+    }
+
     private func resolveHandleToDID(handle: String) async throws -> String {
         guard let url = URL(string: "https://public.api.clearsky.services/api/v1/anon/get-did/\(handle)") else {
             throw BlueskyAPIError.invalidURL
@@ -503,6 +541,25 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
         let decoded = try JSONDecoder().decode(ClearskyDIDResponse.self, from: data)
         return decoded.data.didIdentifier
+    }
+
+    func fetchAuthorFeed(did: String, cursor: String? = nil, account: AppAccount, appPassword: String?) async throws -> GetAuthorFeedResponse {
+        try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            var queryItems = [URLQueryItem(name: "actor", value: did), URLQueryItem(name: "limit", value: "100")]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.feed.getAuthorFeed",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
     }
 
     func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
