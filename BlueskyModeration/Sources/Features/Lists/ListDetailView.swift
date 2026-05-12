@@ -37,7 +37,8 @@ struct ListDetailView: View {
             .toolbar(content: toolbarContent)
             .sheet(isPresented: $isShowingEditSheet) {
                 if let account = accountStore.activeAccount,
-                   let appPassword = accountStore.appPassword(for: account) {
+                   let appPassword = accountStore.appPassword(for: account)
+                {
                     EditListMetadataSheet(
                         list: currentList,
                         isSaving: viewModel.isUpdatingMetadata
@@ -87,7 +88,8 @@ struct ListDetailView: View {
                 if let account = accountStore.activeAccount,
                    let appPassword = accountStore.appPassword(for: account),
                    let result = viewModel.bulkActionResult,
-                   !result.failures.isEmpty {
+                   !result.failures.isEmpty
+                {
                     Button(loc("list.detail.retry_failed")) {
                         Task {
                             await viewModel.retryFailures(
@@ -115,7 +117,8 @@ struct ListDetailView: View {
             ) {
                 Button(loc("list.detail.remove_button"), role: .destructive) {
                     if let account = accountStore.activeAccount,
-                       let appPassword = accountStore.appPassword(for: account) {
+                       let appPassword = accountStore.appPassword(for: account)
+                    {
                         Task {
                             await viewModel.bulkRemoveSelectedMembers(
                                 account: account,
@@ -140,7 +143,8 @@ struct ListDetailView: View {
             ) {
                 Button(loc("actions.delete"), role: .destructive) {
                     if let account = accountStore.activeAccount,
-                       let appPassword = accountStore.appPassword(for: account) {
+                       let appPassword = accountStore.appPassword(for: account)
+                    {
                         Task {
                             do {
                                 try await blueskyClient.deleteList(
@@ -177,7 +181,8 @@ struct ListDetailView: View {
     private var rootContent: some View {
         Group {
             if let account = accountStore.activeAccount,
-               let appPassword = accountStore.appPassword(for: account) {
+               let appPassword = accountStore.appPassword(for: account)
+            {
                 content(account: account, appPassword: appPassword)
             } else {
                 ContentUnavailableView(
@@ -222,7 +227,8 @@ struct ListDetailView: View {
     private func importSheetContent() -> some View {
         ImportHandlesSheet { rawInput in
             if let account = accountStore.activeAccount,
-               let appPassword = accountStore.appPassword(for: account) {
+               let appPassword = accountStore.appPassword(for: account)
+            {
                 Task {
                     await viewModel.prepareImportPreview(
                         from: rawInput,
@@ -240,7 +246,8 @@ struct ListDetailView: View {
     private func importPreviewSheetContent() -> some View {
         if let importPreview = viewModel.importPreview,
            let account = accountStore.activeAccount,
-           let appPassword = accountStore.appPassword(for: account) {
+           let appPassword = accountStore.appPassword(for: account)
+        {
             ImportPreviewSheet(
                 preview: importPreview,
                 isImporting: viewModel.isImportingHandles || viewModel.isPreparingImportPreview
@@ -260,7 +267,6 @@ struct ListDetailView: View {
         }
     }
 
-    @ViewBuilder
     private func content(account: AppAccount, appPassword: String) -> some View {
         List {
             Section {
@@ -387,5 +393,4 @@ struct ListDetailView: View {
             }
         )
     }
-
 }

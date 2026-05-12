@@ -20,7 +20,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
                 method: "GET",
                 queryItems: [
                     URLQueryItem(name: "actor", value: authSession.did),
-                    URLQueryItem(name: "limit", value: "100")
+                    URLQueryItem(name: "limit", value: "100"),
                 ],
                 accessToken: authSession.accessJWT,
                 hostURL: authSession.pdsURL
@@ -81,7 +81,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "list", value: list.id),
-                URLQueryItem(name: "limit", value: "100")
+                URLQueryItem(name: "limit", value: "100"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))

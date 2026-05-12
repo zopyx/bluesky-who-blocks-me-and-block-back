@@ -51,7 +51,8 @@ extension ListDetailViewModel {
               hasMoreMembers,
               !isLoadingMembers,
               !isLoadingMoreMembers,
-              currentMember.id == members.suffix(5).first?.id || members.suffix(5).contains(currentMember) else {
+              currentMember.id == members.suffix(5).first?.id || members.suffix(5).contains(currentMember)
+        else {
             return
         }
 
@@ -106,7 +107,7 @@ extension ListDetailViewModel {
         }
         filteredMembers = members.filter {
             $0.actor.handle.lowercased().contains(trimmed) ||
-            ($0.actor.displayName?.lowercased().contains(trimmed) ?? false)
+                ($0.actor.displayName?.lowercased().contains(trimmed) ?? false)
         }
     }
 
@@ -240,7 +241,7 @@ extension ListDetailViewModel {
             [
                 member.actor.handle.csvField,
                 member.actor.did.csvField,
-                (member.actor.displayName ?? "").csvField
+                (member.actor.displayName ?? "").csvField,
             ].joined(separator: ",")
         }
     }

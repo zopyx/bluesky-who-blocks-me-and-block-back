@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ListMembersControllerTests: XCTestCase {
@@ -29,7 +29,7 @@ final class ListMembersControllerTests: XCTestCase {
         client.pageResult = PagedListMembers(
             members: [
                 makeMember(did: "did:plc:1", handle: "u1.bsky.social"),
-                makeMember(did: "did:plc:2", handle: "u2.bsky.social")
+                makeMember(did: "did:plc:2", handle: "u2.bsky.social"),
             ],
             cursor: "next"
         )
@@ -67,7 +67,7 @@ final class ListMembersControllerTests: XCTestCase {
         // First page returns a cursor so hasMore becomes true
         client.pageResult = PagedListMembers(members: [makeMember()], cursor: "next")
 
-        let _ = try await controller.loadMembers(
+        _ = try await controller.loadMembers(
             for: list,
             account: account,
             appPassword: "pass",
@@ -94,7 +94,7 @@ final class ListMembersControllerTests: XCTestCase {
         let list = makeList()
         client.pageResult = PagedListMembers(members: [makeMember()], cursor: nil)
 
-        let _ = try await controller.loadMembers(
+        _ = try await controller.loadMembers(
             for: list,
             account: account,
             appPassword: "pass",
@@ -116,7 +116,7 @@ final class ListMembersControllerTests: XCTestCase {
         client.pageResult = PagedListMembers(
             members: [
                 makeMember(did: "did:plc:same", handle: "same.bsky.social", recordURI: "at://item/1"),
-                makeMember(did: "did:plc:same", handle: "same.bsky.social", recordURI: "at://item/1")
+                makeMember(did: "did:plc:same", handle: "same.bsky.social", recordURI: "at://item/1"),
             ],
             cursor: nil
         )
@@ -136,10 +136,10 @@ private final class MockLiveBlueskyClient2: LiveBlueskyClient {
     var pageResult: PagedListMembers?
 
     override func fetchListMembersPage(
-        list: BlueskyList,
-        cursor: String?,
-        account: AppAccount,
-        appPassword: String?
+        list _: BlueskyList,
+        cursor _: String?,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> PagedListMembers {
         pageResult ?? PagedListMembers(members: [], cursor: nil)
     }

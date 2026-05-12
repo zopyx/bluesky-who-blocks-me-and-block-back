@@ -23,11 +23,11 @@ struct ActionPresetsView: View {
                 .padding(.vertical, 4)
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) { store.delete(preset) } label: { Label(loc("actions.delete"), systemImage: "trash") }
-                    .accessibilityHint("Permanently deletes this action preset")
+                        .accessibilityHint("Permanently deletes this action preset")
                 }
                 .swipeActions(edge: .leading) {
                     Button { store.duplicate(preset) } label: { Label(loc("presets.duplicate"), systemImage: "doc.on.doc") }
-                    .accessibilityHint("Creates a copy of this action preset")
+                        .accessibilityHint("Creates a copy of this action preset")
                 }
             }
         }
@@ -36,7 +36,7 @@ struct ActionPresetsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { isCreating = true } label: { Image(systemName: "plus") }
-                .accessibilityHint("Creates a new action preset")
+                    .accessibilityHint("Creates a new action preset")
             }
         }
         .sheet(isPresented: $isCreating) {
@@ -48,7 +48,11 @@ struct ActionPresetsView: View {
 private struct Tag: View {
     let text: String
     let color: Color
-    init(_ text: String, color: Color) { self.text = text; self.color = color }
+    init(_ text: String, color: Color) {
+        self.text = text
+        self.color = color
+    }
+
     var body: some View {
         Text(text).font(.caption2.weight(.semibold))
             .foregroundStyle(color).padding(.horizontal, 6).padding(.vertical, 2)

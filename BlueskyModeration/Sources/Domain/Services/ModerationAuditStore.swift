@@ -88,7 +88,7 @@ final class ModerationAuditStore: ObservableObject {
                     summary: "3 accounts added, 1 failed.",
                     succeededHandles: ["alice.bsky.social", "moderator.bsky.social", "safetylab.bsky.social"],
                     failedHandles: ["broken-handle"]
-                )
+                ),
             ]
             return
         }
@@ -138,7 +138,8 @@ final class ModerationAuditStore: ObservableObject {
             .sorted { $0.handle.localizedCaseInsensitiveCompare($1.handle) == .orderedAscending }
 
         if let previousSnapshot,
-           previousSnapshot.members == currentMembers {
+           previousSnapshot.members == currentMembers
+        {
             AppLogger.persistence.debug("Skipped snapshot write for list '\(list.name, privacy: .public)' because membership was unchanged.")
             return ListMembershipSnapshotSummary(
                 listID: list.id,
@@ -186,7 +187,8 @@ final class ModerationAuditStore: ObservableObject {
     ) -> ListMembershipSnapshotSummary? {
         let history = snapshotsByListID[listID] ?? []
         guard let newer = history.first(where: { $0.id == newerSnapshotID }),
-              let older = history.first(where: { $0.id == olderSnapshotID }) else {
+              let older = history.first(where: { $0.id == olderSnapshotID })
+        else {
             return nil
         }
 
@@ -216,12 +218,14 @@ final class ModerationAuditStore: ObservableObject {
 
     private func load() {
         if let data = defaults.data(forKey: snapshotsKey),
-           let decoded = try? JSONDecoder().decode([String: [ListMembershipSnapshot]].self, from: data) {
+           let decoded = try? JSONDecoder().decode([String: [ListMembershipSnapshot]].self, from: data)
+        {
             snapshotsByListID = decoded
         }
 
         if let data = defaults.data(forKey: operationLogKey),
-           let decoded = try? JSONDecoder().decode([ModerationOperationLogEntry].self, from: data) {
+           let decoded = try? JSONDecoder().decode([ModerationOperationLogEntry].self, from: data)
+        {
             operationLog = decoded.sorted { $0.createdAt > $1.createdAt }
         }
     }

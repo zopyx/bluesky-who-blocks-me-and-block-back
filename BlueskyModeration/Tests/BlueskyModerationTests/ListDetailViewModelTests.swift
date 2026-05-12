@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ListDetailViewModelTests: XCTestCase {

@@ -13,7 +13,8 @@ enum RelationshipCache {
     static func load(forKey key: String) -> [BlueskyActor] {
         let url = fileURL(forKey: key)
         guard let data = try? Data(contentsOf: url),
-              let actors = try? JSONDecoder().decode([BlueskyActor].self, from: data) else {
+              let actors = try? JSONDecoder().decode([BlueskyActor].self, from: data)
+        else {
             return []
         }
         return actors

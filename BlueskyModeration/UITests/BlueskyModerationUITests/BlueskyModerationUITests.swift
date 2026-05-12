@@ -11,11 +11,11 @@ final class BlueskyModerationUITests: XCTestCase {
         app.launch()
     }
 
-    func testAppLaunches() throws {
+    func testAppLaunches() {
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 5))
     }
 
-    func testTabNavigation() throws {
+    func testTabNavigation() {
         // Verify all 4 tab bar items exist and are tappable
         XCTAssertTrue(app.buttons["Moderation"].exists)
         XCTAssertTrue(app.buttons["Profile"].exists)
@@ -29,14 +29,14 @@ final class BlueskyModerationUITests: XCTestCase {
         app.buttons["Moderation"].tap()
     }
 
-    func testSettingsScreen() throws {
+    func testSettingsScreen() {
         app.buttons["Settings"].tap()
 
         // Verify Settings has expected sections
         XCTAssertTrue(app.navigationBars["Settings"].exists)
     }
 
-    func testInfoScreen() throws {
+    func testInfoScreen() {
         app.buttons["Info"].tap()
 
         // Verify Info screen has the segmented picker

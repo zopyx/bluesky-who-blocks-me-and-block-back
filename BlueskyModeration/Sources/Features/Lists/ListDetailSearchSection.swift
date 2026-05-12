@@ -21,7 +21,6 @@ extension ListDetailView {
             workflowToolsSection
         }
 
-        @ViewBuilder
         private var searchSection: some View {
             Section {
                 TextField(loc("list.search.placeholder"), text: $searchQuery)

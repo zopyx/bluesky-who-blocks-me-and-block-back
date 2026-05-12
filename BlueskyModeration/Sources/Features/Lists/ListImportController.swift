@@ -97,7 +97,7 @@ final class ListImportController {
 
     private func importedIdentifiers(from rawInput: String) -> [String] {
         let separators = CharacterSet.newlines
-        let rows = rawInput
+        return rawInput
             .components(separatedBy: separators)
             .flatMap { line -> [String] in
                 let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -115,8 +115,6 @@ final class ListImportController {
             }
             .map { normalizedImportedIdentifier($0) }
             .filter { !$0.isEmpty }
-
-        return rows
     }
 
     private func normalizedImportedIdentifier(_ value: String) -> String {
@@ -148,7 +146,8 @@ final class ListImportController {
     private func extractProfileIdentifier(from value: String) -> String {
         guard let url = URL(string: value),
               let profileIndex = url.pathComponents.firstIndex(of: "profile"),
-              url.pathComponents.indices.contains(profileIndex + 1) else {
+              url.pathComponents.indices.contains(profileIndex + 1)
+        else {
             return value
         }
 

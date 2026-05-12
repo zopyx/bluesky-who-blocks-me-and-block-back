@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ModerationWorkspaceStoreTests: XCTestCase {
@@ -35,7 +35,7 @@ final class ModerationWorkspaceStoreTests: XCTestCase {
             BlueskyListMember(
                 recordURI: "at://item/1",
                 actor: BlueskyActor(did: "did:plc:alice", handle: "alice.bsky.social")
-            )
+            ),
         ]
 
         let firstSummary = store.captureSnapshot(for: list, members: members)
@@ -57,8 +57,8 @@ final class ModerationWorkspaceStoreTests: XCTestCase {
             kind: .moderation
         )
 
-        for index in 0..<13 {
-            let members = (0...index).map { memberIndex in
+        for index in 0 ..< 13 {
+            let members = (0 ... index).map { memberIndex in
                 BlueskyListMember(
                     recordURI: "at://item/\(index)-\(memberIndex)",
                     actor: BlueskyActor(
@@ -79,7 +79,7 @@ final class ModerationWorkspaceStoreTests: XCTestCase {
     func testOperationLogKeepsNewestEntriesFirst() {
         let store = ModerationWorkspaceStore(defaults: defaults)
 
-        for index in 0..<26 {
+        for index in 0 ..< 26 {
             store.recordOperation(
                 ModerationOperationLogEntry(
                     title: "Operation \(index)",

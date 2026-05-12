@@ -42,7 +42,7 @@ struct RelationshipsView: View {
         guard !trimmed.isEmpty else { return actors }
         return actors.filter {
             $0.handle.lowercased().contains(trimmed) ||
-            ($0.displayName?.lowercased().contains(trimmed) ?? false)
+                ($0.displayName?.lowercased().contains(trimmed) ?? false)
         }
     }
 
@@ -226,7 +226,8 @@ struct RelationshipsView: View {
         .sheet(isPresented: $isShowingListPicker) {
             if let actor = selectedActorForList,
                let account = accountStore.activeAccount,
-               let appPassword = accountStore.appPassword(for: account) {
+               let appPassword = accountStore.appPassword(for: account)
+            {
                 ListPickerSheet(actor: actor, account: account, appPassword: appPassword, client: blueskyClient)
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
@@ -275,7 +276,7 @@ struct RelationshipsView: View {
                 actor.handle.csvField,
                 actor.did.csvField,
                 (actor.displayName ?? "").csvField,
-                (actor.createdAt?.ISO8601Format() ?? "").csvField
+                (actor.createdAt?.ISO8601Format() ?? "").csvField,
             ].joined(separator: ",")
         }
         return ([header] + rows).joined(separator: "\n")
@@ -288,7 +289,8 @@ struct RelationshipsView: View {
 
     private func load() async {
         guard let account = accountStore.activeAccount,
-              let appPassword = accountStore.appPassword(for: account) else {
+              let appPassword = accountStore.appPassword(for: account)
+        else {
             errorMessage = loc("rel.select_account_first")
             isLoading = false
             return
@@ -374,8 +376,7 @@ struct ListPickerSheet: View {
                                 do {
                                     _ = try await client.addActor(did: actor.did, to: list, account: account, appPassword: appPassword)
                                     dismiss()
-                                } catch {
-                                }
+                                } catch {}
                             }
                         } label: {
                             HStack {
@@ -399,7 +400,7 @@ struct ListPickerSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(loc("actions.cancel")) { dismiss() }
-                    .accessibilityHint("Closes the list picker without adding")
+                        .accessibilityHint("Closes the list picker without adding")
                 }
             }
             .task {

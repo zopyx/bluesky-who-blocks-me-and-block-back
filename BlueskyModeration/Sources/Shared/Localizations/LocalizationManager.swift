@@ -37,7 +37,7 @@ final class LocalizationManager: ObservableObject {
         let saved = UserDefaults.standard.string(forKey: "selectedLanguage")
         let preferred = Locale.current.language.languageCode?.identifier
         let allCodes = supportedLanguages.map(\.code)
-        self.currentLanguage = saved ?? (preferred != nil && allCodes.contains(preferred!) ? preferred! : "en")
+        currentLanguage = saved ?? (preferred != nil && allCodes.contains(preferred!) ? preferred! : "en")
         loadAll()
         loadCurrentBundle()
     }

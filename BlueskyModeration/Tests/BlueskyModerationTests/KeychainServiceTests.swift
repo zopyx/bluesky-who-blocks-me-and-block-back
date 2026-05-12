@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 final class KeychainServiceTests: XCTestCase {
     private var keychain: MockKeychain!

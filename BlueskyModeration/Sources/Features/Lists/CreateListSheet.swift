@@ -14,7 +14,7 @@ struct CreateListSheet: View {
                 Section {
                     TextField(loc("list.create.name_placeholder"), text: $name)
                     TextField(loc("list.create.desc_placeholder"), text: $description)
-                        .lineLimit(3...6)
+                        .lineLimit(3 ... 6)
                 } header: {
                     Text(verbatim: loc("list.create.details"))
                 }

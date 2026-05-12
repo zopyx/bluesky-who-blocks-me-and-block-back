@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ListImportControllerTests: XCTestCase {
@@ -12,7 +12,7 @@ final class ListImportControllerTests: XCTestCase {
 
     func testPreparePreviewClassifiesReadyItems() async throws {
         let client = MockImportClient(profiles: [
-            "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil)
+            "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil),
         ])
 
         let preview = try await controller.preparePreview(
@@ -30,7 +30,7 @@ final class ListImportControllerTests: XCTestCase {
 
     func testPreparePreviewClassifiesAlreadyPresent() async throws {
         let client = MockImportClient(profiles: [
-            "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil)
+            "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil),
         ])
 
         let preview = try await controller.preparePreview(
@@ -48,7 +48,7 @@ final class ListImportControllerTests: XCTestCase {
 
     func testPreparePreviewClassifiesDuplicates() async throws {
         let client = MockImportClient(profiles: [
-            "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil)
+            "alice.bsky.social": BlueskyProfile(id: "did:plc:alice", did: "did:plc:alice", handle: "alice.bsky.social", displayName: nil, description: nil, websiteURL: nil, avatarURL: nil, bannerURL: nil, followersCount: nil, followsCount: nil, postsCount: nil, listsCount: nil, starterPacksCount: nil, createdAt: nil, labels: [], viewerState: nil),
         ])
 
         let preview = try await controller.preparePreview(
@@ -114,8 +114,8 @@ private final class MockImportClient: LiveBlueskyClient {
 
     override func fetchProfile(
         did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> BlueskyProfile {
         if shouldFail {
             throw BlueskyAPIError.server("Not found")

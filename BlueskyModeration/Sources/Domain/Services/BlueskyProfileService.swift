@@ -41,7 +41,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "q", value: trimmedQuery),
-                URLQueryItem(name: "limit", value: "25")
+                URLQueryItem(name: "limit", value: "25"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))
@@ -100,7 +100,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "actor", value: actorDID),
-                URLQueryItem(name: "limit", value: "100")
+                URLQueryItem(name: "limit", value: "100"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))
@@ -140,7 +140,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
                 path: "app.bsky.actor.getProfile",
                 method: "GET",
                 queryItems: [
-                    URLQueryItem(name: "actor", value: actorDID)
+                    URLQueryItem(name: "actor", value: actorDID),
                 ],
                 accessToken: authSession.accessJWT,
                 hostURL: authSession.pdsURL
@@ -158,8 +158,8 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
             bannerURL: URL(string: response.banner ?? ""),
             followersCount: response.followersCount,
             followsCount: response.followsCount,
-            postsCount: response.postsCount
-            ,
+            postsCount: response.postsCount,
+
             listsCount: response.associated?.lists,
             starterPacksCount: response.associated?.starterPacks,
             createdAt: parseDate(response.createdAt),
@@ -195,7 +195,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
                     method: "GET",
                     queryItems: [
                         URLQueryItem(name: "actor", value: actor),
-                        URLQueryItem(name: "limit", value: "100")
+                        URLQueryItem(name: "limit", value: "100"),
                     ],
                     accessToken: authSession.accessJWT,
                     hostURL: authSession.pdsURL
@@ -205,7 +205,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
                     method: "GET",
                     queryItems: [
                         URLQueryItem(name: "actor", value: actor),
-                        URLQueryItem(name: "limit", value: "100")
+                        URLQueryItem(name: "limit", value: "100"),
                     ],
                     accessToken: authSession.accessJWT,
                     hostURL: authSession.pdsURL
@@ -288,7 +288,7 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "actor", value: actorDID),
-                URLQueryItem(name: "limit", value: "100")
+                URLQueryItem(name: "limit", value: "100"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))

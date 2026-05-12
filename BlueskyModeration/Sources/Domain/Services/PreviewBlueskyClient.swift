@@ -8,10 +8,10 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         BlueskyActor(did: "did:plc:3", handle: "safetylab.bsky.social", displayName: "Safety Lab"),
         BlueskyActor(did: "did:plc:4", handle: "bskynews.bsky.social", displayName: "Bluesky News"),
         BlueskyActor(did: "did:plc:5", handle: "curation.team", displayName: "Curation Team"),
-        BlueskyActor(did: "did:plc:6", handle: "reports.ops", displayName: "Reports Ops")
+        BlueskyActor(did: "did:plc:6", handle: "reports.ops", displayName: "Reports Ops"),
     ]
 
-    override func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
+    override func authenticate(handle: String, appPassword _: String, entrywayURL _: URL? = nil) async throws -> BlueskySession {
         BlueskySession(
             did: "did:plc:previewaccount",
             handle: handle,
@@ -21,7 +21,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         )
     }
 
-    override func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
+    override func fetchLists(for account: AppAccount, appPassword _: String?) async throws -> [BlueskyList] {
         try await Task.sleep(for: .milliseconds(150))
 
         let seed = abs(account.handle.hashValue)
@@ -63,7 +63,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                 description: "Freshly observed accounts pending deeper review.",
                 memberCount: 7 + regularBase,
                 kind: .regular
-            )
+            ),
         ]
     }
 
@@ -92,8 +92,8 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func fetchListMembersPage(
         list: BlueskyList,
         cursor: String?,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> PagedListMembers {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -104,7 +104,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         let nextCursor = endIndex < members.count ? String(endIndex) : nil
 
         return PagedListMembers(
-            members: Array(members[startIndex..<endIndex]),
+            members: Array(members[startIndex ..< endIndex]),
             cursor: nextCursor
         )
     }
@@ -126,8 +126,8 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func searchActorsPage(
         query: String,
         cursor: String?,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> PagedActorSearch {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -138,7 +138,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
 
         let matches = previewActors.filter {
             $0.handle.lowercased().contains(trimmed) ||
-            ($0.displayName?.lowercased().contains(trimmed) ?? false)
+                ($0.displayName?.lowercased().contains(trimmed) ?? false)
         }
         let pageSize = 3
         let startIndex = Int(cursor ?? "0") ?? 0
@@ -146,36 +146,36 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         let nextCursor = endIndex < matches.count ? String(endIndex) : nil
 
         return PagedActorSearch(
-            actors: Array(matches[startIndex..<endIndex]),
+            actors: Array(matches[startIndex ..< endIndex]),
             cursor: nextCursor
         )
     }
 
     override func addActor(
         did actorDID: String,
-        to list: BlueskyList,
-        account: AppAccount,
-        appPassword: String?
+        to _: BlueskyList,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> String {
         try await Task.sleep(for: .milliseconds(100))
         return "at://\(actorDID)/app.bsky.graph.listitem/\(UUID().uuidString)"
     }
 
     override func removeMember(
-        recordURI: String,
-        account: AppAccount,
-        appPassword: String?
+        recordURI _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(100))
     }
 
-    override func createList(name: String, description: String, kind: BlueskyList.Kind, account: AppAccount, appPassword: String?) async throws -> BlueskyList {
+    override func createList(name: String, description: String, kind: BlueskyList.Kind, account _: AppAccount, appPassword _: String?) async throws -> BlueskyList {
         try await Task.sleep(for: .milliseconds(100))
         let id = "at://did:plc:preview/app.bsky.graph.list/\(UUID().uuidString)"
         return BlueskyList(id: id, name: name, description: description, memberCount: 0, kind: kind)
     }
 
-    override func deleteList(list: BlueskyList, account: AppAccount, appPassword: String?) async throws {
+    override func deleteList(list _: BlueskyList, account _: AppAccount, appPassword _: String?) async throws {
         try await Task.sleep(for: .milliseconds(100))
     }
 
@@ -183,8 +183,8 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         list: BlueskyList,
         title: String,
         description: String,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> BlueskyList {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -198,19 +198,19 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     }
 
     override func fetchFollowers(
-        actor actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        actor _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await Task.sleep(for: .milliseconds(200))
         return previewActors
     }
 
     override func fetchFollowersPage(
-        actor actorDID: String,
+        actor _: String,
         cursor: String?,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> PagedActorSearch {
         try await Task.sleep(for: .milliseconds(120))
         let pageSize = 3
@@ -218,25 +218,25 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         let endIndex = min(startIndex + pageSize, previewActors.count)
         let nextCursor = endIndex < previewActors.count ? String(endIndex) : nil
         return PagedActorSearch(
-            actors: Array(previewActors[startIndex..<endIndex]),
+            actors: Array(previewActors[startIndex ..< endIndex]),
             cursor: nextCursor
         )
     }
 
     override func fetchFollowing(
-        actor actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        actor _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await Task.sleep(for: .milliseconds(200))
         return previewActors
     }
 
     override func fetchFollowingPage(
-        actor actorDID: String,
+        actor _: String,
         cursor: String?,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> PagedActorSearch {
         try await Task.sleep(for: .milliseconds(120))
         let pageSize = 3
@@ -244,15 +244,15 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         let endIndex = min(startIndex + pageSize, previewActors.count)
         let nextCursor = endIndex < previewActors.count ? String(endIndex) : nil
         return PagedActorSearch(
-            actors: Array(previewActors[startIndex..<endIndex]),
+            actors: Array(previewActors[startIndex ..< endIndex]),
             cursor: nextCursor
         )
     }
 
     override func fetchProfile(
         did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> BlueskyProfile {
         try await Task.sleep(for: .milliseconds(120))
 
@@ -270,7 +270,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
             postsCount: 89,
             listsCount: 3,
             starterPacksCount: 1,
-            createdAt: .now.addingTimeInterval(-86_400 * 200),
+            createdAt: .now.addingTimeInterval(-86400 * 200),
             labels: ["spam", "bot"],
             viewerState: BlueskyViewerState(
                 muted: false,
@@ -287,8 +287,8 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
 
     override func inspectProfile(
         query: String,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> ProfileInspection {
         try await Task.sleep(for: .milliseconds(150))
 
@@ -307,7 +307,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                 postsCount: 128,
                 listsCount: 4,
                 starterPacksCount: 2,
-                createdAt: .now.addingTimeInterval(-86_400 * 500),
+                createdAt: .now.addingTimeInterval(-86400 * 500),
                 labels: ["bot", "spam"],
                 viewerState: BlueskyViewerState(
                     muted: false,
@@ -336,7 +336,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                     memberCount: 67,
                     isMember: false,
                     listItemRecordURI: nil
-                )
+                ),
             ],
             starterPackMemberships: [
                 ProfileStarterPackMembership(
@@ -345,7 +345,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                     memberCount: 25,
                     joinedAllTimeCount: 340,
                     isMember: true
-                )
+                ),
             ]
         )
     }
@@ -359,60 +359,60 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     }
 
     override func fetchBlockedActors(
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await Task.sleep(for: .milliseconds(80))
         return [
             BlueskyActor(did: "did:plc:blocked1", handle: "spam.bsky.social", displayName: "Spam Account"),
-            BlueskyActor(did: "did:plc:blocked2", handle: "troll.bsky.social", displayName: "Troll Account")
+            BlueskyActor(did: "did:plc:blocked2", handle: "troll.bsky.social", displayName: "Troll Account"),
         ]
     }
 
     override func fetchBlockedByActors(
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await Task.sleep(for: .milliseconds(80))
         return []
     }
 
-    override func fetchBlockingCount(for account: AppAccount) async throws -> Int {
+    override func fetchBlockingCount(for _: AppAccount) async throws -> Int {
         2
     }
 
-    override func fetchBlockedByCount(for account: AppAccount) async throws -> Int {
+    override func fetchBlockedByCount(for _: AppAccount) async throws -> Int {
         0
     }
 
     override func blockActor(
-        did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        did _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 
     override func unblockActor(
-        recordURI: String,
-        account: AppAccount,
-        appPassword: String?
+        recordURI _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 
     override func muteActor(
-        did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        did _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }
 
     override func unmuteActor(
-        did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        did _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws {
         try await Task.sleep(for: .milliseconds(120))
     }

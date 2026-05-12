@@ -1,13 +1,13 @@
 import Foundation
 
-enum LoadableState<Value: Sendable>: Sendable {
+enum LoadableState<Value: Sendable> {
     case idle
     case loading
     case loaded(Value)
     case failed(AppError)
 
     var value: Value? {
-        if case .loaded(let v) = self { v } else { nil }
+        if case let .loaded(v) = self { v } else { nil }
     }
 
     var isLoaded: Bool {
@@ -19,7 +19,7 @@ enum LoadableState<Value: Sendable>: Sendable {
     }
 
     var error: AppError? {
-        if case .failed(let e) = self { e } else { nil }
+        if case let .failed(e) = self { e } else { nil }
     }
 
     mutating func startLoading() {

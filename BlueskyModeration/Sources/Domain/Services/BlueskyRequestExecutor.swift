@@ -24,6 +24,7 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
         let delegate = PinningDelegate()
         return URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
     }
+
     private let baseURL: URL
     private let session: URLSession
 
@@ -104,7 +105,7 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
             path: path,
             method: method,
             queryItems: queryItems,
-            body: Optional<String>.none,
+            body: String?.none,
             accessToken: accessToken,
             hostURL: hostURL
         )
@@ -113,7 +114,7 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
 
 private final class PinningDelegate: NSObject, URLSessionDelegate {
     func urlSession(
-        _ session: URLSession,
+        _: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {

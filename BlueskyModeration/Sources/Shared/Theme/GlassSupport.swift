@@ -4,18 +4,18 @@ extension View {
     @ViewBuilder
     func glassProminentButton() -> some View {
         if #available(iOS 26, *) {
-            self.buttonStyle(.glassProminent)
+            buttonStyle(.glassProminent)
         } else {
-            self.buttonStyle(.borderedProminent)
+            buttonStyle(.borderedProminent)
         }
     }
 
     @ViewBuilder
     func glassBorderedButton() -> some View {
         if #available(iOS 26, *) {
-            self.buttonStyle(.glass)
+            buttonStyle(.glass)
         } else {
-            self.buttonStyle(.bordered)
+            buttonStyle(.bordered)
         }
     }
 }

@@ -51,7 +51,7 @@ struct SkeletonCard: View {
 struct SkeletonGrid: View {
     var body: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
-            ForEach(0..<4) { _ in
+            ForEach(0 ..< 4) { _ in
                 SkeletonCard()
             }
         }

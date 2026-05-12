@@ -71,7 +71,7 @@ final class ListDiffController {
         let sections: [(ComparisonBucket, [BlueskyListMember])] = [
             (.overlap, report.overlap),
             (.onlyInCurrent, report.onlyInCurrent),
-            (.onlyInOther, report.onlyInOther)
+            (.onlyInOther, report.onlyInOther),
         ]
 
         return sections.flatMap { bucket, members in
@@ -80,7 +80,7 @@ final class ListDiffController {
                     bucket.title.csvField,
                     member.actor.handle.csvField,
                     member.actor.did.csvField,
-                    (member.actor.displayName ?? "").csvField
+                    (member.actor.displayName ?? "").csvField,
                 ].joined(separator: ",")
             }
         }

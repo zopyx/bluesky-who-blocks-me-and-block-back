@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 final class BlueskyRequestExecutorTests: XCTestCase {
     private var executor: BlueskyRequestExecutor!
@@ -106,7 +106,7 @@ final class BlueskyRequestExecutorTests: XCTestCase {
             )
             XCTFail("Expected error")
         } catch let error as BlueskyAPIError {
-            if case .server(let message) = error {
+            if case let .server(message) = error {
                 XCTAssertEqual(message, "Rate limit exceeded")
             } else {
                 XCTFail("Expected server error, got \(error)")

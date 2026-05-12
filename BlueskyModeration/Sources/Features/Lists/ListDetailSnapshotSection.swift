@@ -30,7 +30,7 @@ extension ListDetailView {
                                 loc("list.snapshot.help_2"),
                                 loc("list.snapshot.help_3"),
                                 loc("list.snapshot.help_4"),
-                                loc("list.snapshot.help_5")
+                                loc("list.snapshot.help_5"),
                             ]
                         )
                         .listRowInsets(EdgeInsets())
@@ -41,7 +41,7 @@ extension ListDetailView {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(loc("actions.done")) { showingSnapshotHelp = false }
-                            .accessibilityHint("Closes the snapshot help screen")
+                                .accessibilityHint("Closes the snapshot help screen")
                         }
                     }
                 }

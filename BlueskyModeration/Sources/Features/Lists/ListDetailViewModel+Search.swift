@@ -66,7 +66,8 @@ extension ListDetailViewModel {
               !isSearching,
               !isLoadingMoreSearchResults,
               lastSearchQuery.count >= 2,
-              let cursor = searchCursor else {
+              let cursor = searchCursor
+        else {
             return
         }
         let requestQuery = lastSearchQuery

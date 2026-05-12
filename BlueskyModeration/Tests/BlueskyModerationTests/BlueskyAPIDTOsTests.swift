@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 final class BlueskyAPIDTOsTests: XCTestCase {
     func testGetListsResponseDecoding() throws {
@@ -117,7 +117,7 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testListRecordEncoding() throws {
         let record = ListRecord(type: "app.bsky.graph.list", purpose: "app.bsky.graph.defs#modlist", name: "Test", description: "Desc", createdAt: "2024-01-01T00:00:00Z")
         let data = try JSONEncoder().encode(record)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["$type"] as? String, "app.bsky.graph.list")
         XCTAssertEqual(json["name"] as? String, "Test")
     }
@@ -125,7 +125,7 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testSubjectRecordEncoding() throws {
         let record = SubjectRecord(type: "app.bsky.graph.block", subject: "did:plc:target")
         let data = try JSONEncoder().encode(record)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["$type"] as? String, "app.bsky.graph.block")
         XCTAssertEqual(json["subject"] as? String, "did:plc:target")
     }
@@ -181,7 +181,7 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testParseHandleChanges() {
         let entries = [
             PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://old-handle.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-01-01T00:00:00Z"),
-            PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://new-handle.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-06-01T00:00:00Z")
+            PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://new-handle.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-06-01T00:00:00Z"),
         ]
         let result = parseHandleChanges(from: entries, currentHandle: "new-handle.bsky.social")
         XCTAssertEqual(result.count, 2)
@@ -192,7 +192,7 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testParseHandleChangesFiltersNullified() {
         let entries = [
             PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://old.bsky.social"], services: nil), cid: nil, nullified: true, createdAt: "2024-01-01T00:00:00Z"),
-            PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://current.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-06-01T00:00:00Z")
+            PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://current.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-06-01T00:00:00Z"),
         ]
         let result = parseHandleChanges(from: entries, currentHandle: "current.bsky.social")
         XCTAssertEqual(result.count, 1)
@@ -202,7 +202,7 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testParseHandleChangesDeduplicates() {
         let entries = [
             PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://same.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-01-01T00:00:00Z"),
-            PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://same.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-06-01T00:00:00Z")
+            PLCAuditLogEntry(did: "did:plc:test", operation: PLCOperation(type: "plc_operation", alsoKnownAs: ["at://same.bsky.social"], services: nil), cid: nil, nullified: false, createdAt: "2024-06-01T00:00:00Z"),
         ]
         let result = parseHandleChanges(from: entries, currentHandle: "same.bsky.social")
         XCTAssertEqual(result.count, 1)
@@ -250,7 +250,7 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testCreateRecordRequestEncoding() throws {
         let request = CreateRecordRequest(repo: "did:plc:repo", collection: "app.bsky.graph.listitem", record: ListItemRecord(createdAt: "now", list: "at://list/1", subject: "did:plc:sub"))
         let data = try JSONEncoder().encode(request)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["repo"] as? String, "did:plc:repo")
         XCTAssertEqual(json["collection"] as? String, "app.bsky.graph.listitem")
     }
@@ -258,14 +258,14 @@ final class BlueskyAPIDTOsTests: XCTestCase {
     func testDeleteRecordRequestEncoding() throws {
         let request = DeleteRecordRequest(repo: "did:plc:repo", collection: "app.bsky.graph.listitem", rkey: "rkey123")
         let data = try JSONEncoder().encode(request)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["rkey"] as? String, "rkey123")
     }
 
     func testActorReferenceRequestEncoding() throws {
         let request = ActorReferenceRequest(actor: "did:plc:target")
         let data = try JSONEncoder().encode(request)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["actor"] as? String, "did:plc:target")
     }
 

@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class LiveBlueskyClientTests: XCTestCase {
@@ -34,8 +34,8 @@ final class LiveBlueskyClientTests: XCTestCase {
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, json)
         }
-        let auditedClient = LiveBlueskyClient(
-            baseURL: URL(string: "https://bsky.social")!,
+        let auditedClient = try LiveBlueskyClient(
+            baseURL: XCTUnwrap(URL(string: "https://bsky.social")),
             session: mockSession
         )
 

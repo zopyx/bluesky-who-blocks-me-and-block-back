@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ListBatchControllerTests: XCTestCase {
@@ -14,7 +14,7 @@ final class ListBatchControllerTests: XCTestCase {
         let actors = [
             makeActor(did: "did:plc:1", handle: "a.bsky.social"),
             makeActor(did: "did:plc:2", handle: "b.bsky.social"),
-            makeActor(did: "did:plc:3", handle: "c.bsky.social")
+            makeActor(did: "did:plc:3", handle: "c.bsky.social"),
         ]
         let result = await controller.performBatch(
             title: "Test",
@@ -29,7 +29,7 @@ final class ListBatchControllerTests: XCTestCase {
     func testPerformBatchSomeFail() async {
         let actors = [
             makeActor(did: "did:plc:1", handle: "a.bsky.social"),
-            makeActor(did: "did:plc:2", handle: "b.bsky.social")
+            makeActor(did: "did:plc:2", handle: "b.bsky.social"),
         ]
         var callCount = 0
         let result = await controller.performBatch(
@@ -62,7 +62,7 @@ final class ListBatchControllerTests: XCTestCase {
     func testPerformBatchReportsProgress() async {
         let actors = [
             makeActor(did: "did:plc:1", handle: "a.bsky.social"),
-            makeActor(did: "did:plc:2", handle: "b.bsky.social")
+            makeActor(did: "did:plc:2", handle: "b.bsky.social"),
         ]
         var progressUpdates: [BatchProgress] = []
         let result = await controller.performBatch(
@@ -84,7 +84,7 @@ final class ListBatchControllerTests: XCTestCase {
     func testPerformBatchCallsOnStartAndComplete() async {
         let actors = [
             makeActor(did: "did:plc:1", handle: "a.bsky.social"),
-            makeActor(did: "did:plc:2", handle: "b.bsky.social")
+            makeActor(did: "did:plc:2", handle: "b.bsky.social"),
         ]
         var started: [BlueskyActor] = []
         var completed: [BlueskyActor] = []

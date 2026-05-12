@@ -17,7 +17,7 @@ enum BlueskyAPIError: LocalizedError {
             return "Bluesky rejected the credentials. Check the handle and app password."
         case .missingCredentials:
             return "No saved app password was found for this account."
-        case .server(let message):
+        case let .server(message):
             return "Bluesky returned an error: \(message)"
         }
     }

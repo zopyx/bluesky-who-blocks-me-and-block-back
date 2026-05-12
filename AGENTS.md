@@ -8,6 +8,9 @@ iOS SwiftUI app for Bluesky moderation (lists, bulk operations, profile inspecti
 xcodegen generate
 xcodebuild -project BlueskyModeration.xcodeproj -scheme BlueskyModeration -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO
 xcodebuild -project BlueskyModeration.xcodeproj -scheme BlueskyModeration -destination 'generic/platform=iOS Simulator' build-for-testing CODE_SIGNING_ALLOWED=NO
+swiftformat --lint .          # check formatting
+swiftlint                     # check lint rules
+swiftformat Sources Tests     # auto-format
 ```
 
 ## Key Architecture

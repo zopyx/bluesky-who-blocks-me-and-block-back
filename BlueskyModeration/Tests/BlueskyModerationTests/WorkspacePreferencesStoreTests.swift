@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class WorkspacePreferencesStoreTests: XCTestCase {
@@ -80,7 +80,7 @@ final class WorkspacePreferencesStoreTests: XCTestCase {
 
     func testRecentSearchLimit() {
         let store = WorkspacePreferencesStore(defaults: defaults)
-        for i in 0..<15 {
+        for i in 0 ..< 15 {
             store.noteRecentSearch("search\(i)")
         }
         XCTAssertEqual(store.recentSearches.count, 12)
@@ -102,8 +102,8 @@ final class WorkspacePreferencesStoreTests: XCTestCase {
         XCTAssertEqual(store.lastProfileQuery, "safety")
     }
 
-    func testLastProfileQueryPersisted() {
-        let defaults = UserDefaults(suiteName: suiteName)!
+    func testLastProfileQueryPersisted() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         let store1 = WorkspacePreferencesStore(defaults: defaults)
         store1.lastProfileQuery = "hello"
         let store2 = WorkspacePreferencesStore(defaults: defaults)

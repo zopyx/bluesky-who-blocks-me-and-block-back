@@ -13,7 +13,8 @@ struct BlueskyProfileView: View {
     var body: some View {
         Group {
             if let account = accountStore.activeAccount,
-               let appPassword = accountStore.appPassword(for: account) {
+               let appPassword = accountStore.appPassword(for: account)
+            {
                 content(account: account, appPassword: appPassword)
             } else {
                 ContentUnavailableView(
@@ -32,29 +33,30 @@ struct BlueskyProfileView: View {
                     .onTapGesture { isShowingAvatarPreview = false }
                     .overlay {
                         AsyncImage(url: avatarURL) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .padding(40)
-                            } placeholder: {
-                                ProgressView()
-                                    .tint(.white)
-                            }
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .padding(40)
+                        } placeholder: {
+                            ProgressView()
+                                .tint(.white)
                         }
-                        .overlay(alignment: .topTrailing) {
-                            Button {
-                                isShowingAvatarPreview = false
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundStyle(.white.opacity(0.8))
-                                    .padding()
-                            }
+                    }
+                    .overlay(alignment: .topTrailing) {
+                        Button {
+                            isShowingAvatarPreview = false
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.white.opacity(0.8))
+                                .padding()
                         }
-                        .transition(.opacity.animation(.easeInOut))
-                }
+                    }
+                    .transition(.opacity.animation(.easeInOut))
             }
         }
+    }
+
     private func content(account: AppAccount, appPassword: String) -> some View {
         List {
             if let profile = viewModel.profile {
@@ -90,50 +92,50 @@ struct BlueskyProfileView: View {
 
                 if !isOwnProfile {
                     Section {
-                    if let viewerState = profile.viewerState {
-                        Toggle(isOn: Binding(
-                            get: { viewerState.isBlocking },
-                            set: { _ in
-                                Task {
-                                    await viewModel.toggleBlock(
-                                        account: account,
-                                        appPassword: appPassword,
-                                        using: blueskyClient
-                                    )
+                        if let viewerState = profile.viewerState {
+                            Toggle(isOn: Binding(
+                                get: { viewerState.isBlocking },
+                                set: { _ in
+                                    Task {
+                                        await viewModel.toggleBlock(
+                                            account: account,
+                                            appPassword: appPassword,
+                                            using: blueskyClient
+                                        )
+                                    }
                                 }
+                            )) {
+                                Label { Text(verbatim: loc("profile.block")) } icon: { Image(systemName: "hand.raised") }
                             }
-                        )) {
-                            Label { Text(verbatim: loc("profile.block")) } icon: { Image(systemName: "hand.raised") }
-                        }
-                        .disabled(viewModel.isUpdatingModeration)
-                        .accessibilityHint(viewerState.isBlocking ? "Turns off block for this account" : "Blocks this account from interacting with you")
+                            .disabled(viewModel.isUpdatingModeration)
+                            .accessibilityHint(viewerState.isBlocking ? "Turns off block for this account" : "Blocks this account from interacting with you")
 
-                        Toggle(isOn: Binding(
-                            get: { viewerState.muted },
-                            set: { _ in
-                                Task {
-                                    await viewModel.toggleMute(
-                                        account: account,
-                                        appPassword: appPassword,
-                                        using: blueskyClient
-                                    )
+                            Toggle(isOn: Binding(
+                                get: { viewerState.muted },
+                                set: { _ in
+                                    Task {
+                                        await viewModel.toggleMute(
+                                            account: account,
+                                            appPassword: appPassword,
+                                            using: blueskyClient
+                                        )
+                                    }
                                 }
+                            )) {
+                                Label { Text(verbatim: loc("profile.mute")) } icon: { Image(systemName: "speaker.slash") }
                             }
-                        )) {
-                            Label { Text(verbatim: loc("profile.mute")) } icon: { Image(systemName: "speaker.slash") }
+                            .disabled(viewModel.isUpdatingModeration)
+                            .accessibilityHint(viewerState.muted ? "Unmutes this account" : "Mutes this account so you no longer see their posts")
                         }
-                        .disabled(viewModel.isUpdatingModeration)
-                        .accessibilityHint(viewerState.muted ? "Unmutes this account" : "Mutes this account so you no longer see their posts")
-                    }
 
-                    if let statusMessage = viewModel.statusMessage {
-                        Text(statusMessage)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if let statusMessage = viewModel.statusMessage {
+                            Text(statusMessage)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } header: {
+                        Text(verbatim: loc("profile.moderation_section"))
                     }
-                } header: {
-                    Text(verbatim: loc("profile.moderation_section"))
-                }
                 }
 
                 if !isOwnProfile, !viewModel.listMemberships.isEmpty {
@@ -174,63 +176,63 @@ struct BlueskyProfileView: View {
 
                 if !isOwnProfile {
                     Section {
-                    if viewModel.isBlockingFollowers {
-                        if let progress = viewModel.blockFollowersProgress {
-                            BatchProgressCard(
-                                title: progress.title,
-                                completedCount: progress.completedCount,
-                                totalCount: progress.totalCount,
-                                currentHandle: progress.currentHandle
-                            )
-                        }
-                    } else {
-                        Button(role: .destructive) {
-                            Task {
-                                await viewModel.blockAllFollowers(
-                                    account: account,
-                                    appPassword: appPassword,
-                                    using: blueskyClient,
-                                    queue: workspaceStore.actionQueue
+                        if viewModel.isBlockingFollowers {
+                            if let progress = viewModel.blockFollowersProgress {
+                                BatchProgressCard(
+                                    title: progress.title,
+                                    completedCount: progress.completedCount,
+                                    totalCount: progress.totalCount,
+                                    currentHandle: progress.currentHandle
                                 )
                             }
-                        } label: {
-                            Label { Text(verbatim: loc("profile.block_all")) } icon: { Image(systemName: "hand.raised.slash") }
-                        }
-                        .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
-                        .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
-                        Text(verbatim: loc("profile.block_all_warning"))
-                            .font(.caption)
-                            .foregroundStyle(.red)
+                        } else {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.blockAllFollowers(
+                                        account: account,
+                                        appPassword: appPassword,
+                                        using: blueskyClient,
+                                        queue: workspaceStore.actionQueue
+                                    )
+                                }
+                            } label: {
+                                Label { Text(verbatim: loc("profile.block_all")) } icon: { Image(systemName: "hand.raised.slash") }
+                            }
+                            .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
+                            .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
+                            Text(verbatim: loc("profile.block_all_warning"))
+                                .font(.caption)
+                                .foregroundStyle(.red)
 
-                    if !ActionPresetStore.shared.presets.isEmpty {
-                        Menu {
-                            ForEach(ActionPresetStore.shared.presets) { preset in
-                                Button(preset.name) {
-                                    Task {
-                                        if preset.shouldBlock {
-                                            await viewModel.toggleBlock(account: account, appPassword: appPassword, using: blueskyClient)
-                                        }
-                                        if preset.shouldMute {
-                                            await viewModel.toggleMute(account: account, appPassword: appPassword, using: blueskyClient)
+                            if !ActionPresetStore.shared.presets.isEmpty {
+                                Menu {
+                                    ForEach(ActionPresetStore.shared.presets) { preset in
+                                        Button(preset.name) {
+                                            Task {
+                                                if preset.shouldBlock {
+                                                    await viewModel.toggleBlock(account: account, appPassword: appPassword, using: blueskyClient)
+                                                }
+                                                if preset.shouldMute {
+                                                    await viewModel.toggleMute(account: account, appPassword: appPassword, using: blueskyClient)
+                                                }
+                                            }
                                         }
                                     }
+                                } label: {
+                                    Label(loc("profile.apply_preset"), systemImage: "square.2.layers.3d")
                                 }
+                                .accessibilityHint("Applies a saved action preset to this account")
                             }
-                        } label: {
-                            Label(loc("profile.apply_preset"), systemImage: "square.2.layers.3d")
                         }
-                        .accessibilityHint("Applies a saved action preset to this account")
-                    }
-                    }
 
-                    if let list {
-                        Label { Text(verbatim: loc("profile.member_of") + " \(list.name)") } icon: { Image(systemName: "person.2.badge.gearshape") }
-                            .foregroundStyle(.secondary)
-                    }
+                        if let list {
+                            Label { Text(verbatim: loc("profile.member_of") + " \(list.name)") } icon: { Image(systemName: "person.2.badge.gearshape") }
+                                .foregroundStyle(.secondary)
+                        }
 
-                } header: {
-                    Text(verbatim: loc("profile.actions_section"))
-                }
+                    } header: {
+                        Text(verbatim: loc("profile.actions_section"))
+                    }
                 }
 
                 if let profileURL = profile.profileURL {
@@ -316,28 +318,27 @@ struct BlueskyProfileView: View {
         }
     }
 
-    @ViewBuilder
     private func profileAvatar(for profile: BlueskyProfile) -> some View {
         Button {
             isShowingAvatarPreview = true
         } label: {
-        if let avatarURL = profile.avatarURL {
-            AsyncImage(url: avatarURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
+            if let avatarURL = profile.avatarURL {
+                AsyncImage(url: avatarURL) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    avatarPlaceholder(for: profile)
+                }
+                .frame(width: 72, height: 72)
+                .clipShape(Circle())
+                .overlay {
+                    Circle()
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                }
+            } else {
                 avatarPlaceholder(for: profile)
             }
-            .frame(width: 72, height: 72)
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-            }
-        } else {
-            avatarPlaceholder(for: profile)
-        }
         }
     }
 
@@ -380,7 +381,6 @@ struct BlueskyProfileView: View {
                 }
             }
     }
-
 }
 
 #Preview {

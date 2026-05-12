@@ -15,15 +15,15 @@ final class AppDependencies: ObservableObject {
         let keychain = KeychainService()
         let sessionService = BlueskySessionService(requestExecutor: requestExecutor, keychain: keychain)
 
-        self.accountStore = AccountStore(keychain: keychain)
-        self.listService = BlueskyListService(requestExecutor: requestExecutor, sessionService: sessionService)
-        self.profileService = BlueskyProfileService(requestExecutor: requestExecutor, sessionService: sessionService)
-        self.workspaceStore = ModerationWorkspaceStore()
-        self.actionPresetStore = ActionPresetStore()
-        self.blueskyClient = LiveBlueskyClient(
+        accountStore = AccountStore(keychain: keychain)
+        listService = BlueskyListService(requestExecutor: requestExecutor, sessionService: sessionService)
+        profileService = BlueskyProfileService(requestExecutor: requestExecutor, sessionService: sessionService)
+        workspaceStore = ModerationWorkspaceStore()
+        actionPresetStore = ActionPresetStore()
+        blueskyClient = LiveBlueskyClient(
             requestExecutor: requestExecutor,
             sessionService: sessionService
         )
-        self.localizationManager = LocalizationManager.shared
+        localizationManager = LocalizationManager.shared
     }
 }

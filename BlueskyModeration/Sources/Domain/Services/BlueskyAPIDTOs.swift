@@ -315,7 +315,8 @@ func parseHandleChanges(from auditLog: [PLCAuditLogEntry], currentHandle: String
         .compactMap { entry -> (handle: String, date: Date)? in
             guard let alsoKnownAs = entry.operation.alsoKnownAs,
                   let atHandle = alsoKnownAs.first(where: { $0.hasPrefix("at://") }),
-                  let date = parseDate(entry.createdAt) else {
+                  let date = parseDate(entry.createdAt)
+            else {
                 return nil
             }
             let handle = String(atHandle.dropFirst(5))

@@ -27,7 +27,7 @@ final class BlueskySessionService: BlueskySessionServicing {
         requestExecutor: BlueskyRequestExecuting,
         keychain: KeychainServicing = KeychainService()
     ) {
-        self.entrywayURL = baseURL
+        entrywayURL = baseURL
         self.requestExecutor = requestExecutor
         self.keychain = keychain
     }
@@ -178,7 +178,7 @@ final class BlueskySessionService: BlueskySessionServicing {
                 path: "com.atproto.server.refreshSession",
                 method: "POST",
                 queryItems: [],
-                body: Optional<String>.none,
+                body: String?.none,
                 accessToken: refreshJWT,
                 hostURL: existingSession.pdsURL
             )
@@ -203,7 +203,8 @@ final class BlueskySessionService: BlueskySessionServicing {
 
     private func restoredSession(for account: AppAccount) throws -> BlueskySession? {
         guard let value = try keychain.read(service: persistedSessionService, account: account.id.uuidString),
-              let data = value.data(using: .utf8) else {
+              let data = value.data(using: .utf8)
+        else {
             return nil
         }
 
@@ -227,14 +228,16 @@ final class BlueskySessionService: BlueskySessionServicing {
 
         if let domainEntryway = entrywayFromDomain(for: handle) {
             if let did = try? await resolveHandle(handle, hostURL: domainEntryway),
-               let pdsURL = try? await resolvePDSURL(forDID: did) {
+               let pdsURL = try? await resolvePDSURL(forDID: did)
+            {
                 return pdsURL
             }
             return domainEntryway
         }
 
         if let did = try? await resolveHandle(handle),
-           let pdsURL = try? await resolvePDSURL(forDID: did) {
+           let pdsURL = try? await resolvePDSURL(forDID: did)
+        {
             return pdsURL
         }
 
@@ -312,7 +315,8 @@ final class BlueskySessionService: BlueskySessionServicing {
         }
         guard let data = Data(base64Encoded: payload),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let exp = json["exp"] as? TimeInterval else {
+              let exp = json["exp"] as? TimeInterval
+        else {
             return nil
         }
         return Date(timeIntervalSince1970: exp)

@@ -98,7 +98,8 @@ final class ListsViewModel: ObservableObject {
     func updateList(_ updatedList: BlueskyList) {
         var updated = listsByKind
         guard var lists = updated[updatedList.kind],
-              let index = lists.firstIndex(where: { $0.id == updatedList.id }) else {
+              let index = lists.firstIndex(where: { $0.id == updatedList.id })
+        else {
             return
         }
 

@@ -243,7 +243,7 @@ extension ListDetailViewModel {
     }
 
     func transferSelectedMembers(
-        from sourceList: BlueskyList,
+        from _: BlueskyList,
         to targetList: BlueskyList,
         move: Bool,
         account: AppAccount,
@@ -414,7 +414,7 @@ extension ListDetailViewModel {
                     ? Dictionary(
                         uniqueKeysWithValues: failedMembers
                             .map { ($0.actor.did, $0.id) }
-                      )
+                    )
                     : [:]
             ) { [self] actor in
                 _ = try await client.addActor(
@@ -425,7 +425,8 @@ extension ListDetailViewModel {
                 )
 
                 if result.operation == .move,
-                   let member = members.first(where: { $0.actor.did == actor.did }) {
+                   let member = members.first(where: { $0.actor.did == actor.did })
+                {
                     try await client.removeMember(
                         recordURI: member.recordURI,
                         account: account,

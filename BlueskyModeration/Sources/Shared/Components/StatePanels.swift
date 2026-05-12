@@ -100,6 +100,7 @@ struct StatusChip: View {
     enum Style {
         case neutral, positive, warning, destructive, info
     }
+
     let text: String
     let style: Style
 

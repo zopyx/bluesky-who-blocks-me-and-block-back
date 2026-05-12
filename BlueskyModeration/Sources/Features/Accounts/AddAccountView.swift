@@ -5,7 +5,9 @@ enum ProviderOption: String, CaseIterable, Identifiable {
     case eurosky = "Eurosky"
     case other = "Other"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var entrywayURL: URL {
         switch self {
@@ -107,8 +109,8 @@ struct AddAccountView: View {
                     }
                     .disabled(
                         handle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                        appPassword.isEmpty ||
-                        accountStore.isAddingAccount
+                            appPassword.isEmpty ||
+                            accountStore.isAddingAccount
                     )
                     .accessibilityHint("Validates credentials and adds the account")
                 }

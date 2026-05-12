@@ -22,7 +22,7 @@ struct ModerationRulesView: View {
                 }
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) { store.delete(rule) } label: { Label(loc("actions.delete"), systemImage: "trash") }
-                    .accessibilityHint("Permanently deletes this moderation rule")
+                        .accessibilityHint("Permanently deletes this moderation rule")
                 }
             }
         }

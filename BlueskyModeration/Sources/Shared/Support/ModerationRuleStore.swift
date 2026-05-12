@@ -7,7 +7,9 @@ struct ModerationRule: Identifiable, Codable, Hashable {
         case followerCountAbove = "Follower count above 1000"
         case handleContains = "Handle contains text"
         case hasLabel = "Has label"
-        var id: String { rawValue }
+        var id: String {
+            rawValue
+        }
     }
 
     enum Action: String, Codable, CaseIterable, Identifiable {
@@ -15,7 +17,9 @@ struct ModerationRule: Identifiable, Codable, Hashable {
         case block = "Block"
         case mute = "Mute"
         case report = "Report"
-        var id: String { rawValue }
+        var id: String {
+            rawValue
+        }
     }
 
     let id: UUID
@@ -85,7 +89,7 @@ final class ModerationRuleStore: ObservableObject {
                 return count > 1000
             case .handleContains:
                 return profile.handle.localizedCaseInsensitiveContains(rule.triggerValue) ||
-                       (profile.displayName?.localizedCaseInsensitiveContains(rule.triggerValue) ?? false)
+                    (profile.displayName?.localizedCaseInsensitiveContains(rule.triggerValue) ?? false)
             case .hasLabel:
                 return profile.labels.contains { $0.localizedCaseInsensitiveContains(rule.triggerValue) }
             }

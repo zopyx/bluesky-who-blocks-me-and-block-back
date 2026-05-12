@@ -6,13 +6,15 @@ enum SplitCriterion: String, CaseIterable, Identifiable {
     case highFollowers = "High Followers (> 1000)"
     case handlePattern = "Handle Pattern"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 }
 
 @MainActor
 final class ListMergeController {
     func merge(
-        sourceList: BlueskyList,
+        sourceList _: BlueskyList,
         into targetList: BlueskyList,
         members: [BlueskyListMember],
         account: AppAccount,
@@ -57,7 +59,7 @@ final class ListMergeController {
         case .handlePattern:
             guard !pattern.isEmpty else { return false }
             return actor.handle.localizedCaseInsensitiveContains(pattern) ||
-                   (actor.displayName?.localizedCaseInsensitiveContains(pattern) ?? false)
+                (actor.displayName?.localizedCaseInsensitiveContains(pattern) ?? false)
         }
     }
 }

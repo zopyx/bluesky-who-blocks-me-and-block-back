@@ -24,14 +24,20 @@ struct NetworkGraphView: View {
         Array(aFollowing.intersection(bFollowing)).sorted()
     }
 
-    private var aFollowsB: Bool { aFollowing.contains(accountB?.did ?? "") }
-    private var bFollowsA: Bool { bFollowing.contains(accountA?.did ?? "") }
+    private var aFollowsB: Bool {
+        aFollowing.contains(accountB?.did ?? "")
+    }
+
+    private var bFollowsA: Bool {
+        bFollowing.contains(accountA?.did ?? "")
+    }
 
     var body: some View {
         List {
             Section {
                 SearchField(query: $searchQueryA, results: $searchResultsA, onSelect: { actor in
-                    accountA = actor; searchQueryA = actor.handle
+                    accountA = actor
+                    searchQueryA = actor.handle
                 }, accountStore: accountStore, blueskyClient: blueskyClient)
                 if let a = accountA {
                     Label(a.handle, systemImage: "person.fill")
@@ -42,7 +48,8 @@ struct NetworkGraphView: View {
 
             Section {
                 SearchField(query: $searchQueryB, results: $searchResultsB, onSelect: { actor in
-                    accountB = actor; searchQueryB = actor.handle
+                    accountB = actor
+                    searchQueryB = actor.handle
                 }, accountStore: accountStore, blueskyClient: blueskyClient)
                 if let b = accountB {
                     Label(b.handle, systemImage: "person.fill")
@@ -134,7 +141,9 @@ private struct SearchField: View {
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             .task(id: query) {
-                guard query.count >= 2 else { results = []; return }
+                guard query.count >= 2 else { results = []
+                    return
+                }
                 try? await Task.sleep(for: .milliseconds(300))
                 guard let account = accountStore.activeAccount,
                       let appPassword = accountStore.appPassword(for: account) else { return }
@@ -145,7 +154,9 @@ private struct SearchField: View {
 
         if !results.isEmpty {
             ForEach(results.prefix(5)) { actor in
-                Button { onSelect(actor); results = [] } label: {
+                Button { onSelect(actor)
+                    results = []
+                } label: {
                     Label(actor.handle, systemImage: "person").foregroundStyle(.primary)
                 }
                 .accessibilityHint("Selects \(actor.handle) for analysis")

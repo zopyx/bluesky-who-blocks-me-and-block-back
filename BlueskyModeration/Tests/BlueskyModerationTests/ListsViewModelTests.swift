@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ListsViewModelTests: XCTestCase {
@@ -65,7 +65,7 @@ final class ListsViewModelTests: XCTestCase {
     func testLoadFetchesBlockingCount() async {
         client.blockedActors = [
             makeActor(did: "did:plc:b1", handle: "b1.bsky.social"),
-            makeActor(did: "did:plc:b2", handle: "b2.bsky.social")
+            makeActor(did: "did:plc:b2", handle: "b2.bsky.social"),
         ]
         let account = makeAccount()
         await viewModel.load(for: account, appPassword: "pass", using: client)
@@ -93,24 +93,24 @@ private final class MockListsClient: LiveBlueskyClient {
     var shouldFailBlocking = false
     var blockedActors: [BlueskyActor] = []
 
-    override func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
+    override func fetchLists(for account: AppAccount, appPassword _: String?) async throws -> [BlueskyList] {
         if shouldFailLists { throw BlueskyAPIError.server("Failed") }
         return [
             makeList(id: "\(account.handle)-mod-1", name: "Spam Watch", kind: .moderation),
-            makeList(id: "\(account.handle)-list-1", name: "Trusted", kind: .regular)
+            makeList(id: "\(account.handle)-list-1", name: "Trusted", kind: .regular),
         ]
     }
 
-    override func fetchProfile(did actorDID: String, account: AppAccount, appPassword: String?) async throws -> BlueskyProfile {
+    override func fetchProfile(did actorDID: String, account: AppAccount, appPassword _: String?) async throws -> BlueskyProfile {
         makeProfile(did: actorDID, handle: account.handle)
     }
 
-    override func fetchBlockingCount(for account: AppAccount) async throws -> Int {
+    override func fetchBlockingCount(for _: AppAccount) async throws -> Int {
         if shouldFailBlocking { throw BlueskyAPIError.server("Failed") }
         return blockedActors.count
     }
 
-    override func fetchBlockedByCount(for account: AppAccount) async throws -> Int {
+    override func fetchBlockedByCount(for _: AppAccount) async throws -> Int {
         return 0
     }
 }

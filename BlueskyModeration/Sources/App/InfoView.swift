@@ -80,7 +80,7 @@ struct InfoView: View {
                         colors: [
                             Color(red: 0.06, green: 0.36, blue: 0.80),
                             Color(red: 0.08, green: 0.55, blue: 0.98),
-                            Color(red: 0.05, green: 0.77, blue: 0.73)
+                            Color(red: 0.05, green: 0.77, blue: 0.73),
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -99,7 +99,7 @@ struct InfoView: View {
     }
 
     private var openSourceCard: some View {
-                Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
+        Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
             HStack(spacing: 14) {
                 Image(systemName: "chevron.left.forwardslash.chevron.right")
                     .font(.title)
@@ -164,7 +164,7 @@ struct InfoView: View {
                     "Browse curation and moderation lists with inline search and filtering.",
                     "Bulk add, remove, copy, and move members across lists with progress tracking.",
                     "Import handles from text, CSV, or files — preview before commit.",
-                    "Export member lists and diff results as CSV."
+                    "Export member lists and diff results as CSV.",
                 ]
             )
 
@@ -175,7 +175,7 @@ struct InfoView: View {
                 items: [
                     "Compare lists and view overlap, only-in-A, and only-in-B buckets.",
                     "Copy or move selected members between lists in bulk.",
-                    "Export diffs for offline review or archiving."
+                    "Export diffs for offline review or archiving.",
                 ]
             )
 
@@ -186,7 +186,7 @@ struct InfoView: View {
                 items: [
                     "Block or mute from profile detail with confirmation dialogs.",
                     "Block all followers of an account — runs as a background task.",
-                    "View and toggle moderation-list membership directly from any profile."
+                    "View and toggle moderation-list membership directly from any profile.",
                 ]
             )
 
@@ -198,7 +198,7 @@ struct InfoView: View {
                     "Local list snapshots captured on each load — compare any two.",
                     "Operation log tracks bulk actions with success and failure counts.",
                     "Pending Actions sheet shows running tasks with progress and retry.",
-                    "Saved and recent profile searches persist across launches."
+                    "Saved and recent profile searches persist across launches.",
                 ]
             )
         }
@@ -380,7 +380,7 @@ struct InfoView: View {
                 colors: [
                     Color(red: 0.04, green: 0.06, blue: 0.11),
                     Color(red: 0.06, green: 0.09, blue: 0.16),
-                    Color(red: 0.04, green: 0.11, blue: 0.19)
+                    Color(red: 0.04, green: 0.11, blue: 0.19),
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

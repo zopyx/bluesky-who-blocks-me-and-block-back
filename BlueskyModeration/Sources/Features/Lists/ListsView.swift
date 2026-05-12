@@ -259,7 +259,8 @@ struct ListsView: View {
             .sheet(isPresented: $isShowingCreateList) {
                 CreateListSheet(kind: createListKind) { name, description, kind in
                     if let account = accountStore.activeAccount,
-                       let appPassword = accountStore.appPassword(for: account) {
+                       let appPassword = accountStore.appPassword(for: account)
+                    {
                         Task {
                             do {
                                 let newList = try await blueskyClient.createList(

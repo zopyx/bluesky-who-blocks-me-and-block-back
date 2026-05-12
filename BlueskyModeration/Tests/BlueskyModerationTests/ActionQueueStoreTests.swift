@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ActionQueueStoreTests: XCTestCase {
@@ -65,7 +65,7 @@ final class ActionQueueStoreTests: XCTestCase {
 
     func testEnqueueMultipleActions() {
         let store = ActionQueueStore()
-        for i in 0..<5 {
+        for i in 0 ..< 5 {
             store.enqueue(QueuedAction(title: "Action \(i)", actors: [makeActor()], operation: .add) { _ in })
         }
         XCTAssertEqual(store.actions.count, 5)

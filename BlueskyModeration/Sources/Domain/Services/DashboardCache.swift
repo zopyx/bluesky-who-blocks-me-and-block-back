@@ -20,7 +20,8 @@ enum DashboardCache {
     static func load(forKey key: String) -> DashboardCacheData? {
         let url = fileURL(forKey: key)
         guard let data = try? Data(contentsOf: url),
-              let decoded = try? JSONDecoder().decode(DashboardCacheData.self, from: data) else {
+              let decoded = try? JSONDecoder().decode(DashboardCacheData.self, from: data)
+        else {
             return nil
         }
         return decoded

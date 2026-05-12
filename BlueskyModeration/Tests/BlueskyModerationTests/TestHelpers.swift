@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 func makeAccount(handle: String = "test.bsky.social", did: String = "did:plc:test") -> AppAccount {
     AppAccount(handle: handle, did: did)
@@ -67,11 +67,11 @@ final class MockKeychain: KeychainServicing {
 final class MockSessionService: BlueskySessionServicing {
     var sessionToReturn: BlueskySession?
     var shouldFailAuth = false
-    var shouldFailAuthWith: Error? = nil
+    var shouldFailAuthWith: Error?
     var persistedSessions: [String: BlueskySession] = [:]
     var onAuthenticatedRequest: ((AppAccount, String?) async throws -> Any)?
 
-    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
+    func authenticate(handle: String, appPassword _: String, entrywayURL _: URL? = nil) async throws -> BlueskySession {
         if shouldFailAuth {
             throw shouldFailAuthWith ?? BlueskyAPIError.unauthorized
         }
@@ -92,7 +92,7 @@ final class MockSessionService: BlueskySessionServicing {
         persistedSessions.removeValue(forKey: account.id.uuidString)
     }
 
-    func restoreSessions(for accounts: [AppAccount]) async {}
+    func restoreSessions(for _: [AppAccount]) async {}
 
     func clearSessionCache() {
         persistedSessions.removeAll()
@@ -141,7 +141,7 @@ struct MockRequestExecutor: BlueskyRequestExecuting {
         accessToken: String?,
         hostURL: URL?
     ) async throws -> Response {
-        try await send(path: path, method: method, queryItems: queryItems, body: Optional<String>.none, accessToken: accessToken, hostURL: hostURL)
+        try await send(path: path, method: method, queryItems: queryItems, body: String?.none, accessToken: accessToken, hostURL: hostURL)
     }
 }
 
@@ -150,8 +150,13 @@ struct EmptyDecodable: Decodable {}
 final class MockURLProtocol: URLProtocol {
     nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override class func canInit(with _: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
 
     override func startLoading() {
         guard let handler = MockURLProtocol.requestHandler else {

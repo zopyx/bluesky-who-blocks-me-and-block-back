@@ -98,7 +98,8 @@ final class BlueskyProfileViewModel: ObservableObject {
 
         do {
             if let recordURI = profile.viewerState?.blockingRecordURI,
-               profile.viewerState?.isBlocking == true {
+               profile.viewerState?.isBlocking == true
+            {
                 try await client.unblockActor(
                     recordURI: recordURI,
                     account: account,

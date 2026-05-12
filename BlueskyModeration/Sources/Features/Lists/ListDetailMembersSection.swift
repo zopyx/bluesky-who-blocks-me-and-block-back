@@ -2,7 +2,9 @@ import SwiftUI
 
 enum ListBulkAction: Identifiable {
     case block, mute, unblock, unmute
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 }
 
 extension ListDetailView {
@@ -92,7 +94,6 @@ extension ListDetailView {
             }
         }
 
-        @ViewBuilder
         private var membersSection: some View {
             Section {
                 if viewModel.isLoadingMembers && viewModel.members.isEmpty {

@@ -8,7 +8,7 @@ final class SearchToken: Sendable {
     private nonisolated let id: UUID
 
     init() {
-        self.id = UUID()
+        id = UUID()
     }
 
     /// Returns true if the receiver matches the provided token.

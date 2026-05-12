@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ModerationAuditStoreTests: XCTestCase {
@@ -44,7 +44,7 @@ final class ModerationAuditStoreTests: XCTestCase {
 
     func testRecordOperationLimitsTo25() {
         let store = ModerationAuditStore(defaults: defaults)
-        for i in 0..<30 {
+        for i in 0 ..< 30 {
             store.recordOperation(ModerationOperationLogEntry(title: "Op \(i)", summary: "", succeededHandles: ["h\(i)"], failedHandles: []))
         }
         XCTAssertEqual(store.operationLog.count, 25)
@@ -73,7 +73,7 @@ final class ModerationAuditStoreTests: XCTestCase {
 
         let secondSummary = store.captureSnapshot(for: list, members: [
             makeMember(did: "did:plc:alice", handle: "alice.bsky.social"),
-            makeMember(did: "did:plc:bob", handle: "bob.bsky.social")
+            makeMember(did: "did:plc:bob", handle: "bob.bsky.social"),
         ])
         XCTAssertTrue(secondSummary.hasChanges)
         XCTAssertEqual(secondSummary.addedMembers.count, 1)
@@ -84,12 +84,12 @@ final class ModerationAuditStoreTests: XCTestCase {
         let store = ModerationAuditStore(defaults: defaults)
         let list = makeList(id: "at://list/remove-test", name: "Remove Test")
 
-        let _ = store.captureSnapshot(for: list, members: [
+        _ = store.captureSnapshot(for: list, members: [
             makeMember(did: "did:plc:alice", handle: "alice.bsky.social"),
-            makeMember(did: "did:plc:bob", handle: "bob.bsky.social")
+            makeMember(did: "did:plc:bob", handle: "bob.bsky.social"),
         ])
         let summary = store.captureSnapshot(for: list, members: [
-            makeMember(did: "did:plc:alice", handle: "alice.bsky.social")
+            makeMember(did: "did:plc:alice", handle: "alice.bsky.social"),
         ])
         XCTAssertTrue(summary.hasChanges)
         XCTAssertEqual(summary.removedMembers.count, 1)
@@ -111,8 +111,8 @@ final class ModerationAuditStoreTests: XCTestCase {
         let store = ModerationAuditStore(defaults: defaults)
         let list = makeList(id: "at://list/retention", name: "Retention")
 
-        for i in 0..<15 {
-            let members = (0...i).map { idx in
+        for i in 0 ..< 15 {
+            let members = (0 ... i).map { idx in
                 makeMember(did: "did:plc:\(i)-\(idx)", handle: "u\(i)-\(idx).bsky.social")
             }
             _ = store.captureSnapshot(for: list, members: members)
@@ -129,7 +129,7 @@ final class ModerationAuditStoreTests: XCTestCase {
         let first = store.captureSnapshot(for: list, members: [makeMember(did: "did:plc:a", handle: "a.bsky.social")])
         let second = store.captureSnapshot(for: list, members: [
             makeMember(did: "did:plc:a", handle: "a.bsky.social"),
-            makeMember(did: "did:plc:b", handle: "b.bsky.social")
+            makeMember(did: "did:plc:b", handle: "b.bsky.social"),
         ])
 
         let comparison = store.compareSnapshots(listID: list.id, newerSnapshotID: second.snapshotID, olderSnapshotID: first.snapshotID)

@@ -1,15 +1,15 @@
-import SwiftUI
 import Network
+import SwiftUI
 
 @MainActor
 final class NetworkMonitor: ObservableObject {
     static let shared = NetworkMonitor()
     @Published var isConnected = true
     @Published var connectionDescription = ""
-    
+
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "network.monitor")
-    
+
     private init() {
         monitor.start(queue: queue)
         monitor.pathUpdateHandler = { [weak self] path in
@@ -19,7 +19,7 @@ final class NetworkMonitor: ObservableObject {
             }
         }
     }
-    
+
     deinit {
         monitor.cancel()
     }

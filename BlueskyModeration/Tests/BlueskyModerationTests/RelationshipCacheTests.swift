@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 final class RelationshipCacheTests: XCTestCase {
     private let testKey = "test_relationship_cache"
@@ -12,7 +12,7 @@ final class RelationshipCacheTests: XCTestCase {
     func testSaveAndLoad() {
         let actors = [
             BlueskyActor(did: "did:plc:1", handle: "alice.bsky.social", displayName: "Alice"),
-            BlueskyActor(did: "did:plc:2", handle: "bob.bsky.social", displayName: "Bob")
+            BlueskyActor(did: "did:plc:2", handle: "bob.bsky.social", displayName: "Bob"),
         ]
         RelationshipCache.save(actors, forKey: testKey)
         let loaded = RelationshipCache.load(forKey: testKey)

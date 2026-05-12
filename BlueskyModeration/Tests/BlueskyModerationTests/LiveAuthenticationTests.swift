@@ -1,12 +1,12 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class LiveAuthenticationTests: XCTestCase {
     func testLoginLogoutWithLiveBlueskyAccount() async throws {
         let credentials = try liveCredentials()
         let keychain = TestKeychainService()
-        let defaults = UserDefaults(suiteName: #function)!
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: #function))
         defaults.removePersistentDomain(forName: #function)
 
         let requestExecutor = BlueskyRequestExecutor()
@@ -76,13 +76,15 @@ final class LiveAuthenticationTests: XCTestCase {
         let values = dotenvValues(from: fileContents)
 
         guard let handle = values["BLUESKY_TEST_USER"],
-              !handle.isEmpty else {
+              !handle.isEmpty
+        else {
             XCTFail("BLUESKY_TEST_USER is missing from \(envURL.path)")
             throw LiveAuthenticationTestError.missingKey("BLUESKY_TEST_USER")
         }
 
         guard let appPassword = values["BLUESKY_TEST_PASSWORD"],
-              !appPassword.isEmpty else {
+              !appPassword.isEmpty
+        else {
             XCTFail("BLUESKY_TEST_PASSWORD is missing from \(envURL.path)")
             throw LiveAuthenticationTestError.missingKey("BLUESKY_TEST_PASSWORD")
         }

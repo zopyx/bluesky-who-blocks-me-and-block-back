@@ -17,7 +17,7 @@ struct ProfileListMembership: Identifiable, Hashable {
         isMember: Bool,
         listItemRecordURI: String?
     ) {
-        self.id = listURI
+        id = listURI
         self.listURI = listURI
         self.name = name
         self.kind = kind
@@ -36,7 +36,7 @@ struct ProfileStarterPackMembership: Identifiable, Hashable {
     let isMember: Bool
 
     init(uri: String, name: String, memberCount: Int?, joinedAllTimeCount: Int?, isMember: Bool) {
-        self.id = uri
+        id = uri
         self.uri = uri
         self.name = name
         self.memberCount = memberCount

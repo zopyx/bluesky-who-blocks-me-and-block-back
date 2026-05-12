@@ -28,7 +28,7 @@ final class AccountStore: ObservableObject {
         if preview {
             accounts = [
                 AppAccount(handle: "team-alpha.bsky.social", displayName: "Team Alpha"),
-                AppAccount(handle: "safety-lab.bsky.social", displayName: "Safety Lab")
+                AppAccount(handle: "safety-lab.bsky.social", displayName: "Safety Lab"),
             ]
             activeAccountID = accounts.first?.id
             return
@@ -189,7 +189,8 @@ final class AccountStore: ObservableObject {
             accounts = try JSONDecoder().decode([AppAccount].self, from: data)
             if let activeIDString = defaults.string(forKey: activeAccountKey),
                let activeID = UUID(uuidString: activeIDString),
-               accounts.contains(where: { $0.id == activeID }) {
+               accounts.contains(where: { $0.id == activeID })
+            {
                 activeAccountID = activeID
             } else {
                 activeAccountID = accounts.first?.id

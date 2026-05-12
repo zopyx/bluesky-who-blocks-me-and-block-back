@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 final class StringCSVTests: XCTestCase {
     func testCSVFieldWrapsInQuotes() {

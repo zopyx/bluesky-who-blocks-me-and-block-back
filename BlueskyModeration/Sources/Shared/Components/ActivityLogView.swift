@@ -15,9 +15,9 @@ struct ActivityLogView: View {
             if let selectedType, entry.title != selectedType { return false }
             if q.isEmpty { return true }
             return entry.title.lowercased().contains(q) ||
-                   entry.summary.lowercased().contains(q) ||
-                   entry.succeededHandles.contains(where: { $0.lowercased().contains(q) }) ||
-                   entry.failedHandles.contains(where: { $0.lowercased().contains(q) })
+                entry.summary.lowercased().contains(q) ||
+                entry.succeededHandles.contains(where: { $0.lowercased().contains(q) }) ||
+                entry.failedHandles.contains(where: { $0.lowercased().contains(q) })
         }
     }
 

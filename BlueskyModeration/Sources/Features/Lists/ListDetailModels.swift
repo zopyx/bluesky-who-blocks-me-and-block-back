@@ -63,7 +63,9 @@ struct ListBulkActionResult: Identifiable, Equatable {
         let actor: BlueskyActor
         let message: String
 
-        var id: String { actor.id }
+        var id: String {
+            actor.id
+        }
     }
 
     let operation: Operation
@@ -90,14 +92,14 @@ struct ListBulkActionResult: Identifiable, Equatable {
     }
 }
 
-struct ListComparisonReport: Equatable, Sendable {
+struct ListComparisonReport: Equatable {
     let otherList: BlueskyList
     let overlap: [BlueskyListMember]
     let onlyInCurrent: [BlueskyListMember]
     let onlyInOther: [BlueskyListMember]
 }
 
-struct BatchProgress: Equatable, Sendable {
+struct BatchProgress: Equatable {
     let title: String
     let completedCount: Int
     let totalCount: Int
@@ -166,7 +168,7 @@ struct ImportPreview: Equatable {
     }
 }
 
-enum ComparisonBucket: String, CaseIterable, Sendable {
+enum ComparisonBucket: String, CaseIterable {
     case overlap
     case onlyInCurrent
     case onlyInOther

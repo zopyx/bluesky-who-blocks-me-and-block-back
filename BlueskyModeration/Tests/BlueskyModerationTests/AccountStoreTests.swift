@@ -1,10 +1,10 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class AccountStoreTests: XCTestCase {
-    func testAddAccountPersistsAppPassword() async {
-        let defaults = UserDefaults(suiteName: #function)!
+    func testAddAccountPersistsAppPassword() async throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: #function))
         defaults.removePersistentDomain(forName: #function)
         let keychain = MockKeychainService()
         let store = AccountStore(defaults: defaults, keychain: keychain)
@@ -65,7 +65,7 @@ private final class MockKeychainService: KeychainServicing {
 
 @MainActor
 private final class MockAuthenticatingClient: BlueskyAuthenticating {
-    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
+    func authenticate(handle: String, appPassword _: String, entrywayURL _: URL? = nil) async throws -> BlueskySession {
         BlueskySession(
             did: "did:plc:test",
             handle: handle,
@@ -75,7 +75,7 @@ private final class MockAuthenticatingClient: BlueskyAuthenticating {
         )
     }
 
-    func persistSession(_ session: BlueskySession, for account: AppAccount) async throws {}
+    func persistSession(_: BlueskySession, for _: AppAccount) async throws {}
 
-    func deletePersistedSession(for account: AppAccount) throws {}
+    func deletePersistedSession(for _: AppAccount) throws {}
 }

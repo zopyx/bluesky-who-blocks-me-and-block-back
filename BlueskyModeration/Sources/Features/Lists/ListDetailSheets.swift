@@ -23,7 +23,7 @@ struct ImportHandlesSheet: View {
                             loc("list.import.help_2"),
                             loc("list.import.help_3"),
                             loc("list.import.help_4"),
-                            loc("list.import.help_5")
+                            loc("list.import.help_5"),
                         ]
                     )
                     .listRowInsets(EdgeInsets())
@@ -67,13 +67,15 @@ struct ImportPreviewSheet: View {
                     Text(preview.sourceDescription)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text(verbatim: loc("list.import_preview.summary_text")
-                        .replacingOccurrences(of: "{ready}", with: "\(preview.readyItems.count)")
-                        .replacingOccurrences(of: "{already}", with: "\(preview.alreadyPresentItems.count)")
-                        .replacingOccurrences(of: "{duplicates}", with: "\(preview.duplicateItems.count)")
-                        .replacingOccurrences(of: "{unresolved}", with: "\(preview.unresolvedItems.count)"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        verbatim: loc("list.import_preview.summary_text")
+                            .replacingOccurrences(of: "{ready}", with: "\(preview.readyItems.count)")
+                            .replacingOccurrences(of: "{already}", with: "\(preview.alreadyPresentItems.count)")
+                            .replacingOccurrences(of: "{duplicates}", with: "\(preview.duplicateItems.count)")
+                            .replacingOccurrences(of: "{unresolved}", with: "\(preview.unresolvedItems.count)")
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                     Text(verbatim: loc("list.import_preview.skip_note"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -95,7 +97,7 @@ struct ImportPreviewSheet: View {
                                 loc("list.import_preview.help_already"),
                                 loc("list.import_preview.help_duplicate"),
                                 loc("list.import_preview.help_unresolved"),
-                                loc("list.import_preview.help_write")
+                                loc("list.import_preview.help_write"),
                             ]
                         )
                         .listRowInsets(EdgeInsets())
@@ -188,7 +190,7 @@ struct EditListMetadataSheet: View {
                         .font(.caption)
 
                     TextField(loc("list.edit.desc_placeholder"), text: $description, axis: .vertical)
-                        .lineLimit(3...6)
+                        .lineLimit(3 ... 6)
                         .onChange(of: description) { _, newValue in
                             if newValue.count > Self.maxDescriptionLength {
                                 description = String(newValue.prefix(Self.maxDescriptionLength))

@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 final class ModerationWorkspaceStore: ObservableObject {
@@ -16,8 +16,8 @@ final class ModerationWorkspaceStore: ObservableObject {
     private let auditStore: ModerationAuditStore
 
     init(defaults: UserDefaults = .standard, preview: Bool = false) {
-        self.preferencesStore = WorkspacePreferencesStore(defaults: defaults, preview: preview)
-        self.auditStore = ModerationAuditStore(defaults: defaults, preview: preview)
+        preferencesStore = WorkspacePreferencesStore(defaults: defaults, preview: preview)
+        auditStore = ModerationAuditStore(defaults: defaults, preview: preview)
         syncFromStores()
         setupBindings()
         setupActionQueueBindings()

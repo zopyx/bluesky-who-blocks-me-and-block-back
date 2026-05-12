@@ -85,7 +85,7 @@ struct ProfileInspectorView: View {
                         } icon: {
                             Image(systemName: "bookmark")
                         }
-                        }
+                    }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityLabel("Save current search query")
                     .accessibilityHint("Saves this search for quick access later")
@@ -342,7 +342,6 @@ struct ProfileInspectorView: View {
                     workspaceStore.noteRecentSearch(newInspection.profile.handle)
                 }
             }
-
         }
     }
 

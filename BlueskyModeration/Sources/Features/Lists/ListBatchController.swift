@@ -35,7 +35,7 @@ final class ListBatchController {
 
             // Attempt with retry
             var lastError: Error?
-            for _ in 0..<3 {
+            for _ in 0 ..< 3 {
                 guard !Task.isCancelled else { break }
                 do {
                     try await action(actor)

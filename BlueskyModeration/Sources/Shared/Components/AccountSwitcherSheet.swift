@@ -123,7 +123,9 @@ struct AccountSwitcherSheet: View {
                                 } label: {
                                     HStack {
                                         Text(loc("account.edit_label.\(option.lowercased())")).foregroundStyle(.primary)
-                                        if editLabelText == option { Spacer(); Image(systemName: "checkmark") }
+                                        if editLabelText == option { Spacer()
+                                            Image(systemName: "checkmark")
+                                        }
                                     }
                                 }
                                 .accessibilityHint("Sets the label to \(option)")
@@ -142,7 +144,7 @@ struct AccountSwitcherSheet: View {
                         }
                         ToolbarItem(placement: .cancellationAction) {
                             Button(loc("account.edit_label.cancel")) { editingLabelAccount = nil }
-                            .accessibilityHint("Discards changes and closes the label editor")
+                                .accessibilityHint("Discards changes and closes the label editor")
                         }
                     }
                 }

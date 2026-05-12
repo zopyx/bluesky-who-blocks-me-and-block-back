@@ -15,7 +15,7 @@ final class iCloudAccountSync: ObservableObject {
     private let accountKey = "syncedAccounts"
 
     private init() {
-        self.isEnabled = UserDefaults.standard.object(forKey: "iCloudSyncEnabled") as? Bool ?? true
+        isEnabled = UserDefaults.standard.object(forKey: "iCloudSyncEnabled") as? Bool ?? true
         NotificationCenter.default.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: store,
@@ -40,7 +40,8 @@ final class iCloudAccountSync: ObservableObject {
             ]
         }
         if let encoded = try? JSONSerialization.data(withJSONObject: data),
-           let json = String(data: encoded, encoding: .utf8) {
+           let json = String(data: encoded, encoding: .utf8)
+        {
             store.set(json, forKey: accountKey)
             store.synchronize()
         }
@@ -50,7 +51,8 @@ final class iCloudAccountSync: ObservableObject {
         guard isEnabled else { return }
         guard let json = store.string(forKey: accountKey),
               let data = json.data(using: .utf8),
-              let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: String]] else {
+              let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: String]]
+        else {
             return
         }
         NotificationCenter.default.post(name: .iCloudAccountsReceived, object: entries)

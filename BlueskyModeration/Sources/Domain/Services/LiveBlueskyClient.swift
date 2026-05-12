@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlueskySession: Codable, Sendable {
+struct BlueskySession: Codable {
     let did: String
     let handle: String
     let accessJWT: String
@@ -21,7 +21,8 @@ struct PagedActorSearch {
 @MainActor
 protocol BlueskyAuthenticating {
     // MARK: - Authentication & Session
-func authenticate(handle: String, appPassword: String, entrywayURL: URL?) async throws -> BlueskySession
+
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL?) async throws -> BlueskySession
     func persistSession(_ session: BlueskySession, for account: AppAccount) async throws
     func deletePersistedSession(for account: AppAccount) throws
 }
@@ -56,7 +57,8 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     }
 
     // MARK: - Authentication & Session
-func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
+
+    func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) async throws -> BlueskySession {
         try await sessionService.authenticate(handle: handle, appPassword: appPassword, entrywayURL: entrywayURL)
     }
 
@@ -72,10 +74,9 @@ func authenticate(handle: String, appPassword: String, entrywayURL: URL? = nil) 
         await sessionService.restoreSessions(for: accounts)
     }
 
-    
-// MARK: - List Operations
+    // MARK: - List Operations
 
-func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
+    func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [BlueskyList] {
         let response: GetListsResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
             appPassword: appPassword
@@ -85,7 +86,7 @@ func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [
                 method: "GET",
                 queryItems: [
                     URLQueryItem(name: "actor", value: authSession.did),
-                    URLQueryItem(name: "limit", value: "100")
+                    URLQueryItem(name: "limit", value: "100"),
                 ],
                 accessToken: authSession.accessJWT,
                 hostURL: authSession.pdsURL
@@ -147,7 +148,7 @@ func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "list", value: list.id),
-                URLQueryItem(name: "limit", value: "100")
+                URLQueryItem(name: "limit", value: "100"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))
@@ -178,10 +179,9 @@ func fetchLists(for account: AppAccount, appPassword: String?) async throws -> [
         )
     }
 
-    
-// MARK: - Actor Search & Moderation
+    // MARK: - Actor Search & Moderation
 
-func searchActors(
+    func searchActors(
         query: String,
         account: AppAccount,
         appPassword: String?
@@ -212,7 +212,7 @@ func searchActors(
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "q", value: trimmedQuery),
-                URLQueryItem(name: "limit", value: "25")
+                URLQueryItem(name: "limit", value: "25"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))
@@ -507,7 +507,7 @@ func searchActors(
                 path: "app.bsky.actor.getProfile",
                 method: "GET",
                 queryItems: [
-                    URLQueryItem(name: "actor", value: actorDID)
+                    URLQueryItem(name: "actor", value: actorDID),
                 ],
                 accessToken: authSession.accessJWT,
                 hostURL: authSession.pdsURL
@@ -525,8 +525,8 @@ func searchActors(
             bannerURL: URL(string: response.banner ?? ""),
             followersCount: response.followersCount,
             followsCount: response.followsCount,
-            postsCount: response.postsCount
-            ,
+            postsCount: response.postsCount,
+
             listsCount: response.associated?.lists,
             starterPacksCount: response.associated?.starterPacks,
             createdAt: parseDate(response.createdAt),
@@ -535,19 +535,18 @@ func searchActors(
         )
     }
 
-    
-// MARK: - Blocking & Profile
+    // MARK: - Blocking & Profile
 
-func fetchBlockedActors(
+    func fetchBlockedActors(
         account: AppAccount,
-        appPassword: String?
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await fetchClearskyActors(account: account, endpoint: "blocklist")
     }
 
     func fetchBlockedByActors(
         account: AppAccount,
-        appPassword: String?
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await fetchClearskyActors(account: account, endpoint: "single-blocklist")
     }
@@ -560,10 +559,9 @@ func fetchBlockedActors(
         try await fetchClearskyCount(account: account, endpoint: "single-blocklist")
     }
 
-    
-// MARK: - Clearsky Integration
+    // MARK: - Clearsky Integration
 
-private func resolveAccountDID(_ account: AppAccount) async throws -> String {
+    private func resolveAccountDID(_ account: AppAccount) async throws -> String {
         if let did = account.did { return did }
         return try await resolveHandleToDID(handle: account.handle)
     }
@@ -583,7 +581,7 @@ private func resolveAccountDID(_ account: AppAccount) async throws -> String {
             request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
             request.timeoutInterval = 30
             let (data, response) = try await session.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+            guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
                 throw BlueskyAPIError.invalidResponse
             }
             let decoded = try JSONDecoder().decode(ClearskyBlocklistResponse.self, from: data)
@@ -607,22 +605,21 @@ private func resolveAccountDID(_ account: AppAccount) async throws -> String {
         request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 30
         let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
             throw BlueskyAPIError.invalidResponse
         }
         let decoded = try JSONDecoder().decode(ClearskyBlocklistTotalResponse.self, from: data)
         return decoded.data.count
     }
 
-    
-// MARK: - DID Resolution
+    // MARK: - DID Resolution
 
-private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
+    private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
         let urlSession = session
         return try await withThrowingTaskGroup(of: [BlueskyActor].self) { group in
             var offset = 0
             while offset < dids.count {
-                let chunk = dids[offset..<min(offset + 25, dids.count)]
+                let chunk = dids[offset ..< min(offset + 25, dids.count)]
                 offset += 25
                 group.addTask {
                     try await Self.fetchProfileBatch(dids: Array(chunk), session: urlSession)
@@ -649,7 +646,7 @@ private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
         req.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
         req.timeoutInterval = 30
         let (data, response) = try await session.data(for: req)
-        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
             throw BlueskyAPIError.invalidResponse
         }
         let decoded = try JSONDecoder().decode(GetProfilesResponse.self, from: data)
@@ -672,7 +669,7 @@ private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
         request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 30
         let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
             throw BlueskyAPIError.invalidResponse
         }
         struct ClearskyDIDResponse: Decodable {
@@ -688,26 +685,24 @@ private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {
         return decoded.data.didIdentifier
     }
 
-    
-// MARK: - PLC Audit
+    // MARK: - PLC Audit
 
-func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
+    func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
         guard let url = URL(string: "https://plc.directory/\(did)/log/audit") else {
             throw BlueskyAPIError.invalidURL
         }
         var request = URLRequest(url: url)
         request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
         let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
             throw BlueskyAPIError.invalidResponse
         }
         return try JSONDecoder().decode([PLCAuditLogEntry].self, from: data)
     }
 
-    
-// MARK: - Followers / Following
+    // MARK: - Followers / Following
 
-func fetchFollowers(
+    func fetchFollowers(
         actor actorDID: String,
         account: AppAccount,
         appPassword: String?
@@ -731,7 +726,9 @@ func fetchFollowers(
                 break
             }
         } while cursor != nil
-        if all.isEmpty, let lastError { throw lastError }
+        if all.isEmpty, let lastError {
+            throw lastError
+        }
         return all
     }
 
@@ -747,7 +744,7 @@ func fetchFollowers(
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "actor", value: actorDID),
-                URLQueryItem(name: "limit", value: "100")
+                URLQueryItem(name: "limit", value: "100"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))
@@ -798,7 +795,9 @@ func fetchFollowers(
                 break
             }
         } while cursor != nil
-        if all.isEmpty, let lastError { throw lastError }
+        if all.isEmpty, let lastError {
+            throw lastError
+        }
         return all
     }
 
@@ -814,7 +813,7 @@ func fetchFollowers(
         ) { authSession in
             var queryItems = [
                 URLQueryItem(name: "actor", value: actorDID),
-                URLQueryItem(name: "limit", value: "100")
+                URLQueryItem(name: "limit", value: "100"),
             ]
             if let cursor {
                 queryItems.append(URLQueryItem(name: "cursor", value: cursor))
@@ -835,10 +834,9 @@ func fetchFollowers(
         )
     }
 
-    
-// MARK: - Profile Inspection
+    // MARK: - Profile Inspection
 
-func inspectProfile(
+    func inspectProfile(
         query: String,
         account: AppAccount,
         appPassword: String?
@@ -865,7 +863,7 @@ func inspectProfile(
                     method: "GET",
                     queryItems: [
                         URLQueryItem(name: "actor", value: actor),
-                        URLQueryItem(name: "limit", value: "100")
+                        URLQueryItem(name: "limit", value: "100"),
                     ],
                     accessToken: authSession.accessJWT,
                     hostURL: authSession.pdsURL
@@ -875,7 +873,7 @@ func inspectProfile(
                     method: "GET",
                     queryItems: [
                         URLQueryItem(name: "actor", value: actor),
-                        URLQueryItem(name: "limit", value: "100")
+                        URLQueryItem(name: "limit", value: "100"),
                     ],
                     accessToken: authSession.accessJWT,
                     hostURL: authSession.pdsURL
@@ -927,4 +925,3 @@ func inspectProfile(
         )
     }
 }
-

@@ -8,7 +8,8 @@ extension ListDetailView {
     var selectedSnapshotComparison: ListMembershipSnapshotSummary? {
         guard let selectedNewerSnapshotID,
               let selectedOlderSnapshotID,
-              selectedNewerSnapshotID != selectedOlderSnapshotID else {
+              selectedNewerSnapshotID != selectedOlderSnapshotID
+        else {
             return nil
         }
 
@@ -131,11 +132,12 @@ extension ListDetailView {
 
     func handleImportedFile(_ result: Result<URL, Error>) {
         switch result {
-        case .success(let url):
+        case let .success(url):
             do {
                 let content = try String(contentsOf: url, encoding: .utf8)
                 if let account = accountStore.activeAccount,
-                   let appPassword = accountStore.appPassword(for: account) {
+                   let appPassword = accountStore.appPassword(for: account)
+                {
                     Task {
                         await viewModel.prepareImportPreview(
                             from: content,
@@ -149,7 +151,7 @@ extension ListDetailView {
             } catch {
                 viewModel.errorMessage = error.localizedDescription
             }
-        case .failure(let error):
+        case let .failure(error):
             viewModel.errorMessage = error.localizedDescription
         }
     }

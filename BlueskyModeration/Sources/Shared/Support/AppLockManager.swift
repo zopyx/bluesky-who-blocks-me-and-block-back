@@ -1,5 +1,5 @@
-import SwiftUI
 import LocalAuthentication
+import SwiftUI
 
 @MainActor
 final class AppLockManager: ObservableObject {
@@ -53,7 +53,7 @@ final class AppLockManager: ObservableObject {
     func appDidEnterBackground() {
         backgroundEntryTime = Date()
         didEnterBackground = true
-        if isEnabled && timeoutMinutes == 0 {
+        if isEnabled, timeoutMinutes == 0 {
             isLocked = true
         }
     }

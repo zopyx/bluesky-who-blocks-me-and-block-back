@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class BlueskyProfileServiceTests: XCTestCase {
@@ -149,7 +149,7 @@ final class BlueskyProfileServiceTests: XCTestCase {
         XCTAssertEqual(following.count, 2)
     }
 
-    func testInspectProfileSuccess() async throws {
+    func testInspectProfileSuccess() {
         sessionService.onAuthenticatedRequest = { _, _ in
             let profile = try JSONDecoder().decode(ProfileViewDetailed.self, from: """
             {"did": "did:plc:test", "handle": "test.bsky.social", "displayName": "Test"}

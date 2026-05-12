@@ -1,5 +1,5 @@
-import XCTest
 @testable import BlueskyModeration
+import XCTest
 
 @MainActor
 final class ProfileInspectorViewModelTests: XCTestCase {
@@ -44,7 +44,7 @@ final class ProfileInspectorViewModelTests: XCTestCase {
     func testInspectSetsInspectionResult() async {
         let viewModel = ProfileInspectorViewModel()
         var client = MockLiveBlueskyClient()
-        client.inspectHandler = { query in
+        client.inspectHandler = { _ in
             ProfileInspection(
                 profile: BlueskyProfile(
                     id: "did:plc:test",
@@ -158,48 +158,55 @@ private struct MockLiveBlueskyClient: BlueskyProfileInspecting {
 
     func searchActors(
         query: String,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> [BlueskyActor] {
         try await searchHandler(query)
     }
 
     func searchActorsPage(
         query: String,
-        cursor: String?,
-        account: AppAccount,
-        appPassword: String?
+        cursor _: String?,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> PagedActorSearch {
         let actors = try await searchHandler(query)
         return PagedActorSearch(actors: actors, cursor: nil)
     }
 
     func fetchProfile(
-        did actorDID: String,
-        account: AppAccount,
-        appPassword: String?
+        did _: String,
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> BlueskyProfile {
         throw BlueskyAPIError.server("Not implemented")
     }
 
     func inspectProfile(
         query: String,
-        account: AppAccount,
-        appPassword: String?
+        account _: AppAccount,
+        appPassword _: String?
     ) async throws -> ProfileInspection {
         try await inspectHandler(query)
     }
 
-    func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {}
-    func unblockActor(recordURI: String, account: AppAccount, appPassword: String?) async throws {}
-    func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {}
-    func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {}
-    func fetchFollowers(actor actorDID: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] { [] }
-    func fetchFollowersPage(actor actorDID: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
+    func blockActor(did _: String, account _: AppAccount, appPassword _: String?) async throws {}
+    func unblockActor(recordURI _: String, account _: AppAccount, appPassword _: String?) async throws {}
+    func muteActor(did _: String, account _: AppAccount, appPassword _: String?) async throws {}
+    func unmuteActor(did _: String, account _: AppAccount, appPassword _: String?) async throws {}
+    func fetchFollowers(actor _: String, account _: AppAccount, appPassword _: String?) async throws -> [BlueskyActor] {
+        []
+    }
+
+    func fetchFollowersPage(actor _: String, cursor _: String?, account _: AppAccount, appPassword _: String?) async throws -> PagedActorSearch {
         PagedActorSearch(actors: [], cursor: nil)
     }
-    func fetchFollowing(actor actorDID: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] { [] }
-    func fetchFollowingPage(actor actorDID: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
+
+    func fetchFollowing(actor _: String, account _: AppAccount, appPassword _: String?) async throws -> [BlueskyActor] {
+        []
+    }
+
+    func fetchFollowingPage(actor _: String, cursor _: String?, account _: AppAccount, appPassword _: String?) async throws -> PagedActorSearch {
         PagedActorSearch(actors: [], cursor: nil)
     }
 }

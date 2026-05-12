@@ -61,11 +61,11 @@ final class WorkspacePreferencesStore: ObservableObject {
         if preview {
             savedSearches = [
                 SavedProfileSearch(query: "safety"),
-                SavedProfileSearch(query: "did:plc:moderator")
+                SavedProfileSearch(query: "did:plc:moderator"),
             ]
             recentSearches = [
                 RecentProfileSearch(query: "alice.bsky.social"),
-                RecentProfileSearch(query: "reply filters")
+                RecentProfileSearch(query: "reply filters"),
             ]
             lastProfileQuery = "safety"
             return
@@ -112,12 +112,14 @@ final class WorkspacePreferencesStore: ObservableObject {
 
     private func load() {
         if let data = defaults.data(forKey: savedSearchesKey),
-           let decoded = try? JSONDecoder().decode([SavedProfileSearch].self, from: data) {
+           let decoded = try? JSONDecoder().decode([SavedProfileSearch].self, from: data)
+        {
             savedSearches = decoded.sorted { $0.lastUsedAt > $1.lastUsedAt }
         }
 
         if let data = defaults.data(forKey: recentSearchesKey),
-           let decoded = try? JSONDecoder().decode([RecentProfileSearch].self, from: data) {
+           let decoded = try? JSONDecoder().decode([RecentProfileSearch].self, from: data)
+        {
             recentSearches = decoded.sorted { $0.usedAt > $1.usedAt }
         }
 

@@ -11,7 +11,7 @@ struct BulkProfileLookupView: View {
                 TextField(loc("bulk.input_placeholder"), text: $viewModel.rawInput)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .lineLimit(5...15)
+                    .lineLimit(5 ... 15)
                     .font(.body.monospaced())
             } header: {
                 Text(verbatim: loc("bulk.input"))

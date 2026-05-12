@@ -24,12 +24,12 @@ struct PendingActionsSheet: View {
                                 Text(loc("pending.waiting"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                            case .running(let done, let total, let handle):
+                            case let .running(done, total, handle):
                                 ProgressView(value: Double(done), total: Double(total))
                                 Text("\(done) of \(total)\(handle.map { " \u{2014} \($0)" } ?? "")")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                            case .completed(let succeeded, let failed):
+                            case let .completed(succeeded, failed):
                                 if failed > 0 {
                                     Text("\(succeeded) succeeded, \(failed) failed")
                                         .font(.caption)
@@ -70,7 +70,7 @@ struct PendingActionsSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(loc("pending.done_button")) { isPresented = false }
-                    .accessibilityHint("Closes the pending actions sheet")
+                        .accessibilityHint("Closes the pending actions sheet")
                 }
             }
         }
@@ -106,9 +106,9 @@ struct PendingActionsSheet: View {
                     }
                 }
                 .foregroundStyle(Color.skyPrimary)
-        case .completed(let succeeded, let failed):
+        case let .completed(succeeded, failed):
             if failed > 0 {
-                Text("\(succeeded)/\(succeeded+failed)")
+                Text("\(succeeded)/\(succeeded + failed)")
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)

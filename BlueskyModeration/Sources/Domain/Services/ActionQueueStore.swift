@@ -24,11 +24,11 @@ struct QueuedAction: Identifiable {
     ) {
         self.id = id
         self.title = title
-        self.createdAt = .now
+        createdAt = .now
         self.actors = actors
         self.operation = operation
         self.action = action
-        self.status = .pending
+        status = .pending
     }
 }
 
@@ -36,7 +36,10 @@ extension QueuedAction: Hashable {
     static func == (lhs: QueuedAction, rhs: QueuedAction) -> Bool {
         lhs.id == rhs.id
     }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 @MainActor
@@ -67,7 +70,7 @@ final class ActionQueueStore: ObservableObject {
 
     func retry(_ id: UUID) {
         guard let idx = actions.firstIndex(where: { $0.id == id }),
-              case .completed(_, _) = actions[idx].status else { return }
+              case .completed = actions[idx].status else { return }
         let action = actions[idx]
         actions.remove(at: idx)
         enqueue(action)

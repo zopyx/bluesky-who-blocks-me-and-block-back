@@ -153,7 +153,7 @@ extension ListDetailView {
                                 loc("list.compare.help_only_current"),
                                 loc("list.compare.help_only_other"),
                                 loc("list.compare.help_copy"),
-                                loc("list.compare.help_move")
+                                loc("list.compare.help_move"),
                             ]
                         )
                         .listRowInsets(EdgeInsets())
@@ -164,7 +164,7 @@ extension ListDetailView {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(loc("actions.done")) { showingCompareHelp = false }
-                            .accessibilityHint("Closes the comparison help screen")
+                                .accessibilityHint("Closes the comparison help screen")
                         }
                     }
                 }
