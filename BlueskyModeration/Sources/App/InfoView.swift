@@ -41,7 +41,6 @@ struct InfoView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Overview Tab
@@ -125,8 +124,8 @@ struct InfoView: View {
             .padding(16)
             .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
         }
-        .accessibilityLabel("View on GitHub")
-        .accessibilityHint("Opens the project repository on GitHub in your browser")
+        .accessibilityLabel(loc("info.github.label"))
+        .accessibilityHint(loc("info.github.hint"))
     }
 
     private var securityNote: some View {
@@ -213,20 +212,20 @@ struct InfoView: View {
             Link(destination: URL(string: "https://www.py-consultant.com/")!) {
                 legalRow(icon: "globe", title: localizationManager.localized("info.legal.website"), value: "py-consultant.com", link: true)
             }
-            .accessibilityLabel("Visit website")
-            .accessibilityHint("Opens the author's website in your browser")
+            .accessibilityLabel(loc("info.website.label"))
+            .accessibilityHint(loc("info.website.hint"))
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
                 legalRow(icon: "doc.text", title: localizationManager.localized("info.legal.imprint"), value: "py-consultant.com/imprint-privacy.html", link: true)
             }
-            .accessibilityLabel("View imprint")
-            .accessibilityHint("Opens the legal imprint page in your browser")
+            .accessibilityLabel(loc("info.imprint.label"))
+            .accessibilityHint(loc("info.imprint.hint"))
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
                 legalRow(icon: "hand.raised", title: localizationManager.localized("info.legal.privacy"), value: "py-consultant.com/imprint-privacy.html", link: true)
             }
-            .accessibilityLabel("View privacy policy")
-            .accessibilityHint("Opens the privacy policy page in your browser")
+            .accessibilityLabel(loc("info.privacy.label"))
+            .accessibilityHint(loc("info.privacy.hint"))
 
             legalRow(icon: "doc.text.magnifyingglass", title: localizationManager.localized("info.legal.license"), value: localizationManager.localized("info.legal.license_value"))
 
@@ -240,14 +239,14 @@ struct InfoView: View {
                 Link(destination: URL(string: "https://clearsky.app")!) {
                     legalRow(icon: "cloud", title: localizationManager.localized("info.legal.clearsky"), value: "clearsky.app", link: true)
                 }
-                .accessibilityLabel("Visit ClearSky website")
-                .accessibilityHint("Opens the ClearSky website in your browser")
+                .accessibilityLabel(loc("info.clearsky.label"))
+                .accessibilityHint(loc("info.clearsky.hint"))
 
                 Link(destination: URL(string: "https://github.com/ClearskyApp06/clearskyservices")!) {
                     legalRow(icon: "chevron.left.forwardslash.chevron.right", title: localizationManager.localized("info.legal.clearsky_github"), value: "github.com/ClearskyApp06", link: true)
                 }
-                .accessibilityLabel("View ClearSky on GitHub")
-                .accessibilityHint("Opens the ClearSky GitHub repository in your browser")
+                .accessibilityLabel(loc("info.clearsky_github.label"))
+                .accessibilityHint(loc("info.clearsky_github.hint"))
 
                 Text(verbatim: localizationManager.localized("info.clearsky.desc"))
                     .font(.subheadline)
