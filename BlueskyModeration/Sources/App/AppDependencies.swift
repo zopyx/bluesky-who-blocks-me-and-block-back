@@ -7,7 +7,6 @@ final class AppDependencies: ObservableObject {
     let profileService: BlueskyProfileService
     let workspaceStore: ModerationWorkspaceStore
     let actionPresetStore: ActionPresetStore
-    let profileNotesStore: ProfileNotesStore
     let blueskyClient: LiveBlueskyClient
     let localizationManager: LocalizationManager
 
@@ -21,7 +20,6 @@ final class AppDependencies: ObservableObject {
         self.profileService = BlueskyProfileService(requestExecutor: requestExecutor, sessionService: sessionService)
         self.workspaceStore = ModerationWorkspaceStore()
         self.actionPresetStore = ActionPresetStore()
-        self.profileNotesStore = ProfileNotesStore()
         self.blueskyClient = LiveBlueskyClient(
             requestExecutor: requestExecutor,
             sessionService: sessionService

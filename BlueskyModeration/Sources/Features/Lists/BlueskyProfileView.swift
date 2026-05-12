@@ -7,9 +7,7 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
-    @EnvironmentObject private var notesStore: ProfileNotesStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
-    @State private var isShowingNote = false
     @State private var isShowingAvatarPreview = false
 
     var body: some View {
@@ -230,12 +228,6 @@ struct BlueskyProfileView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Button {
-                        isShowingNote = true
-                    } label: {
-                        Label { Text(verbatim: notesStore.note(for: profile.did).isEmpty ? loc("profile.add_note") : loc("profile.edit_note")) } icon: { Image(systemName: "note.text") }
-                    }
-                    .accessibilityHint("Opens a note editor to record information about this account")
                 } header: {
                     Text(verbatim: loc("profile.actions_section"))
                 }
@@ -321,11 +313,6 @@ struct BlueskyProfileView: View {
                 appPassword: appPassword,
                 using: blueskyClient
             )
-        }
-        .sheet(isPresented: $isShowingNote) {
-            if let profile = viewModel.profile {
-                NoteSheet(profile: profile, notesStore: notesStore)
-            }
         }
     }
 

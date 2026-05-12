@@ -20,7 +20,6 @@
 		14BA8586549ECC7C09AC54F3 /* SkeletonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EDEE1ABF2EE278C94B2F9CB /* SkeletonRow.swift */; };
 		178B1835C4B70F8059C0FA70 /* BlueskyModerationApp+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773146DBD740D76320221CD7 /* BlueskyModerationApp+macOS.swift */; };
 		178D70F028B5C4268AA7124E /* ProfileMembershipModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79ABBA6F2ED069100538D3 /* ProfileMembershipModels.swift */; };
-		17A9B183485F810F5F041A4E /* ProfileNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9FAB14AE1373027DEEB7CC3 /* ProfileNotesStore.swift */; };
 		189FA455C5241B0C5451208C /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0343E7705C27F52D7BD3B03 /* AccountStore.swift */; };
 		1B362E45A02E3DF1A7EF962C /* BlueskyProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90F621A53763D04B73DCF960 /* BlueskyProfileView.swift */; };
 		1B76BA3E7743655F026C83CE /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B884F490FEB25B8E1D1176 /* LocalizationManager.swift */; };
@@ -70,7 +69,6 @@
 		70186A14734E8D6FDCB582DE /* pt.json in Resources */ = {isa = PBXBuildFile; fileRef = 8B449D02461B900DE3BB8695 /* pt.json */; };
 		71078C5514EE9940C0B02C63 /* BlueskyAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */; };
 		717340FD0D8E509C8A2A946D /* BlueskyListMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E071265425B642977F4F283 /* BlueskyListMember.swift */; };
-		750C922E8DE1EA8C12482796 /* NoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63CC417FEA83051148B086E /* NoteSheet.swift */; };
 		769FD129FB4226B167ABC9A8 /* BlueskyActorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955786A2EEC90205E3714E5F /* BlueskyActorRow.swift */; };
 		78FB60ACB6D4E62D9A06E700 /* ListDetailMembersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7930ABCB9DDA0325197A398A /* ListDetailMembersSection.swift */; };
 		795656C9EA2FEAD13203A79F /* it.json in Resources */ = {isa = PBXBuildFile; fileRef = 620CD95FA51441EC9A0D6FAB /* it.json */; };
@@ -289,7 +287,6 @@
 		B55575E25BE062386D5FC79B /* ListDetailSearchSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailSearchSection.swift; sourceTree = "<group>"; };
 		B5A8121B7C0C147CA5085B44 /* ListDetailViewModel+Bulk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Bulk.swift"; sourceTree = "<group>"; };
 		B8014739C557415DBA53214A /* FollowerDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowerDiffView.swift; sourceTree = "<group>"; };
-		B9FAB14AE1373027DEEB7CC3 /* ProfileNotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileNotesStore.swift; sourceTree = "<group>"; };
 		BB464B8B239E0371375D559B /* BlueskyListServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyListServiceTests.swift; sourceTree = "<group>"; };
 		BC391D2CC0B10AF7D5785121 /* BlueskyModerationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyModerationApp.swift; sourceTree = "<group>"; };
 		BCA9F08989BAD1CDC445CF51 /* BlueskyModerationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyModerationUITests.swift; sourceTree = "<group>"; };
@@ -304,7 +301,6 @@
 		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		D0343E7705C27F52D7BD3B03 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
 		D518E231CD77FA86955D8DBE /* ModerationAuditStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModerationAuditStore.swift; sourceTree = "<group>"; };
-		D63CC417FEA83051148B086E /* NoteSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteSheet.swift; sourceTree = "<group>"; };
 		D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewBlueskyClient.swift; sourceTree = "<group>"; };
 		D71B5EB54E4DCA5C64988E2B /* iCloudAccountSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iCloudAccountSync.swift; sourceTree = "<group>"; };
 		D771DE332A156BEC772250D8 /* LocalizedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedText.swift; sourceTree = "<group>"; };
@@ -527,7 +523,6 @@
 				69EC0405E28F2993D2F08CD9 /* LoadableState.swift */,
 				64B90EB01283830E6D941663 /* ModerationRuleStore.swift */,
 				B1F016FD34001C8C06C7F8A3 /* NetworkMonitor.swift */,
-				B9FAB14AE1373027DEEB7CC3 /* ProfileNotesStore.swift */,
 				0CD5EDFE8B1DAAE5AB4D0656 /* SearchToken.swift */,
 				73A46736FC0C1C5021AF660D /* String+CSV.swift */,
 				F04D96EE5014E7DB9DA13C19 /* URL+Bluesky.swift */,
@@ -605,7 +600,6 @@
 				955786A2EEC90205E3714E5F /* BlueskyActorRow.swift */,
 				7DDA648ACF44338C909DB844 /* iPadAccountSwitcher.swift */,
 				2CF2022C84E0AE6157C78325 /* LockScreenView.swift */,
-				D63CC417FEA83051148B086E /* NoteSheet.swift */,
 				9E461E066D84590E3C04B4A3 /* OfflineBanner.swift */,
 				2EDEE1ABF2EE278C94B2F9CB /* SkeletonRow.swift */,
 				DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */,
@@ -922,14 +916,12 @@
 				08EB742F3AE1C460EE990875 /* ModerationWorkspaceStore.swift in Sources */,
 				8A02BE6221E860D984BDEE98 /* NetworkGraphView.swift in Sources */,
 				2CA05CA492077D5A62A85AA9 /* NetworkMonitor.swift in Sources */,
-				750C922E8DE1EA8C12482796 /* NoteSheet.swift in Sources */,
 				CBA297E4462546D81F74EF73 /* OfflineBanner.swift in Sources */,
 				C43E6FB7AC166AB8B45E991A /* PendingActionsSheet.swift in Sources */,
 				57463BDF5FE8746553C8DF37 /* PreviewBlueskyClient.swift in Sources */,
 				818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */,
 				5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */,
 				178D70F028B5C4268AA7124E /* ProfileMembershipModels.swift in Sources */,
-				17A9B183485F810F5F041A4E /* ProfileNotesStore.swift in Sources */,
 				878D807B5A85A664CFDBD4DC /* RelationshipCache.swift in Sources */,
 				7B0F420541C16E2AEE22861B /* RelationshipsView.swift in Sources */,
 				5165EDC2FE9BE35295B2F749 /* ReportGeneratorView.swift in Sources */,
