@@ -156,6 +156,9 @@ struct EditListMetadataSheet: View {
     let isSaving: Bool
     let saveAction: (_ title: String, _ description: String) -> Void
 
+    private static let maxTitleLength = 64
+    private static let maxDescriptionLength = 300
+
     @State private var title: String
     @State private var description: String
 
@@ -176,8 +179,23 @@ struct EditListMetadataSheet: View {
             Form {
                 Section {
                     TextField(loc("list.edit.name_placeholder"), text: $title)
-                    TextField(loc("list.edit.desc_placeholder"), text: $description)
+                        .onChange(of: title) { _, newValue in
+                            if newValue.count > Self.maxTitleLength {
+                                title = String(newValue.prefix(Self.maxTitleLength))
+                            }
+                        }
+                    counterBadge(count: title.count, max: Self.maxTitleLength)
+                        .font(.caption)
+
+                    TextField(loc("list.edit.desc_placeholder"), text: $description, axis: .vertical)
                         .lineLimit(3...6)
+                        .onChange(of: description) { _, newValue in
+                            if newValue.count > Self.maxDescriptionLength {
+                                description = String(newValue.prefix(Self.maxDescriptionLength))
+                            }
+                        }
+                    counterBadge(count: description.count, max: Self.maxDescriptionLength)
+                        .font(.caption)
                 } header: {
                     Text(verbatim: loc("list.edit.metadata"))
                 }
@@ -201,6 +219,15 @@ struct EditListMetadataSheet: View {
                     .accessibilityHint("Saves the updated list metadata")
                 }
             }
+        }
+    }
+
+    private func counterBadge(count: Int, max: Int) -> some View {
+        HStack {
+            Spacer()
+            Text("\(count)/\(max)")
+                .foregroundStyle(count > max ? .red : count > max - 10 ? .orange : .secondary)
+                .monospacedDigit()
         }
     }
 }
