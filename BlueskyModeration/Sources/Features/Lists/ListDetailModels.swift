@@ -8,6 +8,9 @@ struct ListBulkActionResult: Identifiable, Equatable {
         case move
         case `import`
         case block
+        case mute
+        case unblock
+        case unmute
 
         var title: String {
             switch self {
@@ -22,7 +25,13 @@ struct ListBulkActionResult: Identifiable, Equatable {
             case .import:
                 "Import Handles"
             case .block:
-                "Block Followers"
+                "Block Members"
+            case .mute:
+                "Mute Members"
+            case .unblock:
+                "Unblock Members"
+            case .unmute:
+                "Unmute Members"
             }
         }
 
@@ -40,6 +49,12 @@ struct ListBulkActionResult: Identifiable, Equatable {
                 "imported"
             case .block:
                 "blocked"
+            case .mute:
+                "muted"
+            case .unblock:
+                "unblocked"
+            case .unmute:
+                "unmuted"
             }
         }
     }

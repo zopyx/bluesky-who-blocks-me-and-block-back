@@ -119,6 +119,101 @@ extension ListDetailViewModel {
         bulkActionResult = result
     }
 
+    func bulkBlockSelectedMembers(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        let selectedMembers = members.filter { selectedMemberIDs.contains($0.id) }
+        guard !selectedMembers.isEmpty else { return }
+
+        let result = await performActorBatch(
+            title: "Blocking members",
+            actors: selectedMembers.map(\.actor),
+            operation: .block
+        ) { actor in
+            try await client.blockActor(
+                did: actor.did,
+                account: account,
+                appPassword: appPassword
+            )
+        }
+
+        clearMemberSelection()
+        bulkActionResult = result
+    }
+
+    func bulkMuteSelectedMembers(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        let selectedMembers = members.filter { selectedMemberIDs.contains($0.id) }
+        guard !selectedMembers.isEmpty else { return }
+
+        let result = await performActorBatch(
+            title: "Muting members",
+            actors: selectedMembers.map(\.actor),
+            operation: .mute
+        ) { actor in
+            try await client.muteActor(
+                did: actor.did,
+                account: account,
+                appPassword: appPassword
+            )
+        }
+
+        clearMemberSelection()
+        bulkActionResult = result
+    }
+
+    func bulkUnblockSelectedMembers(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        let selectedMembers = members.filter { selectedMemberIDs.contains($0.id) }
+        guard !selectedMembers.isEmpty else { return }
+
+        let result = await performActorBatch(
+            title: "Unblocking members",
+            actors: selectedMembers.map(\.actor),
+            operation: .unblock
+        ) { actor in
+            let inspection = try await client.inspectProfile(query: actor.did, account: account, appPassword: appPassword)
+            if let recordURI = inspection.profile.viewerState?.blockingRecordURI {
+                try await client.unblockActor(recordURI: recordURI, account: account, appPassword: appPassword)
+            }
+        }
+
+        clearMemberSelection()
+        bulkActionResult = result
+    }
+
+    func bulkUnmuteSelectedMembers(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        let selectedMembers = members.filter { selectedMemberIDs.contains($0.id) }
+        guard !selectedMembers.isEmpty else { return }
+
+        let result = await performActorBatch(
+            title: "Unmuting members",
+            actors: selectedMembers.map(\.actor),
+            operation: .unmute
+        ) { actor in
+            try await client.unmuteActor(
+                did: actor.did,
+                account: account,
+                appPassword: appPassword
+            )
+        }
+
+        clearMemberSelection()
+        bulkActionResult = result
+    }
+
     func bulkAddComparisonSelection(
         to list: BlueskyList,
         account: AppAccount,
@@ -255,6 +350,47 @@ extension ListDetailViewModel {
                 operation: .block
             ) { actor in
                 try await client.blockActor(
+                    did: actor.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+            }
+            bulkActionResult = retryResult
+
+        case .mute:
+            let retryResult = await performActorBatch(
+                title: "Retrying mutes",
+                actors: failedActors,
+                operation: .mute
+            ) { actor in
+                try await client.muteActor(
+                    did: actor.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+            }
+            bulkActionResult = retryResult
+
+        case .unblock:
+            let retryResult = await performActorBatch(
+                title: "Retrying unblocks",
+                actors: failedActors,
+                operation: .unblock
+            ) { actor in
+                let inspection = try await client.inspectProfile(query: actor.did, account: account, appPassword: appPassword)
+                if let recordURI = inspection.profile.viewerState?.blockingRecordURI {
+                    try await client.unblockActor(recordURI: recordURI, account: account, appPassword: appPassword)
+                }
+            }
+            bulkActionResult = retryResult
+
+        case .unmute:
+            let retryResult = await performActorBatch(
+                title: "Retrying unmutes",
+                actors: failedActors,
+                operation: .unmute
+            ) { actor in
+                try await client.unmuteActor(
                     did: actor.did,
                     account: account,
                     appPassword: appPassword

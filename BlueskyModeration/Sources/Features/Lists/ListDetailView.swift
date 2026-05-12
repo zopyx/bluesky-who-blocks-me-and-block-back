@@ -23,6 +23,7 @@ struct ListDetailView: View {
     @State var cachedDiffExportFileURL: URL?
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingSubscribe = false
+    @State private var pendingBulkAction: ListBulkAction?
     @Environment(\.dismiss) private var dismiss
 
     init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
@@ -325,6 +326,7 @@ struct ListDetailView: View {
                 account: account,
                 appPassword: appPassword,
                 isShowingBulkRemoveConfirmation: $isShowingBulkRemoveConfirmation,
+                pendingBulkAction: $pendingBulkAction,
                 syncSnapshot: { syncSnapshot() }
             )
 

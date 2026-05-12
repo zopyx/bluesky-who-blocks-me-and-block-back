@@ -574,5 +574,15 @@
     "list_templates.creating": "Creating...",
     "activity.failed_format": "Failed: {handles}",
     "tab.accounts": "Accounts",
-    "account.manage.edit": "Edit"
+    "account.manage.edit": "Edit",
+    "list.members.block_selected": "Block Selected",
+    "list.members.mute_selected": "Mute Selected",
+    "list.members.unblock_selected": "Unblock Selected",
+    "list.members.unmute_selected": "Unmute Selected",
+    "list.members.bulk_action_title": "Confirm Bulk Action",
+    "list.members.confirm": "Confirm",
+    "list.members.bulk_block_message": "Block {count} selected members?",
+    "list.members.bulk_mute_message": "Mute {count} selected members?",
+    "list.members.bulk_unblock_message": "Unblock {count} selected members?",
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
 }

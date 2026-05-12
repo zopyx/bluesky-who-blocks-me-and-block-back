@@ -1,5 +1,10 @@
 import SwiftUI
 
+enum ListBulkAction: Identifiable {
+    case block, mute, unblock, unmute
+    var id: Self { self }
+}
+
 extension ListDetailView {
     struct ListMembersSection: View {
         @ObservedObject var viewModel: ListDetailViewModel
@@ -8,6 +13,7 @@ extension ListDetailView {
         let account: AppAccount
         let appPassword: String
         @Binding var isShowingBulkRemoveConfirmation: Bool
+        @Binding var pendingBulkAction: ListBulkAction?
         let syncSnapshot: () -> Void
 
         @EnvironmentObject var accountStore: AccountStore
@@ -15,8 +21,51 @@ extension ListDetailView {
         @EnvironmentObject var workspaceStore: ModerationWorkspaceStore
 
         var body: some View {
-            findMembersSection
-            membersSection
+            Group {
+                findMembersSection
+                membersSection
+            }
+            .confirmationDialog(
+                loc("list.members.bulk_action_title"),
+                isPresented: .init(get: { pendingBulkAction != nil }, set: { if !$0 { pendingBulkAction = nil } }),
+                titleVisibility: .visible
+            ) {
+                if let action = pendingBulkAction {
+                    Button(loc("list.members.confirm")) {
+                        Task { await performBulkAction(action) }
+                    }
+                    Button(loc("actions.cancel"), role: .cancel) { pendingBulkAction = nil }
+                }
+            } message: {
+                if let action = pendingBulkAction {
+                    Text(verbatim: confirmationMessage(for: action))
+                }
+            }
+        }
+
+        private func confirmationMessage(for action: ListBulkAction) -> String {
+            let count = viewModel.selectedMemberIDs.count
+            switch action {
+            case .block: return loc("list.members.bulk_block_message").replacingOccurrences(of: "{count}", with: "\(count)")
+            case .mute: return loc("list.members.bulk_mute_message").replacingOccurrences(of: "{count}", with: "\(count)")
+            case .unblock: return loc("list.members.bulk_unblock_message").replacingOccurrences(of: "{count}", with: "\(count)")
+            case .unmute: return loc("list.members.bulk_unmute_message").replacingOccurrences(of: "{count}", with: "\(count)")
+            }
+        }
+
+        private func performBulkAction(_ action: ListBulkAction) async {
+            pendingBulkAction = nil
+            switch action {
+            case .block:
+                await viewModel.bulkBlockSelectedMembers(account: account, appPassword: appPassword, using: blueskyClient)
+            case .mute:
+                await viewModel.bulkMuteSelectedMembers(account: account, appPassword: appPassword, using: blueskyClient)
+            case .unblock:
+                await viewModel.bulkUnblockSelectedMembers(account: account, appPassword: appPassword, using: blueskyClient)
+            case .unmute:
+                await viewModel.bulkUnmuteSelectedMembers(account: account, appPassword: appPassword, using: blueskyClient)
+            }
+            syncSnapshot()
         }
 
         private var findMembersSection: some View {
@@ -147,7 +196,6 @@ extension ListDetailView {
                     }
                     .disabled(viewModel.isPerformingBulkAction || viewModel.filteredMembers.isEmpty)
                     .accessibilityLabel(viewModel.selectedMemberIDs.count == viewModel.filteredMembers.count && !viewModel.filteredMembers.isEmpty ? "Clear visible selection" : "Select all visible members")
-                    .accessibilityHint(viewModel.selectedMemberIDs.count == viewModel.filteredMembers.count && !viewModel.filteredMembers.isEmpty ? "Deselects all currently visible members" : "Selects all members shown on screen")
 
                     Spacer()
 
@@ -158,14 +206,53 @@ extension ListDetailView {
                     }
                 }
 
-                Button(role: .destructive) {
-                    isShowingBulkRemoveConfirmation = true
-                } label: {
-                    Label { Text(verbatim: loc("list.members.remove_selected")) } icon: { Image(systemName: "person.crop.circle.badge.minus") }
+                if !viewModel.selectedMemberIDs.isEmpty {
+                    HStack(spacing: 8) {
+                        Button {
+                            isShowingBulkRemoveConfirmation = true
+                        } label: {
+                            Label { Text(verbatim: loc("list.members.remove_selected")) } icon: { Image(systemName: "person.crop.circle.badge.minus") }
+                        }
+                        .disabled(viewModel.isPerformingBulkAction)
+                        .font(.caption)
+
+                        Spacer()
+
+                        Button {
+                            pendingBulkAction = .block
+                        } label: {
+                            Label { Text(verbatim: loc("list.members.block_selected")) } icon: { Image(systemName: "hand.raised") }
+                        }
+                        .disabled(viewModel.isPerformingBulkAction)
+                        .font(.caption)
+
+                        Button {
+                            pendingBulkAction = .mute
+                        } label: {
+                            Label { Text(verbatim: loc("list.members.mute_selected")) } icon: { Image(systemName: "speaker.slash") }
+                        }
+                        .disabled(viewModel.isPerformingBulkAction)
+                        .font(.caption)
+                    }
+
+                    HStack(spacing: 8) {
+                        Button {
+                            pendingBulkAction = .unblock
+                        } label: {
+                            Label { Text(verbatim: loc("list.members.unblock_selected")) } icon: { Image(systemName: "hand.raised.slash") }
+                        }
+                        .disabled(viewModel.isPerformingBulkAction)
+                        .font(.caption)
+
+                        Button {
+                            pendingBulkAction = .unmute
+                        } label: {
+                            Label { Text(verbatim: loc("list.members.unmute_selected")) } icon: { Image(systemName: "speaker.wave.2") }
+                        }
+                        .disabled(viewModel.isPerformingBulkAction)
+                        .font(.caption)
+                    }
                 }
-                .disabled(viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
-                .accessibilityLabel("Remove selected members from list")
-                .accessibilityHint("This action cannot be undone.")
             }
         }
     }
