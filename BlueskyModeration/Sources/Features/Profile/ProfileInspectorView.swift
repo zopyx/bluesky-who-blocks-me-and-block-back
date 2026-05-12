@@ -22,7 +22,7 @@ struct ProfileInspectorView: View {
 
                     if viewModel.isSearching {
                         LoadingPanel(message: localizationManager.localized("profile.searching"))
-                    } else if !viewModel.query.isEmpty && viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                    } else if !viewModel.query.isEmpty, viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                         Text(verbatim: localizationManager.localized("profile.search.hint"))
                             .foregroundStyle(.secondary)
                     } else if !viewModel.searchResults.isEmpty {
@@ -42,7 +42,7 @@ struct ProfileInspectorView: View {
                             .buttonStyle(.plain)
                             .accessibilityHint(localizationManager.localized("profile.result.hint"))
                         }
-                    } else if !viewModel.query.isEmpty && !viewModel.isSearching {
+                    } else if !viewModel.query.isEmpty, !viewModel.isSearching {
                         EmptyStatePanel(title: localizationManager.localized("profile.search.no_results"))
                     }
 

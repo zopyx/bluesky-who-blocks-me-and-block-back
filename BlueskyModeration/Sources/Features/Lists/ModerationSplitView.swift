@@ -37,7 +37,6 @@ struct ModerationSplitView: View {
 
     // MARK: - Compact (iPhone) — delegate to existing ListsView
 
-    @ViewBuilder
     private var compactContent: some View {
         ListsView()
             .environmentObject(accountStore)
