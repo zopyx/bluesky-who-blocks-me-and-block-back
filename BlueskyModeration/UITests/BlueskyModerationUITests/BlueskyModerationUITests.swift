@@ -11,6 +11,8 @@ final class BlueskyModerationUITests: XCTestCase {
         app.launch()
     }
 
+    // MARK: - Existing Tests
+
     func testAppLaunches() {
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 5))
     }
@@ -63,5 +65,63 @@ final class BlueskyModerationUITests: XCTestCase {
 
         let legalButton = app.buttons["Legal"]
         XCTAssertTrue(legalButton.waitForExistence(timeout: 1))
+    }
+
+    // MARK: - Phase 6: UX Reliability Tests
+
+    /// Verifies that onboarding is automatically skipped in testing mode
+    /// and the main moderation content is shown directly.
+    func testOnboardingSkip() {
+        // With --uitesting, onboarding is auto-dismissed via hasSeenOnboarding
+        // Verify we land on the moderation tab with its toolbar visible
+        let refreshButton = app.buttons["Refresh lists"]
+        XCTAssertTrue(refreshButton.waitForExistence(timeout: 3),
+                      "Moderation toolbar refresh button should be visible after onboarding skip")
+
+        // Confirm tab bar is visible (we're in the main app, not stuck on onboarding)
+        XCTAssertTrue(app.tabBars.firstMatch.exists, "Tab bar should be visible in main app")
+    }
+
+    /// Verifies the full account management flow: navigate to Accounts tab,
+    /// see the account list, enter edit mode, and verify edit mode activates.
+    func testAccountManagementFlow() {
+        // Navigate to Accounts tab
+        app.tabBars.firstMatch.buttons["Accounts"].tap()
+
+        // Verify account list appears (preview accounts loaded in testing mode)
+        let teamAlpha = app.staticTexts["team-alpha.bsky.social"]
+        XCTAssertTrue(teamAlpha.waitForExistence(timeout: 3),
+                      "Preview account 'team-alpha.bsky.social' should appear in accounts list")
+
+        // Tap the Edit button to activate edit mode
+        let editButton = app.buttons["Edit"]
+        XCTAssertTrue(editButton.exists, "Edit button should be present in account toolbar")
+        editButton.tap()
+
+        // Verify edit mode activates — the Edit button should change to Done
+        let doneButton = app.buttons["Done"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 2),
+                      "Done button should appear when edit mode is active")
+    }
+
+    /// Verifies the Settings tab navigation bar is accessible.
+    func testSettingsNavigation() {
+        // Navigate to Settings tab
+        app.tabBars.firstMatch.buttons["Settings"].tap()
+
+        // Verify the Settings navigation bar exists
+        let settingsNavBar = app.navigationBars["Settings"]
+        XCTAssertTrue(settingsNavBar.waitForExistence(timeout: 3),
+                      "Settings navigation bar should be visible")
+    }
+
+    /// Verifies the Moderation tab's refresh button has proper accessibility label.
+    func testModerationTabAccessibility() {
+        // Default tab is Moderation — verify the refresh button exists with correct label
+        let refreshButton = app.buttons["Refresh lists"]
+        XCTAssertTrue(refreshButton.waitForExistence(timeout: 3),
+                      "Refresh lists button should exist on moderation tab")
+        XCTAssertEqual(refreshButton.label, "Refresh lists",
+                       "Refresh button should have correct accessibility label")
     }
 }

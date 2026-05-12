@@ -21,6 +21,11 @@ struct EmptyStatePanel: View {
     let title: String
     let message: String
 
+    init(title: String, message: String = "") {
+        self.title = title
+        self.message = message
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "tray")
@@ -28,10 +33,12 @@ struct EmptyStatePanel: View {
                 .foregroundStyle(.secondary)
             Text(title)
                 .font(.headline)
-            Text(message)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            if !message.isEmpty {
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 120)
         .padding()
@@ -108,8 +115,8 @@ struct StatusChip: View {
         Text(text)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 12)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
             .background {
                 if #available(iOS 26, *) {
                     Color.clear.glassEffect(.regular.tint(tintColor), in: .rect(cornerRadius: .infinity))

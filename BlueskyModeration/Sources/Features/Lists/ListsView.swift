@@ -12,36 +12,12 @@ struct ListsView: View {
         NavigationStack {
             Group {
                 if accountStore.accounts.isEmpty {
-                    ContentUnavailableView {
-                        Label(localizationManager.localized("lists.no_account.title"), systemImage: "person.crop.circle.badge.plus")
-                    } description: {
-                        Text(verbatim: localizationManager.localized("lists.no_account.desc"))
-                    }
+                    EmptyStatePanel(
+                        title: localizationManager.localized("lists.no_account.title"),
+                        message: localizationManager.localized("lists.no_account.desc")
+                    )
                 } else if viewModel.isLoading {
-                    List {
-                        Section {
-                            SkeletonCard()
-                                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                                .listRowBackground(Color.clear)
-                        }
-                        Section {
-                            SkeletonGrid()
-                                .listRowInsets(EdgeInsets())
-                                .listRowBackground(Color.clear)
-                        } header: {
-                            Text(verbatim: localizationManager.localized("lists.relationships"))
-                                .redacted(reason: .placeholder)
-                        }
-                        Section {
-                            SkeletonRow()
-                            SkeletonRow()
-                        } header: {
-                            Text(verbatim: localizationManager.localized("lists.moderation_lists"))
-                                .redacted(reason: .placeholder)
-                        }
-                    }
-                    .listStyle(.insetGrouped)
-                    .redacted(reason: .placeholder)
+                    LoadingPanel(message: localizationManager.localized("lists.loading"))
                 } else {
                     List {
                         if let activeAccount = accountStore.activeAccount {

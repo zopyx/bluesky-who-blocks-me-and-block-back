@@ -52,7 +52,7 @@ struct BlueskyProfileView: View {
                                 .padding()
                         }
                     }
-                    .transition(.opacity.animation(.easeInOut))
+                    .transition(.opacity.animation(UIAccessibility.isReduceMotionEnabled ? nil : .easeInOut))
             }
         }
     }
@@ -289,9 +289,7 @@ struct BlueskyProfileView: View {
                     }
                 }
             } else if viewModel.isLoading {
-                Section {
-                    SkeletonCard()
-                }
+                LoadingPanel(message: loc("profile.loading"))
             }
 
             if let errorMessage = viewModel.errorMessage {

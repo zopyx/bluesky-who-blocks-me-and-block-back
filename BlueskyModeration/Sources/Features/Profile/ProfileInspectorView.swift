@@ -17,15 +17,11 @@ struct ProfileInspectorView: View {
                     TextField(loc("profile.search.placeholder"), text: $viewModel.query)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .accessibilityLabel("Search Bluesky by handle or DID")
-                        .accessibilityHint("Type a handle or DID to search for a Bluesky account")
+                        .accessibilityLabel(loc("profile.search.label"))
+                        .accessibilityHint(loc("profile.search.hint"))
 
                     if viewModel.isSearching {
-                        HStack {
-                            ProgressView()
-                            Text(verbatim: localizationManager.localized("profile.searching"))
-                                .foregroundStyle(.secondary)
-                        }
+                        LoadingPanel(message: localizationManager.localized("profile.searching"))
                     } else if !viewModel.query.isEmpty && viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                         Text(verbatim: localizationManager.localized("profile.search.hint"))
                             .foregroundStyle(.secondary)
@@ -47,8 +43,7 @@ struct ProfileInspectorView: View {
                             .accessibilityHint(localizationManager.localized("profile.result.hint"))
                         }
                     } else if !viewModel.query.isEmpty && !viewModel.isSearching {
-                        Text(verbatim: localizationManager.localized("profile.search.no_results"))
-                            .foregroundStyle(.secondary)
+                        EmptyStatePanel(title: localizationManager.localized("profile.search.no_results"))
                     }
 
                     Button {
@@ -87,8 +82,8 @@ struct ProfileInspectorView: View {
                         }
                     }
                     .disabled(viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .accessibilityLabel("Save current search query")
-                    .accessibilityHint("Saves this search for quick access later")
+                    .accessibilityLabel(loc("profile.save_search.label"))
+                    .accessibilityHint(loc("profile.save_search.hint"))
 
                     if let activeAccount = accountStore.activeAccount {
                         Text(verbatim: localizationManager.localized("profile.using_account").replacingOccurrences(of: "{handle}", with: activeAccount.handle))
@@ -127,7 +122,7 @@ struct ProfileInspectorView: View {
                                         .foregroundStyle(Color.skyPrimary)
                                 }
                             }
-                            .accessibilityLabel("Load saved search for \(search.query)")
+                            .accessibilityLabel(loc("profile.saved_search.label").replacingOccurrences(of: "{query}", with: search.query))
                             .buttonStyle(.plain)
                             .swipeActions {
                                 Button(role: .destructive) {
@@ -156,7 +151,7 @@ struct ProfileInspectorView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
-                            .accessibilityLabel("Load saved search for \(search.query)")
+                            .accessibilityLabel(loc("profile.recent_search.label").replacingOccurrences(of: "{query}", with: search.query))
                             .buttonStyle(.plain)
                         }
                     } header: {
