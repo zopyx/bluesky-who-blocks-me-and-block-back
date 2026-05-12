@@ -273,7 +273,7 @@ struct ListsView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.skyPrimary)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
@@ -283,8 +283,14 @@ struct ListsView: View {
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 4)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func activeAccountMember(_ account: AppAccount) -> BlueskyListMember {
