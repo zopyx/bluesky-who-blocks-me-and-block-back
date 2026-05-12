@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var appLockManager: AppLockManager
     @AppStorage("debugMode") private var debugMode = false
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @State private var isShowingClearCacheConfirmation = false
     @State private var cacheStatusMessage: String?
 
@@ -12,6 +13,22 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section {
+                    Picker(
+                        selection: Binding(
+                            get: { self.appearanceMode },
+                            set: { self.appearanceMode = $0 }
+                        )
+                    ) {
+                        Text(loc("settings.appearance.system")).tag("system")
+                        Text(loc("settings.appearance.dark")).tag("dark")
+                    } label: {
+                        Label {
+                            Text(localizationManager.localized("settings.appearance"))
+                        } icon: {
+                            Image(systemName: "moon.fill")
+                        }
+                    }
+
                     Picker(selection: Binding(
                         get: { localizationManager.currentLanguage },
                         set: { localizationManager.currentLanguage = $0 }

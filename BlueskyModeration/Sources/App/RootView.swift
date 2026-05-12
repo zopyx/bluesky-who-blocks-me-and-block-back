@@ -6,9 +6,18 @@ struct RootView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @EnvironmentObject private var localizationManager: LocalizationManager
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+
+    private var preferredScheme: ColorScheme? {
+        switch appearanceMode {
+        case "dark": return .dark
+        default: return nil
+        }
+    }
 
     var body: some View {
         TabView(selection: $workspaceStore.selectedTab) {
+            ModerationSplitView()
             ModerationSplitView()
                 .tag(WorkspaceTab.moderation)
                 .tabItem {
@@ -50,6 +59,7 @@ struct RootView: View {
                 }
         }
         .tint(.skyPrimary)
+        .preferredColorScheme(preferredScheme)
         .sheet(isPresented: .init(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = !$0 })) {
             NavigationStack {
                 ScrollView {

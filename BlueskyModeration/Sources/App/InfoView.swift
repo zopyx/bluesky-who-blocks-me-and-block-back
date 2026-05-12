@@ -2,6 +2,7 @@ import SwiftUI
 
 struct InfoView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab: InfoTab = .overview
 
     enum InfoTab: String, CaseIterable {
@@ -48,7 +49,6 @@ struct InfoView: View {
                 .toolbarBackground(.hidden, for: .navigationBar)
             }
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Overview Tab
@@ -112,7 +112,7 @@ struct InfoView: View {
                     .font(.title)
                     .foregroundStyle(.primary)
                     .frame(width: 40, height: 40)
-                    .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                    .background(highlightSurface, in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(verbatim: localizationManager.localized("info.view_github"))
@@ -130,7 +130,7 @@ struct InfoView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(16)
-            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+            .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
         }
         .accessibilityLabel(loc("info.github.label"))
         .accessibilityHint(loc("info.github.hint"))
@@ -156,7 +156,7 @@ struct InfoView: View {
             Spacer()
         }
         .padding(16)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+        .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Features Tab
@@ -248,7 +248,7 @@ struct InfoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(verbatim: localizationManager.localized("info.third_party"))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
 
                 Link(destination: URL(string: "https://clearsky.app")!) {
                     legalRow(icon: "cloud", title: localizationManager.localized("info.legal.clearsky"), value: "clearsky.app", link: true)
@@ -269,7 +269,7 @@ struct InfoView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+            .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
 
             legalDivider
 
@@ -284,7 +284,7 @@ struct InfoView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+            .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
         }
     }
 
@@ -300,7 +300,7 @@ struct InfoView: View {
                 .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity, minHeight: 80)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+        .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func featureCard(icon: String, color: Color, title: String, items: [String]) -> some View {
@@ -337,7 +337,7 @@ struct InfoView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+        .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func legalRow(icon: String, title: String, value: String? = nil, link: Bool = false) -> some View {
@@ -368,11 +368,11 @@ struct InfoView: View {
             }
         }
         .padding(14)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 14))
+        .background(cardSurface, in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var legalDivider: some View {
-        Color.white.opacity(0.08)
+        Color.appDivider.opacity(colorScheme == .dark ? 0.6 : 0.35)
             .frame(height: 1)
             .padding(.vertical, 4)
     }
@@ -392,11 +392,7 @@ struct InfoView: View {
     private var background: some View {
         ZStack {
             LinearGradient(
-                colors: [
-                    Color(red: 0.04, green: 0.06, blue: 0.11),
-                    Color(red: 0.06, green: 0.09, blue: 0.16),
-                    Color(red: 0.04, green: 0.11, blue: 0.19),
-                ],
+                colors: backgroundGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -414,6 +410,30 @@ struct InfoView: View {
                 .offset(x: -150, y: 240)
         }
         .ignoresSafeArea()
+    }
+
+    private var cardSurface: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color(.secondarySystemGroupedBackground)
+    }
+
+    private var highlightSurface: Color {
+        colorScheme == .dark ? Color.white.opacity(0.1) : Color(.tertiarySystemGroupedBackground)
+    }
+
+    private var backgroundGradientColors: [Color] {
+        if colorScheme == .dark {
+            return [
+                Color(red: 0.04, green: 0.06, blue: 0.11),
+                Color(red: 0.06, green: 0.09, blue: 0.16),
+                Color(red: 0.04, green: 0.11, blue: 0.19),
+            ]
+        }
+
+        return [
+            Color(red: 0.95, green: 0.97, blue: 0.99),
+            Color(red: 0.90, green: 0.95, blue: 0.99),
+            Color(red: 0.93, green: 0.97, blue: 0.96),
+        ]
     }
 }
 
