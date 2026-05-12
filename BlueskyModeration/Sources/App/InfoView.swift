@@ -237,6 +237,12 @@ struct InfoView: View {
 
             legalRow(icon: "doc.text.magnifyingglass", title: localizationManager.localized("info.legal.license"), value: localizationManager.localized("info.legal.license_value"))
 
+            Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
+                legalRow(icon: "chevron.left.forwardslash.chevron.right", title: localizationManager.localized("info.view_github"), value: "github.com/zopyx/bluesky-who-blocks-me-and-block-back", link: true)
+            }
+            .accessibilityLabel(loc("info.github.label"))
+            .accessibilityHint(loc("info.github.hint"))
+
             legalDivider
 
             VStack(alignment: .leading, spacing: 8) {
