@@ -329,6 +329,13 @@ struct ProfileInspectorView: View {
                     using: blueskyClient
                 )
             }
+            .refreshable {
+                await viewModel.search(
+                    account: accountStore.activeAccount,
+                    appPassword: activePassword,
+                    using: blueskyClient
+                )
+            }
             .onChange(of: viewModel.query) { _, newValue in
                 workspaceStore.lastProfileQuery = newValue
             }
