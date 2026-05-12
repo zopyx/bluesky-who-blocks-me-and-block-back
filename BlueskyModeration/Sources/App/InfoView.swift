@@ -63,11 +63,11 @@ struct InfoView: View {
 
             Text(verbatim: localizationManager.localized("onboarding.title"))
                 .font(.body)
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(.secondary)
 
             Text(verbatim: localizationManager.localized("info.powered_by"))
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.80))
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -102,24 +102,24 @@ struct InfoView: View {
             HStack(spacing: 14) {
                 Image(systemName: "chevron.left.forwardslash.chevron.right")
                     .font(.title)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .frame(width: 40, height: 40)
                     .background(Color.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(verbatim: localizationManager.localized("info.view_github"))
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                     Text(verbatim: localizationManager.localized("info.github_url"))
                         .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.80))
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.secondary)
             }
             .padding(16)
             .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
@@ -139,10 +139,10 @@ struct InfoView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(verbatim: localizationManager.localized("info.keychain.title"))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                 Text(verbatim: localizationManager.localized("info.keychain.desc"))
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.80))
+                    .foregroundStyle(.secondary)
             }
 
             Spacer()
@@ -250,7 +250,7 @@ struct InfoView: View {
 
                 Text(verbatim: localizationManager.localized("info.clearsky.desc"))
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.80))
+                    .foregroundStyle(.secondary)
                     .padding(.leading, 50)
             }
             .padding(16)
@@ -262,7 +262,7 @@ struct InfoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(verbatim: localizationManager.localized("info.data_classification"))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
 
                 dataRow(label: localizationManager.localized("info.data.account"), value: localizationManager.localized("info.data.account_value"))
                 dataRow(label: localizationManager.localized("info.data.api"), value: localizationManager.localized("info.data.api_value"))
@@ -283,7 +283,7 @@ struct InfoView: View {
                 .foregroundStyle(color)
             Text(text)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.85))
+                .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity, minHeight: 80)
         .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
@@ -300,7 +300,7 @@ struct InfoView: View {
 
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -313,7 +313,7 @@ struct InfoView: View {
 
                         Text(item)
                             .font(.body)
-                            .foregroundStyle(.white.opacity(0.80))
+                            .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -337,10 +337,10 @@ struct InfoView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                 Text(value)
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.80))
+                    .foregroundStyle(.secondary)
             }
 
             Spacer()
@@ -348,7 +348,7 @@ struct InfoView: View {
             if link {
                 Image(systemName: "arrow.up.right")
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.35))
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(14)
@@ -365,11 +365,11 @@ struct InfoView: View {
         HStack {
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.80))
+                .foregroundStyle(.secondary)
             Spacer()
             Text(value)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.85))
+                .foregroundStyle(.primary)
         }
     }
 
