@@ -144,7 +144,7 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            sectionHeader(title: loc("lists.moderation_lists"), icon: "checklist.checked", kind: .moderation)
+                            Text(loc("lists.moderation_lists"))
                         }
 
                         Section {
@@ -177,7 +177,7 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            sectionHeader(title: loc("lists.lists"), icon: "list.bullet", kind: .regular)
+                            Text(loc("lists.lists"))
                         }
 
                         if let errorMessage = viewModel.errorMessage {
@@ -285,28 +285,6 @@ struct ListsView: View {
             }
         }
         .padding(.vertical, 4)
-    }
-
-    private func sectionHeader(title: String, icon: String, kind: BlueskyList.Kind) -> some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(kind == .moderation ? .orange : .skyPrimary)
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .textCase(.none)
-            Spacer()
-            Button {
-                presentationState.createListKind = kind
-                presentationState.isShowingCreateList = true
-            } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(kind == .moderation ? .orange : .skyPrimary)
-                    .symbolRenderingMode(.hierarchical)
-            }
-            .buttonStyle(.plain)
-        }
     }
 
     private func activeAccountMember(_ account: AppAccount) -> BlueskyListMember {
