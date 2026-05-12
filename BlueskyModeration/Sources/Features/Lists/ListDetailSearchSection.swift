@@ -26,7 +26,7 @@ extension ListDetailView {
                 TextField(loc("list.search.placeholder"), text: $searchQuery)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .accessibilityLabel("Search Bluesky by handle or name")
+                    .accessibilityLabel(loc("list.search.field.label"))
 
                 if !viewModel.searchResults.isEmpty || viewModel.hasMoreSearchResults {
                     Text(viewModel.searchResultSummary)
@@ -83,8 +83,8 @@ extension ListDetailView {
                                 )
                             }
                         }
-                        .accessibilityLabel("Load more search results")
-                        .accessibilityHint("Fetches more matching accounts from Bluesky")
+                        .accessibilityLabel(loc("list.search.load_more.label"))
+                        .accessibilityHint(loc("list.search.load_more.hint"))
                     }
                 } else if !searchQuery.isEmpty && !viewModel.isSearching {
                     if let errorMsg = viewModel.searchErrorMessage {
@@ -157,23 +157,23 @@ extension ListDetailView {
                 } label: {
                     Label { Text(verbatim: loc("list.search.paste")) } icon: { Image(systemName: "square.and.pencil") }
                 }
-                .accessibilityLabel("Paste handles or CSV to import")
-                .accessibilityHint("Opens a dialog to paste handles or CSV data for importing")
+                .accessibilityLabel(loc("list.search.paste.label"))
+                .accessibilityHint(loc("list.search.paste.hint"))
 
                 Button {
                     isShowingImportFilePicker = true
                 } label: {
                     Label { Text(verbatim: loc("list.search.import_file")) } icon: { Image(systemName: "arrow.down.doc") }
                 }
-                .accessibilityLabel("Import from text file")
-                .accessibilityHint("Opens a file picker to select a text file of handles to import")
+                .accessibilityLabel(loc("list.search.import_file.label"))
+                .accessibilityHint(loc("list.search.import_file.hint"))
 
                 if let exportFileURL {
                     ShareLink(item: exportFileURL) {
                         Label { Text(verbatim: loc("list.search.export_csv")) } icon: { Image(systemName: "square.and.arrow.up") }
                     }
-                    .accessibilityLabel("Export members as CSV")
-                    .accessibilityHint("Shares a CSV file containing all list members")
+                    .accessibilityLabel(loc("list.search.export_csv.label"))
+                    .accessibilityHint(loc("list.search.export_csv.hint"))
                 }
             }
         }

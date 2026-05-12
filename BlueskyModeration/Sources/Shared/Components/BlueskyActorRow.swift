@@ -19,8 +19,8 @@ struct BlueskyActorRow: View {
 
             Spacer()
         }
-        .padding(.vertical, 4)
-        .accessibilityLabel("\(actor.title), \(actor.handle)")
+        .padding(.vertical, 10)
+        .accessibilityLabel(loc("actor_row.label").replacingOccurrences(of: "{title}", with: actor.title).replacingOccurrences(of: "{handle}", with: actor.handle))
     }
 
     @ViewBuilder

@@ -139,8 +139,8 @@ extension ListDetailView {
                             .foregroundStyle(Color.skyPrimary)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Help with list comparison")
-                    .accessibilityHint("Explains the comparison buckets and available actions")
+                    .accessibilityLabel(loc("list.compare.help.label"))
+                    .accessibilityHint(loc("list.compare.help.hint"))
                 }
             }
             .sheet(isPresented: $showingCompareHelp) {

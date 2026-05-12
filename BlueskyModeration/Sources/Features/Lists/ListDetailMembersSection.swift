@@ -23,7 +23,7 @@ extension ListDetailView {
                 TextField(loc("list.members.filter_placeholder"), text: $memberSearchQuery)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .accessibilityLabel("Filter members by handle or name")
+                    .accessibilityLabel(loc("list.members.filter.label"))
 
                 if !viewModel.members.isEmpty {
                     Text(viewModel.loadedMemberSummary)
@@ -111,8 +111,8 @@ extension ListDetailView {
                                 )
                             }
                         }
-                        .accessibilityLabel("Load more list members")
-                        .accessibilityHint("Fetches the next page of list members")
+                        .accessibilityLabel(loc("list.members.load_more.label"))
+                        .accessibilityHint(loc("list.members.load_more.hint"))
                     }
                 }
             } header: {

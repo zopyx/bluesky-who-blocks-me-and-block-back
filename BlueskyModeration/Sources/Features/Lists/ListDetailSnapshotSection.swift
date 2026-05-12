@@ -100,8 +100,8 @@ extension ListDetailView {
                                 .foregroundStyle(Color.skyPrimary)
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Help with snapshots")
-                        .accessibilityHint("Explains how snapshots track membership changes over time")
+                        .accessibilityLabel(loc("list.snapshot.help.label"))
+                        .accessibilityHint(loc("list.snapshot.help.hint"))
                     }
                 }
             }
