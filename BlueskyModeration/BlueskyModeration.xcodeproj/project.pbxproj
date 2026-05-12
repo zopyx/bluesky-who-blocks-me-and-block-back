@@ -62,6 +62,7 @@
 		5E22B125B79A8F3D0697BE2A /* ProfileInspectorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B8DD93DE77C5A5C4DA5283 /* ProfileInspectorViewModel.swift */; };
 		6072099E9BFE97B5EA453F4A /* ActionPresetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4ADF018E91D04F8AA93D1 /* ActionPresetsView.swift */; };
 		60B49F6F117771AD08C7BBC3 /* BlueskyProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D493CE6BEC23FAEDADC7AED /* BlueskyProfileViewModel.swift */; };
+		65BD8A0781B6870A00C2A475 /* BlueskySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07BE40C971D3F844FF367A7 /* BlueskySession.swift */; };
 		668F2BDCA14645A65832BEF9 /* ListDetailModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63773A69DCC33A8E4CF380A /* ListDetailModels.swift */; };
 		6691930F0ED40550F40E1E1E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1428B2B7544B3F6DDABF69BA /* DashboardView.swift */; };
 		6D458A8566E3007419549459 /* ListTemplatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBD49F5D31AD7E39041AD778 /* ListTemplatesView.swift */; };
@@ -316,6 +317,7 @@
 		EBE960440B30CBC64A390168 /* ListDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailViewModel.swift; sourceTree = "<group>"; };
 		EC0E3F7FA736E83C99680AA9 /* fr.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = fr.json; sourceTree = "<group>"; };
 		F04D96EE5014E7DB9DA13C19 /* URL+Bluesky.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Bluesky.swift"; sourceTree = "<group>"; };
+		F07BE40C971D3F844FF367A7 /* BlueskySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskySession.swift; sourceTree = "<group>"; };
 		F6BCC2E559B5C44D603CAEA0 /* BlueskyProfileServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfileServiceTests.swift; sourceTree = "<group>"; };
 		F76E41F8550E61824407479D /* pl.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pl.json; sourceTree = "<group>"; };
 		F781FA4EB7557C4AE1B618BB /* AppLockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockManager.swift; sourceTree = "<group>"; };
@@ -539,6 +541,7 @@
 				54B1E02BE44CA22084439787 /* BlueskyProfileInspecting.swift */,
 				08CDD4AC481D588629B31A73 /* BlueskyProfileService.swift */,
 				39B01267CADAE8DD6E824E38 /* BlueskyRequestExecutor.swift */,
+				F07BE40C971D3F844FF367A7 /* BlueskySession.swift */,
 				03561C1580449FBB58D3E623 /* BlueskySessionService.swift */,
 				A59AA1ED0E3DB179E3F2B921 /* DashboardCache.swift */,
 				BFF191EB15C70F7E9EDEBF65 /* KeychainService.swift */,
@@ -868,6 +871,7 @@
 				1B362E45A02E3DF1A7EF962C /* BlueskyProfileView.swift in Sources */,
 				60B49F6F117771AD08C7BBC3 /* BlueskyProfileViewModel.swift in Sources */,
 				82DFC595354A428ABCBC5BDB /* BlueskyRequestExecutor.swift in Sources */,
+				65BD8A0781B6870A00C2A475 /* BlueskySession.swift in Sources */,
 				21F961EE9D4E554A91E4AC70 /* BlueskySessionService.swift in Sources */,
 				55718730D3E181B90078F4E7 /* BulkProfileLookupView.swift in Sources */,
 				30F4D56FFAA1630DC9192E2C /* BulkProfileLookupViewModel.swift in Sources */,
