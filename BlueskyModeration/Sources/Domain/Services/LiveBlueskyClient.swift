@@ -407,7 +407,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             guard let url = URL(string: urlString) else { throw BlueskyAPIError.invalidURL }
             var request = URLRequest(url: url)
             request.setValue("application/json", forHTTPHeaderField: "Accept")
-            request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+            request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
             request.timeoutInterval = 30
             let (data, response) = try await session.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
@@ -429,7 +429,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         guard let url = URL(string: urlString) else { throw BlueskyAPIError.invalidURL }
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 30
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
@@ -470,7 +470,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         guard let finalURL = components.url else { throw BlueskyAPIError.invalidURL }
         var req = URLRequest(url: finalURL)
         req.setValue("application/json", forHTTPHeaderField: "Accept")
-        req.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        req.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
         req.timeoutInterval = 30
         let (data, response) = try await session.data(for: req)
         guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
@@ -488,7 +488,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 30
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
@@ -510,7 +510,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             throw BlueskyAPIError.invalidURL
         }
         var request = URLRequest(url: url)
-        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
             throw BlueskyAPIError.invalidResponse

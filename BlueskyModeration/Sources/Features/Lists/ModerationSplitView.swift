@@ -367,7 +367,7 @@ struct ModerationSplitView: View {
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: label)
-                        .font(.body)
+                        .font(.headline)
                         .foregroundStyle(.primary)
                     Text("\(count)")
                         .font(.title3.weight(.semibold))

@@ -10,6 +10,7 @@ struct RootView: View {
 
     private var preferredScheme: ColorScheme? {
         switch appearanceMode {
+        case "light": return .light
         case "dark": return .dark
         default: return nil
         }
@@ -27,16 +28,6 @@ struct RootView: View {
                     }
                 }
 
-            SettingsView()
-                .tag(WorkspaceTab.settings)
-                .tabItem {
-                    Label {
-                        Text(localizationManager.localized("tab.settings"))
-                    } icon: {
-                        Image(systemName: "gearshape")
-                    }
-                }
-
             InfoView()
                 .tag(WorkspaceTab.info)
                 .tabItem {
@@ -44,6 +35,16 @@ struct RootView: View {
                         Text(localizationManager.localized("tab.info"))
                     } icon: {
                         Image(systemName: "sparkles.rectangle.stack")
+                    }
+                }
+
+            SettingsView()
+                .tag(WorkspaceTab.settings)
+                .tabItem {
+                    Label {
+                        Text(localizationManager.localized("tab.settings"))
+                    } icon: {
+                        Image(systemName: "gearshape")
                     }
                 }
 

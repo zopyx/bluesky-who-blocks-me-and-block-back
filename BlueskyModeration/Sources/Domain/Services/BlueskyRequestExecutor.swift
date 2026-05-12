@@ -57,7 +57,7 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("Rulyx Moderation App", forHTTPHeaderField: "User-Agent")
+        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
 
         if let accessToken {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")

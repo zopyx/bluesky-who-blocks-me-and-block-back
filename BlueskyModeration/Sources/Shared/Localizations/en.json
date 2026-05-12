@@ -563,6 +563,7 @@
     "actions.retry": "Retry",
     "settings.internal": "Internal",
     "settings.appearance": "Appearance",
+    "settings.appearance.light": "Light",
     "settings.appearance.system": "System",
     "settings.appearance.dark": "Dark",
     "settings.cache_cleared": "Local cache cleared.",

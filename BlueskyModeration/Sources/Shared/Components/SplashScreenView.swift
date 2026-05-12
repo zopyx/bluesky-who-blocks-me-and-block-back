@@ -23,7 +23,7 @@ struct SplashScreenView: View {
                 Image("RulyxLogo")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 130)
+                    .frame(height: 260)
 
                 Text("RULYX")
                     .font(.system(size: 52, weight: .heavy, design: .rounded))

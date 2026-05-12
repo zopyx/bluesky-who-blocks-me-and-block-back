@@ -4,7 +4,6 @@ struct CreateListSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var description = ""
-    @State private var isShowingTemplates = false
     let kind: BlueskyList.Kind
     let onCreate: (String, String, BlueskyList.Kind) -> Void
 
@@ -17,11 +16,6 @@ struct CreateListSheet: View {
                         .lineLimit(3 ... 6)
                 } header: {
                     Text(verbatim: loc("list.create.details"))
-                }
-                Section {
-                    Button(loc("list.create.choose_templates")) { isShowingTemplates = true }
-                        .foregroundStyle(Color.skyPrimary)
-                        .accessibilityHint("Opens the list template picker")
                 }
             }
             .navigationTitle(kind == .moderation ? loc("list.create.moderation_title") : loc("list.create.title"))
@@ -38,17 +32,6 @@ struct CreateListSheet: View {
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .accessibilityHint("Creates the new list")
-                }
-            }
-            .sheet(isPresented: $isShowingTemplates) {
-                NavigationStack {
-                    ListTemplatesView { template in
-                        name = template.name
-                        onCreate(template.name, template.description, kind)
-                        dismiss()
-                    }
-                    .environmentObject(AccountStore(preview: true))
-                    .environmentObject(PreviewBlueskyClient())
                 }
             }
         }

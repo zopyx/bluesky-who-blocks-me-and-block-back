@@ -175,67 +175,6 @@ struct BlueskyProfileView: View {
                     }
                 }
 
-                if !isOwnProfile {
-                    Section {
-                        if viewModel.isBlockingFollowers {
-                            if let progress = viewModel.blockFollowersProgress {
-                                BatchProgressCard(
-                                    title: progress.title,
-                                    completedCount: progress.completedCount,
-                                    totalCount: progress.totalCount,
-                                    currentHandle: progress.currentHandle
-                                )
-                            }
-                        } else {
-                            Button(role: .destructive) {
-                                Task {
-                                    await viewModel.blockAllFollowers(
-                                        account: account,
-                                        appPassword: appPassword,
-                                        using: blueskyClient,
-                                        queue: workspaceStore.actionQueue
-                                    )
-                                }
-                            } label: {
-                                Label { Text(verbatim: loc("profile.block_all")) } icon: { Image(systemName: "hand.raised.slash") }
-                            }
-                            .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
-                            .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
-                            Text(verbatim: loc("profile.block_all_warning"))
-                                .font(.caption)
-                                .foregroundStyle(.red)
-
-                            if !ActionPresetStore.shared.presets.isEmpty {
-                                Menu {
-                                    ForEach(ActionPresetStore.shared.presets) { preset in
-                                        Button(preset.name) {
-                                            Task {
-                                                if preset.shouldBlock {
-                                                    await viewModel.toggleBlock(account: account, appPassword: appPassword, using: blueskyClient)
-                                                }
-                                                if preset.shouldMute {
-                                                    await viewModel.toggleMute(account: account, appPassword: appPassword, using: blueskyClient)
-                                                }
-                                            }
-                                        }
-                                    }
-                                } label: {
-                                    Label(loc("profile.apply_preset"), systemImage: "square.2.layers.3d")
-                                }
-                                .accessibilityHint("Applies a saved action preset to this account")
-                            }
-                        }
-
-                        if let list {
-                            Label { Text(verbatim: loc("profile.member_of") + " \(list.name)") } icon: { Image(systemName: "person.2.badge.gearshape") }
-                                .foregroundStyle(.secondary)
-                        }
-
-                    } header: {
-                        Text(verbatim: loc("profile.actions_section"))
-                    }
-                }
-
                 if let profileURL = profile.profileURL {
                     Section {
                         Link(destination: profileURL) {
@@ -286,6 +225,47 @@ struct BlueskyProfileView: View {
                         }
                     } header: {
                         Text(verbatim: loc("profile.handle_history"))
+                    }
+                }
+
+                if !isOwnProfile {
+                    Section {
+                        if viewModel.isBlockingFollowers {
+                            if let progress = viewModel.blockFollowersProgress {
+                                BatchProgressCard(
+                                    title: progress.title,
+                                    completedCount: progress.completedCount,
+                                    totalCount: progress.totalCount,
+                                    currentHandle: progress.currentHandle
+                                )
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.blockAllFollowers(
+                                        account: account,
+                                        appPassword: appPassword,
+                                        using: blueskyClient,
+                                        queue: workspaceStore.actionQueue
+                                    )
+                                }
+                            } label: {
+                                Label { Text(verbatim: loc("profile.block_all")) } icon: { Image(systemName: "hand.raised.slash") }
+                            }
+                            .disabled(viewModel.isUpdatingModeration || viewModel.isBlockingFollowers)
+                            .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
+                            Text(verbatim: loc("profile.block_all_warning"))
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+
+                        if let list {
+                            Label { Text(verbatim: loc("profile.member_of") + " \(list.name)") } icon: { Image(systemName: "person.2.badge.gearshape") }
+                                .foregroundStyle(.secondary)
+                        }
+
+                    } header: {
+                        Text(verbatim: loc("profile.actions_section"))
                     }
                 }
             } else if viewModel.isLoading {

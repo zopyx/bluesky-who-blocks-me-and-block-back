@@ -41,15 +41,15 @@ struct AccountRowView: View {
                         .foregroundStyle(.secondary)
                     if let label = entrywayLabel {
                         Text(label)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.tertiary)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
                             .background {
                                 if #available(iOS 26, *) {
                                     Color.clear.glassEffect(.regular, in: .rect(cornerRadius: .infinity))
                                 } else {
-                                    Color.clear.background(Color.secondary.opacity(0.1), in: Capsule())
+                                    Color.clear.background(Color.secondary.opacity(0.15), in: Capsule())
                                 }
                             }
                     }

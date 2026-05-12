@@ -19,6 +19,7 @@ struct SettingsView: View {
                             set: { self.appearanceMode = $0 }
                         )
                     ) {
+                        Text(loc("settings.appearance.light")).tag("light")
                         Text(loc("settings.appearance.system")).tag("system")
                         Text(loc("settings.appearance.dark")).tag("dark")
                     } label: {

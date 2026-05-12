@@ -26,20 +26,19 @@ struct InfoView: View {
                         Text(verbatim: localizationManager.localized("info.section"))
                     }
                     .pickerStyle(.segmented)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
 
                     ScrollView {
                         VStack(spacing: 16) {
-                            overviewTab
-                                .opacity(selectedTab == .overview ? 1 : 0)
-                                .frame(maxHeight: selectedTab == .overview ? .infinity : 0)
-                            featuresTab
-                                .opacity(selectedTab == .features ? 1 : 0)
-                                .frame(maxHeight: selectedTab == .features ? .infinity : 0)
-                            legalTab
-                                .opacity(selectedTab == .legal ? 1 : 0)
-                                .frame(maxHeight: selectedTab == .legal ? .infinity : 0)
+                            switch selectedTab {
+                            case .overview: overviewTab
+                            case .features: featuresTab
+                            case .legal: legalTab
+                            }
                         }
                         .padding(16)
                     }
@@ -84,11 +83,7 @@ struct InfoView: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [
-                            Color(red: 0.06, green: 0.36, blue: 0.80),
-                            Color(red: 0.08, green: 0.55, blue: 0.98),
-                            Color(red: 0.05, green: 0.77, blue: 0.73),
-                        ],
+                        colors: heroGradientColors,
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -98,10 +93,10 @@ struct InfoView: View {
 
     private var claimsGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            claimTile(icon: "dollarsign.circle.fill", text: localizationManager.localized("info.claim.free"), color: .green)
-            claimTile(icon: "swift", text: localizationManager.localized("info.claim.opensource"), color: .orange)
-            claimTile(icon: "hand.raised.slash.fill", text: localizationManager.localized("info.claim.notracking"), color: .skyPrimary)
-            claimTile(icon: "megaphone.slash.fill", text: localizationManager.localized("info.claim.noads"), color: .skyAccent)
+            claimTile(icon: "dollarsign.circle.fill", text: localizationManager.localized("info.claim.free"), color: .skyPrimary)
+            claimTile(icon: "swift", text: localizationManager.localized("info.claim.opensource"), color: .skyAccent)
+            claimTile(icon: "hand.raised.slash.fill", text: localizationManager.localized("info.claim.notracking"), color: Color(red: 0.05, green: 0.70, blue: 0.60))
+            claimTile(icon: "megaphone.slash.fill", text: localizationManager.localized("info.claim.noads"), color: .skyOrange)
         }
     }
 
@@ -112,7 +107,7 @@ struct InfoView: View {
                     .font(.title)
                     .foregroundStyle(.primary)
                     .frame(width: 40, height: 40)
-                    .background(highlightSurface, in: RoundedRectangle(cornerRadius: 12))
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(verbatim: localizationManager.localized("info.view_github"))
@@ -130,8 +125,9 @@ struct InfoView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(16)
-            .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         }
+        .tint(.primary)
         .accessibilityLabel(loc("info.github.label"))
         .accessibilityHint(loc("info.github.hint"))
     }
@@ -156,7 +152,7 @@ struct InfoView: View {
             Spacer()
         }
         .padding(16)
-        .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Features Tab
@@ -177,7 +173,7 @@ struct InfoView: View {
 
             featureCard(
                 icon: "rectangle.split.3x1",
-                color: Color(red: 0.96, green: 0.60, blue: 0.18),
+                color: .skyOrange,
                 title: localizationManager.localized("info.feature.compare"),
                 items: [
                     loc("info.feature.compare.compare"),
@@ -199,7 +195,7 @@ struct InfoView: View {
 
             featureCard(
                 icon: "clock.arrow.trianglehead.counterclockwise.rotate.90",
-                color: Color(red: 0.70, green: 0.35, blue: 0.90),
+                color: .skyPurple,
                 title: localizationManager.localized("info.feature.audit"),
                 items: [
                     loc("info.feature.audit.snapshots"),
@@ -220,18 +216,21 @@ struct InfoView: View {
             Link(destination: URL(string: "https://www.py-consultant.com/")!) {
                 legalRow(icon: "globe", title: localizationManager.localized("info.legal.website"), value: "py-consultant.com", link: true)
             }
+            .tint(.primary)
             .accessibilityLabel(loc("info.website.label"))
             .accessibilityHint(loc("info.website.hint"))
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
                 legalRow(icon: "doc.text", title: localizationManager.localized("info.legal.imprint"), link: true)
             }
+            .tint(.primary)
             .accessibilityLabel(loc("info.imprint.label"))
             .accessibilityHint(loc("info.imprint.hint"))
 
             Link(destination: URL(string: "https://www.py-consultant.com/imprint-privacy.html")!) {
                 legalRow(icon: "hand.raised", title: localizationManager.localized("info.legal.privacy"), link: true)
             }
+            .tint(.primary)
             .accessibilityLabel(loc("info.privacy.label"))
             .accessibilityHint(loc("info.privacy.hint"))
 
@@ -240,6 +239,7 @@ struct InfoView: View {
             Link(destination: URL(string: "https://github.com/zopyx/bluesky-who-blocks-me-and-block-back")!) {
                 legalRow(icon: "chevron.left.forwardslash.chevron.right", title: localizationManager.localized("info.view_github"), value: "github.com/zopyx/bluesky-who-blocks-me-and-block-back", link: true)
             }
+            .tint(.primary)
             .accessibilityLabel(loc("info.github.label"))
             .accessibilityHint(loc("info.github.hint"))
 
@@ -253,12 +253,14 @@ struct InfoView: View {
                 Link(destination: URL(string: "https://clearsky.app")!) {
                     legalRow(icon: "cloud", title: localizationManager.localized("info.legal.clearsky"), value: "clearsky.app", link: true)
                 }
+                .tint(.primary)
                 .accessibilityLabel(loc("info.clearsky.label"))
                 .accessibilityHint(loc("info.clearsky.hint"))
 
                 Link(destination: URL(string: "https://github.com/ClearskyApp06/clearskyservices")!) {
                     legalRow(icon: "chevron.left.forwardslash.chevron.right", title: localizationManager.localized("info.legal.clearsky_github"), value: "github.com/ClearskyApp06", link: true)
                 }
+                .tint(.primary)
                 .accessibilityLabel(loc("info.clearsky_github.label"))
                 .accessibilityHint(loc("info.clearsky_github.hint"))
 
@@ -269,7 +271,7 @@ struct InfoView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
             legalDivider
 
@@ -284,7 +286,7 @@ struct InfoView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         }
     }
 
@@ -300,7 +302,7 @@ struct InfoView: View {
                 .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity, minHeight: 80)
-        .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func featureCard(icon: String, color: Color, title: String, items: [String]) -> some View {
@@ -337,7 +339,7 @@ struct InfoView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(16)
-        .background(cardSurface, in: RoundedRectangle(cornerRadius: 16))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func legalRow(icon: String, title: String, value: String? = nil, link: Bool = false) -> some View {
@@ -368,7 +370,7 @@ struct InfoView: View {
             }
         }
         .padding(14)
-        .background(cardSurface, in: RoundedRectangle(cornerRadius: 14))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var legalDivider: some View {
@@ -412,12 +414,19 @@ struct InfoView: View {
         .ignoresSafeArea()
     }
 
-    private var cardSurface: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color(.secondarySystemGroupedBackground)
-    }
-
-    private var highlightSurface: Color {
-        colorScheme == .dark ? Color.white.opacity(0.1) : Color(.tertiarySystemGroupedBackground)
+    private var heroGradientColors: [Color] {
+        if colorScheme == .dark {
+            return [
+                Color(red: 0.04, green: 0.20, blue: 0.50),
+                Color(red: 0.05, green: 0.30, blue: 0.55),
+                Color(red: 0.03, green: 0.45, blue: 0.42),
+            ]
+        }
+        return [
+            Color(red: 0.06, green: 0.36, blue: 0.80),
+            Color(red: 0.08, green: 0.55, blue: 0.98),
+            Color(red: 0.05, green: 0.77, blue: 0.73),
+        ]
     }
 
     private var backgroundGradientColors: [Color] {

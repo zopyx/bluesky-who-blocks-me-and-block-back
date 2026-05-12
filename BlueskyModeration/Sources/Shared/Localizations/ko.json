@@ -561,6 +561,7 @@
     "settings.biometric_footer": "Lock the app with {biometric} when it goes to the background.",
     "profile.block_all_warning": "Warning: This will block every follower of this account. Use with caution.",
     "actions.retry": "Retry",
+    "settings.appearance.light": "라이트",
     "settings.cache_cleared": "Local cache cleared.",
     "lock_screen.unlock": "Unlock",
     "lock_screen.face_id_title": "Use Face ID to Unlock",
