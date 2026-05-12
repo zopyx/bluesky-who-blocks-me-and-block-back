@@ -50,7 +50,7 @@ final class ListDetailViewModel: ObservableObject {
     }
 
     /// Resets the cancellation flag before starting a new batch.
-    private func resetBatchCancellation() {
+    func resetBatchCancellation() {
         isBatchCancelled = false
     }
 }
