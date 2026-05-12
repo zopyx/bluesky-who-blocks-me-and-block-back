@@ -41,6 +41,7 @@ struct InfoView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color(red: 0.05, green: 0.08, blue: 0.14), for: .navigationBar)
         }
+        .preferredColorScheme(.dark)
     }
 
     // MARK: - Overview Tab
@@ -375,7 +376,15 @@ struct InfoView: View {
 
     private var background: some View {
         ZStack {
-            Color(.systemBackground)
+            LinearGradient(
+                colors: [
+                    Color(red: 0.04, green: 0.06, blue: 0.11),
+                    Color(red: 0.06, green: 0.09, blue: 0.16),
+                    Color(red: 0.04, green: 0.11, blue: 0.19),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
 
             Circle()
                 .fill(Color.skyPrimary.opacity(0.22))
