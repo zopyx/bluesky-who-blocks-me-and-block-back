@@ -272,15 +272,15 @@ struct ListsView: View {
     private func relationshipRow(icon: String, label: String, count: Int) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(.body)
                 .foregroundStyle(Color.skyPrimary)
-                .frame(width: 28)
+                .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(.primary)
                 Text("\(count)")
-                    .font(.title3.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
             Spacer()
