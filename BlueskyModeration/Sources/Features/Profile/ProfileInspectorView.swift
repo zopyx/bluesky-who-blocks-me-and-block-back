@@ -94,6 +94,16 @@ struct ProfileInspectorView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+
+                    if horizontalSizeClass == .regular, accountStore.activeAccount != nil {
+                        Button {
+                            isShowingQuickAccountSwitcher = true
+                        } label: {
+                            Label(localizationManager.localized("account.switch"), systemImage: "person.crop.circle")
+                        }
+                        .accessibilityLabel(localizationManager.localized("account.switcher.label"))
+                        .accessibilityHint(localizationManager.localized("account.switcher.hint"))
+                    }
                 }
 
                 if let errorMessage = viewModel.errorMessage {

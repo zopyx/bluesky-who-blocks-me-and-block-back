@@ -9,7 +9,7 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $workspaceStore.selectedTab) {
-            ListsView()
+            ModerationSplitView()
                 .tag(WorkspaceTab.moderation)
                 .tabItem {
                     Label {
@@ -74,7 +74,7 @@ struct RootView: View {
 
                         VStack(alignment: .leading, spacing: 16) {
                             OnboardingRow(icon: "checklist.checked", color: .skyPrimary, title: localizationManager.localized("tab.moderation"), description: localizationManager.localized("onboarding.moderation.desc"))
-                            OnboardingRow(icon: "person.text.rectangle", color: .skyAccent, title: localizationManager.localized("tab.profile"), description: localizationManager.localized("onboarding.profile.desc"))
+                            OnboardingRow(icon: "person.circle", color: .skyPrimary, title: localizationManager.localized("tab.accounts"), description: localizationManager.localized("onboarding.accounts.desc"))
                             OnboardingRow(icon: "gearshape", color: .orange, title: localizationManager.localized("tab.settings"), description: localizationManager.localized("onboarding.settings.desc"))
                             OnboardingRow(icon: "sparkles.rectangle.stack", color: .purple, title: localizationManager.localized("tab.info"), description: localizationManager.localized("onboarding.info.desc"))
                         }
@@ -99,7 +99,7 @@ struct RootView: View {
                         Button(localizationManager.localized("onboarding.close")) {
                             hasSeenOnboarding = true
                         }
-                        .accessibilityLabel("Close onboarding")
+                        .accessibilityLabel(loc("onboarding.close.label"))
                     }
                 }
             }
