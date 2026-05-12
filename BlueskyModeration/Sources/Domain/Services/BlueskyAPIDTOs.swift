@@ -386,3 +386,82 @@ struct EmbedImageItem: Decodable {
     let fullsize: String
     let alt: String?
 }
+
+// MARK: - Rich Feed / Author Feed (for post browser)
+
+struct RichFeedResponse: Decodable {
+    let cursor: String?
+    let feed: [RichFeedEntry]
+}
+
+struct RichFeedEntry: Decodable {
+    let post: RichPost
+}
+
+struct RichPost: Decodable {
+    let uri: String
+    let author: RichAuthor?
+    let record: RichRecord?
+    let embed: RichEmbed?
+    let replyCount: Int?
+    let repostCount: Int?
+    let likeCount: Int?
+    let indexedAt: String?
+
+    var safeAuthor: RichAuthor {
+        author ?? RichAuthor(did: "", handle: "unknown", displayName: nil, avatar: nil)
+    }
+
+    var safeRecord: RichRecord {
+        record ?? RichRecord(text: "", createdAt: "")
+    }
+}
+
+struct RichAuthor: Decodable {
+    let did: String?
+    let handle: String?
+    let displayName: String?
+    let avatar: String?
+}
+
+struct RichRecord: Decodable {
+    let text: String?
+    let createdAt: String?
+}
+
+struct RichEmbed: Decodable {
+    let images: [RichEmbedImage]?
+}
+
+struct RichEmbedImage: Decodable {
+    let fullsize: String?
+    let alt: String?
+}
+
+// MARK: - Post Thread
+
+struct GetPostThreadResponse: Decodable {
+    let thread: ThreadNode
+}
+
+final class ThreadNode: Decodable {
+    let post: ThreadPostNode
+    let parent: ThreadNode?
+    let replies: [ThreadNode]?
+
+    init(post: ThreadPostNode, parent: ThreadNode?, replies: [ThreadNode]?) {
+        self.post = post
+        self.parent = parent
+        self.replies = replies
+    }
+}
+
+struct ThreadPostNode: Decodable {
+    let uri: String?
+    let author: RichAuthor?
+    let record: RichRecord?
+    let replyCount: Int?
+    let repostCount: Int?
+    let likeCount: Int?
+    let indexedAt: String?
+}

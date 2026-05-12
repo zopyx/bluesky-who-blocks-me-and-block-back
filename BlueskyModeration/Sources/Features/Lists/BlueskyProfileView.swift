@@ -11,6 +11,7 @@ struct BlueskyProfileView: View {
     @State private var isShowingAvatarPreview = false
     @State private var isShowingFolderPicker = false
     @State private var selectedDownloadFolder: URL?
+    @State private var showPostBrowser = false
 
     var body: some View {
         Group {
@@ -78,6 +79,13 @@ struct BlueskyProfileView: View {
                 selectedDownloadFolder = url
             }
         }
+        .sheet(isPresented: $showPostBrowser) {
+            if let profile = viewModel.profile {
+                UserPostsView(did: profile.did)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
+        }
     }
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
@@ -112,6 +120,7 @@ struct BlueskyProfileView: View {
                     LabeledContent(loc("profile.stats.posts"), value: statText(profile.postsCount))
                 } header: {
                     Text(verbatim: loc("profile.stats"))
+                        .onTapGesture(count: 2) { showPostBrowser = true }
                 }
 
                 if !isOwnProfile {

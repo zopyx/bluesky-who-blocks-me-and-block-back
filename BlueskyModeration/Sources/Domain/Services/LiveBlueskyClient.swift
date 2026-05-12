@@ -562,6 +562,40 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    func fetchRichFeed(did: String, cursor: String? = nil, account: AppAccount, appPassword: String?) async throws -> RichFeedResponse {
+        try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            var queryItems = [URLQueryItem(name: "actor", value: did), URLQueryItem(name: "limit", value: "100")]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.feed.getAuthorFeed",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func fetchPostThread(uri: String, account: AppAccount, appPassword: String?) async throws -> GetPostThreadResponse {
+        try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            try await requestExecutor.send(
+                path: "app.bsky.feed.getPostThread",
+                method: "GET",
+                queryItems: [URLQueryItem(name: "uri", value: uri)],
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
     func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
         guard let url = URL(string: "https://plc.directory/\(did)/log/audit") else {
             throw BlueskyAPIError.invalidURL
