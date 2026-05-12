@@ -12,7 +12,6 @@ struct ListDetailView: View {
     @State var searchQuery = ""
     @State var memberSearchQuery = ""
     @State var isShowingEditSheet = false
-    @State var isShowingBulkRemoveConfirmation = false
     @State var isShowingImportSheet = false
     @State var isShowingImportFilePicker = false
     @State var selectedComparisonListID = ""
@@ -22,7 +21,6 @@ struct ListDetailView: View {
     @State var cachedExportFileURL: URL?
     @State var cachedDiffExportFileURL: URL?
     @State private var isShowingDeleteConfirmation = false
-    @State private var pendingBulkAction: ListBulkAction?
     @Environment(\.dismiss) private var dismiss
 
     init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
@@ -109,32 +107,6 @@ struct ListDetailView: View {
                 if let result = viewModel.bulkActionResult {
                     Text(bulkActionMessage(for: result))
                 }
-            }
-            .confirmationDialog(
-                loc("list.detail.remove_confirm"),
-                isPresented: $isShowingBulkRemoveConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button(loc("list.detail.remove_button"), role: .destructive) {
-                    if let account = accountStore.activeAccount,
-                       let appPassword = accountStore.appPassword(for: account)
-                    {
-                        Task {
-                            await viewModel.bulkRemoveSelectedMembers(
-                                account: account,
-                                appPassword: appPassword,
-                                using: blueskyClient
-                            )
-                            syncSnapshot()
-                        }
-                    }
-                }
-                .accessibilityHint("Removes the selected members from this list")
-
-                Button(loc("actions.cancel"), role: .cancel) {}
-                    .accessibilityHint("Cancels the removal")
-            } message: {
-                Text(verbatim: loc("list.detail.remove_message").replacingOccurrences(of: "{count}", with: "\(viewModel.selectedMemberIDs.count)"))
             }
             .confirmationDialog(
                 loc("list.detail.delete_confirm"),
@@ -313,8 +285,6 @@ struct ListDetailView: View {
                 currentList: currentList,
                 account: account,
                 appPassword: appPassword,
-                isShowingBulkRemoveConfirmation: $isShowingBulkRemoveConfirmation,
-                pendingBulkAction: $pendingBulkAction,
                 syncSnapshot: { syncSnapshot() }
             )
 
