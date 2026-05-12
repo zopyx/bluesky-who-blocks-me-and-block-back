@@ -278,6 +278,7 @@ struct ListsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.subheadline)
+                    .lineLimit(1)
                     .foregroundStyle(.primary)
                 Text("\(count)")
                     .font(.body.weight(.semibold))
