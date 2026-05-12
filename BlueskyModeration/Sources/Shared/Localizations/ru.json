@@ -636,5 +636,19 @@
     "list.snapshot.help.hint": "Explains how snapshots track membership changes over time (RU)",
     "list.compare.help.label": "Help with list comparison (RU)",
     "list.compare.help.hint": "Explains the comparison buckets and available actions (RU)",
-    "actor_row.label": "{title}, {handle} (RU)"
+    "actor_row.label": "{title}, {handle} (RU)",
+    "info.feature.lists.browse": "Browse curation and moderation lists with inline search and filtering. (RU)",
+    "info.feature.lists.bulk": "Bulk add, remove, copy, and move members across lists with progress tracking. (RU)",
+    "info.feature.lists.import": "Import handles from text, CSV, or files — preview before commit. (RU)",
+    "info.feature.lists.export": "Export member lists and diff results as CSV. (RU)",
+    "info.feature.compare.compare": "Compare lists and view overlap, only-in-A, and only-in-B buckets. (RU)",
+    "info.feature.compare.transfer": "Copy or move selected members between lists in bulk. (RU)",
+    "info.feature.compare.export": "Export diffs for offline review or archiving. (RU)",
+    "info.feature.moderation.block": "Block or mute from profile detail with confirmation dialogs. (RU)",
+    "info.feature.moderation.block_all": "Block all followers of an account — runs as a background task. (RU)",
+    "info.feature.moderation.membership": "View and toggle moderation-list membership directly from any profile. (RU)",
+    "info.feature.audit.snapshots": "Local list snapshots captured on each load — compare any two. (RU)",
+    "info.feature.audit.log": "Operation log tracks bulk actions with success and failure counts. (RU)",
+    "info.feature.audit.pending": "Pending Actions sheet shows running tasks with progress and retry. (RU)",
+    "info.feature.audit.searches": "Saved and recent profile searches persist across launches. (RU)"
 }

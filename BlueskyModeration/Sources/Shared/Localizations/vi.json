@@ -636,5 +636,19 @@
     "list.snapshot.help.hint": "Explains how snapshots track membership changes over time (VI)",
     "list.compare.help.label": "Help with list comparison (VI)",
     "list.compare.help.hint": "Explains the comparison buckets and available actions (VI)",
-    "actor_row.label": "{title}, {handle} (VI)"
+    "actor_row.label": "{title}, {handle} (VI)",
+    "info.feature.lists.browse": "Browse curation and moderation lists with inline search and filtering. (VI)",
+    "info.feature.lists.bulk": "Bulk add, remove, copy, and move members across lists with progress tracking. (VI)",
+    "info.feature.lists.import": "Import handles from text, CSV, or files — preview before commit. (VI)",
+    "info.feature.lists.export": "Export member lists and diff results as CSV. (VI)",
+    "info.feature.compare.compare": "Compare lists and view overlap, only-in-A, and only-in-B buckets. (VI)",
+    "info.feature.compare.transfer": "Copy or move selected members between lists in bulk. (VI)",
+    "info.feature.compare.export": "Export diffs for offline review or archiving. (VI)",
+    "info.feature.moderation.block": "Block or mute from profile detail with confirmation dialogs. (VI)",
+    "info.feature.moderation.block_all": "Block all followers of an account — runs as a background task. (VI)",
+    "info.feature.moderation.membership": "View and toggle moderation-list membership directly from any profile. (VI)",
+    "info.feature.audit.snapshots": "Local list snapshots captured on each load — compare any two. (VI)",
+    "info.feature.audit.log": "Operation log tracks bulk actions with success and failure counts. (VI)",
+    "info.feature.audit.pending": "Pending Actions sheet shows running tasks with progress and retry. (VI)",
+    "info.feature.audit.searches": "Saved and recent profile searches persist across launches. (VI)"
 }

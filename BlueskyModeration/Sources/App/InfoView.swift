@@ -168,10 +168,10 @@ struct InfoView: View {
                 color: .skyPrimary,
                 title: localizationManager.localized("info.feature.lists"),
                 items: [
-                    "Browse curation and moderation lists with inline search and filtering.",
-                    "Bulk add, remove, copy, and move members across lists with progress tracking.",
-                    "Import handles from text, CSV, or files — preview before commit.",
-                    "Export member lists and diff results as CSV.",
+                    loc("info.feature.lists.browse"),
+                    loc("info.feature.lists.bulk"),
+                    loc("info.feature.lists.import"),
+                    loc("info.feature.lists.export"),
                 ]
             )
 
@@ -180,9 +180,9 @@ struct InfoView: View {
                 color: Color(red: 0.96, green: 0.60, blue: 0.18),
                 title: localizationManager.localized("info.feature.compare"),
                 items: [
-                    "Compare lists and view overlap, only-in-A, and only-in-B buckets.",
-                    "Copy or move selected members between lists in bulk.",
-                    "Export diffs for offline review or archiving.",
+                    loc("info.feature.compare.compare"),
+                    loc("info.feature.compare.transfer"),
+                    loc("info.feature.compare.export"),
                 ]
             )
 
@@ -191,9 +191,9 @@ struct InfoView: View {
                 color: .skyAccent,
                 title: localizationManager.localized("info.feature.moderation"),
                 items: [
-                    "Block or mute from profile detail with confirmation dialogs.",
-                    "Block all followers of an account — runs as a background task.",
-                    "View and toggle moderation-list membership directly from any profile.",
+                    loc("info.feature.moderation.block"),
+                    loc("info.feature.moderation.block_all"),
+                    loc("info.feature.moderation.membership"),
                 ]
             )
 
@@ -202,10 +202,10 @@ struct InfoView: View {
                 color: Color(red: 0.70, green: 0.35, blue: 0.90),
                 title: localizationManager.localized("info.feature.audit"),
                 items: [
-                    "Local list snapshots captured on each load — compare any two.",
-                    "Operation log tracks bulk actions with success and failure counts.",
-                    "Pending Actions sheet shows running tasks with progress and retry.",
-                    "Saved and recent profile searches persist across launches.",
+                    loc("info.feature.audit.snapshots"),
+                    loc("info.feature.audit.log"),
+                    loc("info.feature.audit.pending"),
+                    loc("info.feature.audit.searches"),
                 ]
             )
         }
