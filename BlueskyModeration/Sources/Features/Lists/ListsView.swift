@@ -156,7 +156,7 @@ struct ListsView: View {
                                         }
                                     } label: {
                                         ListRowView(list: list)
-                                            .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
+                                            .accessibilityLabel(loc("list.row.label").replacingOccurrences(of: "{name}", with: list.name).replacingOccurrences(of: "{count}", with: "\(list.memberCount ?? 0)"))
                                     }
                                 }
                             } else {
@@ -189,7 +189,7 @@ struct ListsView: View {
                                         }
                                     } label: {
                                         ListRowView(list: list)
-                                            .accessibilityLabel("\(list.name), \(list.memberCount ?? 0) members")
+                                            .accessibilityLabel(loc("list.row.label").replacingOccurrences(of: "{name}", with: list.name).replacingOccurrences(of: "{count}", with: "\(list.memberCount ?? 0)"))
                                     }
                                 }
                             } else {
@@ -222,7 +222,7 @@ struct ListsView: View {
                             }
                         }
                     }
-                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                    .dynamicTypeSize(DynamicTypeSize.xSmall...DynamicTypeSize.accessibility1)
                     .listStyle(.insetGrouped)
                     .refreshable {
                         await reload()
@@ -240,7 +240,7 @@ struct ListsView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
-                    .accessibilityLabel("Refresh lists")
+                    .accessibilityLabel(loc("lists.refresh.label"))
                     .disabled(accountStore.activeAccount == nil)
                 }
             }
@@ -290,7 +290,6 @@ struct ListsView: View {
             .task(id: accountStore.activeAccountID) {
                 await reload()
             }
-            .preferredColorScheme(.dark)
         }
     }
 
