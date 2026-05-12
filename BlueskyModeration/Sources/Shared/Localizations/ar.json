@@ -573,5 +573,6 @@
     "list_templates.title": "List Templates",
     "list_templates.creating": "Creating...",
     "activity.failed_format": "Failed: {handles}",
-    "tab.accounts": "Accounts"
+    "tab.accounts": "Accounts",
+    "account.manage.edit": "Edit"
 }

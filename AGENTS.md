@@ -34,3 +34,12 @@ Every completed task MUST include an accurate description rendered as a table:
 - Views in `Sources/Features/Lists/`, `Sources/Features/Profile/`, `Sources/Features/Accounts/`
 - Services in `Sources/Domain/Services/`
 - Models in `Sources/Domain/Models/`
+
+## Internationalization (i18n)
+- All user-facing strings MUST use `loc("key")` — never hardcode English text
+- Translation keys follow dot-notation: `screen.component.description`
+- All 16 language files must be updated when adding new keys:
+  `en.json`, `de.json`, `fr.json`, `it.json`, `ja.json`, `zh.json`,
+  `es.json`, `pt.json`, `ko.json`, `ru.json`, `ar.json`, `nl.json`,
+  `pl.json`, `tr.json`, `th.json`, `vi.json`
+- New keys in non-English files require native translation — do not leave English fallback

@@ -7,6 +7,7 @@ struct AccountTabView: View {
     @State private var isPresentingAddAccount = false
     @State private var editingLabelAccount: AppAccount?
     @State private var editLabelText = ""
+    @State private var editMode: EditMode = .inactive
 
     var body: some View {
         NavigationStack {
@@ -34,20 +35,6 @@ struct AccountTabView: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityHint("Switches the active account to \(account.label ?? account.handle)")
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    accountStore.removeAccount(account, client: blueskyClient)
-                                } label: {
-                                    Label(loc("account.remove"), systemImage: "trash")
-                                }
-
-                                Button {
-                                    editLabelText = account.label ?? ""
-                                    editingLabelAccount = account
-                                } label: {
-                                    Label(loc("account.edit_label"), systemImage: "tag")
-                                }
-                            }
                         }
                         .onMove(perform: accountStore.moveAccount)
                         .onDelete { indexSet in
@@ -61,6 +48,14 @@ struct AccountTabView: View {
             }
             .navigationTitle(loc("account.manage.title"))
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(editMode.isEditing ? loc("actions.done") : loc("account.manage.edit")) {
+                        withAnimation {
+                            editMode = editMode.isEditing ? .inactive : .active
+                        }
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isPresentingAddAccount = true
@@ -73,7 +68,7 @@ struct AccountTabView: View {
             .task {
                 await accountStore.refreshAccountProfiles(using: blueskyClient)
             }
-            .environment(\.editMode, .constant(.active))
+            .environment(\.editMode, $editMode)
             .sheet(isPresented: $isPresentingAddAccount) {
                 AddAccountView()
                     .environmentObject(accountStore)

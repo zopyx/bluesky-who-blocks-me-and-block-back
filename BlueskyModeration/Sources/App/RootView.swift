@@ -19,16 +19,6 @@ struct RootView: View {
                     }
                 }
 
-            AccountTabView()
-                .tag(WorkspaceTab.account)
-                .tabItem {
-                    Label {
-                        Text(localizationManager.localized("tab.accounts"))
-                    } icon: {
-                        Image(systemName: "person.circle")
-                    }
-                }
-
             SettingsView()
                 .tag(WorkspaceTab.settings)
                 .tabItem {
@@ -46,6 +36,16 @@ struct RootView: View {
                         Text(localizationManager.localized("tab.info"))
                     } icon: {
                         Image(systemName: "sparkles.rectangle.stack")
+                    }
+                }
+
+            AccountTabView()
+                .tag(WorkspaceTab.account)
+                .tabItem {
+                    Label {
+                        Text(localizationManager.localized("tab.accounts"))
+                    } icon: {
+                        Image(systemName: "person.circle")
                     }
                 }
         }
