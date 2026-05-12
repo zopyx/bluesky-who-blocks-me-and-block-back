@@ -35,6 +35,8 @@ struct AppError: LocalizedError, Equatable {
                 return AppError(category: .decoding, message: apiError.localizedDescription)
             case .unauthorized, .missingCredentials:
                 return AppError(category: .authentication, message: apiError.localizedDescription)
+            case .sslPinFailure:
+                return AppError(category: .network, message: apiError.localizedDescription)
             case .server:
                 return AppError(category: .server, message: apiError.localizedDescription)
             }
@@ -79,7 +81,7 @@ struct AppError: LocalizedError, Equatable {
         }
 
         let nsError = error as NSError
-        if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+        if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
             return true
         }
 

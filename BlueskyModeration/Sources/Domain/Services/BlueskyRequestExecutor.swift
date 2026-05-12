@@ -1,11 +1,12 @@
+import CryptoKit
 import Foundation
 
 protocol BlueskyRequestExecuting: Sendable {
-    func send<Response: Decodable, Body: Encodable>(
+    func send<Response: Decodable>(
         path: String,
         method: String,
         queryItems: [URLQueryItem],
-        body: Body?,
+        body: (some Encodable)?,
         accessToken: String?,
         hostURL: URL?
     ) async throws -> Response
@@ -33,11 +34,11 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
         self.session = session
     }
 
-    func send<Response: Decodable, Body: Encodable>(
+    func send<Response: Decodable>(
         path: String,
         method: String,
         queryItems: [URLQueryItem] = [],
-        body: Body?,
+        body: (some Encodable)?,
         accessToken: String?,
         hostURL: URL?
     ) async throws -> Response {
@@ -113,6 +114,10 @@ struct BlueskyRequestExecutor: BlueskyRequestExecuting {
 }
 
 private final class PinningDelegate: NSObject, URLSessionDelegate {
+    private static let pinnedSPKIHashes = [
+        "Va6hs2tSCkc4CWC91P6Bga2S05J/R2R+Tp4WPAv7Hlc=",
+    ]
+
     func urlSession(
         _: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
@@ -122,10 +127,89 @@ private final class PinningDelegate: NSObject, URLSessionDelegate {
             completionHandler(.performDefaultHandling, nil)
             return
         }
-        if let serverTrust = challenge.protectionSpace.serverTrust {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-        } else {
+        guard let serverTrust = challenge.protectionSpace.serverTrust else {
             completionHandler(.cancelAuthenticationChallenge, nil)
+            return
         }
+
+        var secResult = SecTrustResultType.invalid
+        let status = SecTrustEvaluate(serverTrust, &secResult)
+        guard status == errSecSuccess, secResult == .unspecified || secResult == .proceed else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+
+        guard let leafCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+        let certData = SecCertificateCopyData(leafCertificate) as Data
+        guard let spki = extractSPKI(from: certData) else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+        let hash = Data(SHA256.hash(data: spki)).base64EncodedString()
+        guard Self.pinnedSPKIHashes.contains(hash) else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+        completionHandler(.useCredential, URLCredential(trust: serverTrust))
+    }
+}
+
+private func extractSPKI(from certDER: Data) -> Data? {
+    var index = certDER.startIndex
+    guard certDER[index] == 0x30 else { return nil }
+    index += 1
+    guard readLength(from: certDER, index: &index) != nil else { return nil }
+
+    guard certDER[index] == 0x30 else { return nil }
+    index += 1
+    guard let tbsLen = readLength(from: certDER, index: &index) else { return nil }
+    let tbsEnd = index + tbsLen
+
+    var lastSeqStart = index
+    var lastSeqTagLen = 0
+
+    while index < tbsEnd {
+        let fieldStart = index
+        guard let tag = certDER[safe: index] else { return nil }
+        index += 1
+        guard let len = readLength(from: certDER, index: &index) else { return nil }
+        index += len
+
+        if tag == 0x30 {
+            lastSeqStart = fieldStart
+            lastSeqTagLen = index - fieldStart
+        }
+        if tag == 0xA1 || tag == 0xA2 || tag == 0xA3 {
+            guard lastSeqTagLen > 0 else { return nil }
+            return certDER[lastSeqStart ..< fieldStart]
+        }
+    }
+    guard lastSeqTagLen > 0 else { return nil }
+    return certDER[lastSeqStart ..< tbsEnd]
+}
+
+private func readLength(from data: Data, index: inout Data.Index) -> Int? {
+    guard let first = data[safe: index] else { return nil }
+    index += 1
+    if first & 0x80 == 0 {
+        return Int(first)
+    }
+    let numBytes = Int(first & 0x7F)
+    guard numBytes <= 4 else { return nil }
+    var length = 0
+    for _ in 0 ..< numBytes {
+        guard let byte = data[safe: index] else { return nil }
+        index += 1
+        length = (length << 8) | Int(byte)
+    }
+    return length
+}
+
+private extension Data {
+    subscript(safe index: Index) -> UInt8? {
+        indices.contains(index) ? self[index] : nil
     }
 }

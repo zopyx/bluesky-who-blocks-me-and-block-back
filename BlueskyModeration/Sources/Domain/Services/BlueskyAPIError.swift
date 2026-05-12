@@ -5,20 +5,23 @@ enum BlueskyAPIError: LocalizedError {
     case invalidResponse
     case unauthorized
     case missingCredentials
+    case sslPinFailure
     case server(String)
 
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "The Bluesky endpoint URL is invalid."
+            "The Bluesky endpoint URL is invalid."
         case .invalidResponse:
-            return "Bluesky returned an unexpected response."
+            "Bluesky returned an unexpected response."
         case .unauthorized:
-            return "Bluesky rejected the credentials. Check the handle and app password."
+            "Bluesky rejected the credentials. Check the handle and app password."
         case .missingCredentials:
-            return "No saved app password was found for this account."
+            "No saved app password was found for this account."
+        case .sslPinFailure:
+            "The server certificate does not match the pinned fingerprint."
         case let .server(message):
-            return "Bluesky returned an error: \(message)"
+            "Bluesky returned an error: \(message)"
         }
     }
 }
