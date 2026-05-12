@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "ハンドルとアプリパスワードが必要です。",
+    "account.error.already_exists": "このアカウントは既に存在します。",
+    "account.error.failed_to_delete_credentials": "セキュアな認証情報の削除に失敗しました。",
+    "account.error.failed_to_restore": "保存されたアカウントの復元に失敗しました。",
+    "account.error.failed_to_save": "アカウントの保存に失敗しました。"
 }

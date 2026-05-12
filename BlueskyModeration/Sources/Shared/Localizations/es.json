@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "El identificador y la contraseña de la aplicación son obligatorios.",
+    "account.error.already_exists": "Esta cuenta ya existe.",
+    "account.error.failed_to_delete_credentials": "Error al eliminar las credenciales seguras.",
+    "account.error.failed_to_restore": "Error al restaurar las cuentas guardadas.",
+    "account.error.failed_to_save": "Error al guardar las cuentas."
 }

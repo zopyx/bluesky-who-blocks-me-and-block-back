@@ -57,12 +57,12 @@ final class AccountStore: ObservableObject {
         let trimmedPassword = appPassword.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedHandle.isEmpty, !trimmedPassword.isEmpty else {
-            errorMessage = "Handle and app password are required."
+            errorMessage = loc("account.error.handle_and_password_required")
             return false
         }
 
         if accounts.contains(where: { $0.handle.caseInsensitiveCompare(trimmedHandle) == .orderedSame }) {
-            errorMessage = "This account already exists."
+            errorMessage = loc("account.error.already_exists")
             return false
         }
 
@@ -99,7 +99,7 @@ final class AccountStore: ObservableObject {
         do {
             try keychain.delete(service: passwordService, account: account.id.uuidString)
         } catch {
-            errorMessage = "Failed to delete secure credentials."
+            errorMessage = loc("account.error.failed_to_delete_credentials")
         }
 
         if let client {
@@ -198,7 +198,7 @@ final class AccountStore: ObservableObject {
                 activeAccountID = accounts.first?.id
             }
         } catch {
-            errorMessage = "Failed to restore saved accounts."
+            errorMessage = loc("account.error.failed_to_restore")
         }
     }
 
@@ -208,7 +208,7 @@ final class AccountStore: ObservableObject {
             defaults.set(data, forKey: accountsKey)
             defaults.set(activeAccountID?.uuidString, forKey: activeAccountKey)
         } catch {
-            errorMessage = "Failed to save accounts."
+            errorMessage = loc("account.error.failed_to_save")
         }
         iCloudAccountSync.shared.pushAccounts(accounts)
     }

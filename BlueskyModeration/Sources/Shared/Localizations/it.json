@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "L'handle e la password dell'app sono obbligatori.",
+    "account.error.already_exists": "Questo account esiste già.",
+    "account.error.failed_to_delete_credentials": "Eliminazione delle credenziali sicure non riuscita.",
+    "account.error.failed_to_restore": "Ripristino degli account salvati non riuscito.",
+    "account.error.failed_to_save": "Salvataggio degli account non riuscito."
 }

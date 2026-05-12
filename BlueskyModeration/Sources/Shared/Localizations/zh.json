@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "需要提供标识符和应用密码。",
+    "account.error.already_exists": "此帐户已存在。",
+    "account.error.failed_to_delete_credentials": "删除安全凭据失败。",
+    "account.error.failed_to_restore": "恢复已保存的帐户失败。",
+    "account.error.failed_to_save": "保存帐户失败。"
 }

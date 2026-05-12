@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "ต้องระบุชื่อผู้ใช้และรหัสผ่านแอป",
+    "account.error.already_exists": "บัญชีนี้มีอยู่แล้ว",
+    "account.error.failed_to_delete_credentials": "ไม่สามารถลบข้อมูลรับรองที่ปลอดภัยได้",
+    "account.error.failed_to_restore": "ไม่สามารถกู้คืนบัญชีที่บันทึกไว้ได้",
+    "account.error.failed_to_save": "ไม่สามารถบันทึกบัญชีได้"
 }

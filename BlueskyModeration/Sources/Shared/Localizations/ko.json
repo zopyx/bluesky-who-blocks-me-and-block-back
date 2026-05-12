@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "핸들과 앱 비밀번호가 필요합니다.",
+    "account.error.already_exists": "이 계정이 이미 존재합니다.",
+    "account.error.failed_to_delete_credentials": "보안 자격 증명 삭제에 실패했습니다.",
+    "account.error.failed_to_restore": "저장된 계정 복원에 실패했습니다.",
+    "account.error.failed_to_save": "계정 저장에 실패했습니다."
 }

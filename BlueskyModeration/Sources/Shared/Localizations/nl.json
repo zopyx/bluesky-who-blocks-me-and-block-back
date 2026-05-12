@@ -584,5 +584,10 @@
     "list.members.bulk_block_message": "Block {count} selected members?",
     "list.members.bulk_mute_message": "Mute {count} selected members?",
     "list.members.bulk_unblock_message": "Unblock {count} selected members?",
-    "list.members.bulk_unmute_message": "Unmute {count} selected members?"
+    "list.members.bulk_unmute_message": "Unmute {count} selected members?",
+    "account.error.handle_and_password_required": "Handle en app-wachtwoord zijn vereist.",
+    "account.error.already_exists": "Dit account bestaat al.",
+    "account.error.failed_to_delete_credentials": "Verwijderen van beveiligde inloggegevens mislukt.",
+    "account.error.failed_to_restore": "Herstellen van opgeslagen accounts mislukt.",
+    "account.error.failed_to_save": "Opslaan van accounts mislukt."
 }
