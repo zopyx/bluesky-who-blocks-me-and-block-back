@@ -11,11 +11,11 @@ struct InfoView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                background
-                    .ignoresSafeArea()
+        ZStack {
+            background
+                .ignoresSafeArea()
 
+            NavigationStack {
                 VStack(spacing: 0) {
                     Picker(selection: $selectedTab) {
                         ForEach(InfoTab.allCases, id: \.self) { tab in
@@ -39,10 +39,10 @@ struct InfoView: View {
                         .padding(16)
                     }
                 }
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.hidden, for: .navigationBar)
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .preferredColorScheme(.dark)
     }
