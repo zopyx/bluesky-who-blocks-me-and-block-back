@@ -144,7 +144,7 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            Text(loc("lists.moderation_lists"))
+                            sectionHeaderWithCreate(title: loc("lists.moderation_lists"), kind: .moderation)
                         }
 
                         Section {
@@ -177,7 +177,7 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            Text(loc("lists.lists"))
+                            sectionHeaderWithCreate(title: loc("lists.lists"), kind: .regular)
                         }
 
                         if let errorMessage = viewModel.errorMessage {
@@ -285,6 +285,26 @@ struct ListsView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private func sectionHeaderWithCreate(title: String, kind: BlueskyList.Kind) -> some View {
+        ZStack {
+            Text(title)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Spacer()
+                Button {
+                    presentationState.createListKind = kind
+                    presentationState.isShowingCreateList = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.callout)
+                        .foregroundStyle(kind == .moderation ? .orange : .skyPrimary)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     private func activeAccountMember(_ account: AppAccount) -> BlueskyListMember {
