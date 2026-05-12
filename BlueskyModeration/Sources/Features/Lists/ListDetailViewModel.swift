@@ -38,4 +38,19 @@ final class ListDetailViewModel: ObservableObject {
     let importController = ListImportController()
     let diffController = ListDiffController()
     let batchController = ListBatchController()
+
+    /// Flag set to true when the user requests batch cancellation.
+    /// Checked by the batch controller via the isCancelled closure.
+    private(set) var isBatchCancelled = false
+
+    /// Cancels the currently running batch operation, if any.
+    func cancelBatch() {
+        isBatchCancelled = true
+        isPerformingBulkAction = false
+    }
+
+    /// Resets the cancellation flag before starting a new batch.
+    private func resetBatchCancellation() {
+        isBatchCancelled = false
+    }
 }

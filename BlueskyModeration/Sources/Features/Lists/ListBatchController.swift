@@ -15,13 +15,14 @@ final class ListBatchController {
         onProgress: ((BatchProgress) -> Void)? = nil,
         onActorStart: ((BlueskyActor) -> Void)? = nil,
         onActorComplete: ((BlueskyActor) -> Void)? = nil,
+        isCancelled: @escaping () -> Bool = { false },
         action: @escaping (BlueskyActor) async throws -> Void
     ) async -> ListBulkActionResult {
         var succeededActors: [BlueskyActor] = []
         var failures: [ListBulkActionResult.Failure] = []
 
         for (index, actor) in actors.enumerated() {
-            guard !Task.isCancelled else { break }
+            guard !Task.isCancelled, !isCancelled() else { break }
 
             onProgress?(
                 BatchProgress(

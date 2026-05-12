@@ -254,7 +254,8 @@ struct ListDetailView: View {
                         title: batchProgress.title,
                         completedCount: batchProgress.completedCount,
                         totalCount: batchProgress.totalCount,
-                        currentHandle: batchProgress.currentHandle
+                        currentHandle: batchProgress.currentHandle,
+                        onCancel: { viewModel.cancelBatch() }
                     )
                 } header: {
                     Text(verbatim: loc("list.detail.bulk_operation"))

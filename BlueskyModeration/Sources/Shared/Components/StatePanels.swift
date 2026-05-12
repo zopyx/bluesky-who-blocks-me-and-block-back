@@ -81,6 +81,21 @@ struct BatchProgressCard: View {
     let completedCount: Int
     let totalCount: Int
     let currentHandle: String?
+    let onCancel: (() -> Void)?
+
+    init(
+        title: String,
+        completedCount: Int,
+        totalCount: Int,
+        currentHandle: String?,
+        onCancel: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.completedCount = completedCount
+        self.totalCount = totalCount
+        self.currentHandle = currentHandle
+        self.onCancel = onCancel
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -92,6 +107,17 @@ struct BatchProgressCard: View {
             ProgressView(value: Double(completedCount), total: Double(totalCount))
             if let currentHandle {
                 Text(currentHandle).font(.caption.monospaced()).foregroundStyle(.secondary)
+            }
+            if let onCancel {
+                HStack {
+                    Spacer()
+                    Button(role: .destructive, action: onCancel) {
+                        Label(loc("actions.cancel"), systemImage: "xmark.circle")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .accessibilityLabel(loc("actions.cancel"))
+                }
             }
         }
         .padding()

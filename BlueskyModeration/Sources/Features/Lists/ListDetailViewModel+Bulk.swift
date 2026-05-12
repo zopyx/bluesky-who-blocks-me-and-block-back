@@ -454,6 +454,7 @@ extension ListDetailViewModel {
         removingMemberIDsByActorDID: [String: String] = [:],
         action: @escaping (BlueskyActor) async throws -> Void
     ) async -> ListBulkActionResult {
+        resetBatchCancellation()
         isPerformingBulkAction = true
         defer {
             isPerformingBulkAction = false
@@ -483,6 +484,7 @@ extension ListDetailViewModel {
                     self?.removingMemberIDs.remove(memberID)
                 }
             },
+            isCancelled: { [weak self] in self?.isBatchCancelled ?? false },
             action: action
         )
     }
