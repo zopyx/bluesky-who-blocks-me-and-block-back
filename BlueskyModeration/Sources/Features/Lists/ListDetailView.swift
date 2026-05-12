@@ -11,15 +11,9 @@ struct ListDetailView: View {
     @State var currentList: BlueskyList
     @State var searchQuery = ""
     @State var memberSearchQuery = ""
-    @State var isShowingEditSheet = false
-    @State var isShowingImportSheet = false
-    @State var isShowingImportFilePicker = false
-    @State var selectedComparisonListID = ""
-    @State var snapshotSummary: ListMembershipSnapshotSummary?
-    @State var selectedNewerSnapshotID: UUID?
-    @State var selectedOlderSnapshotID: UUID?
-    @State var cachedExportFileURL: URL?
-    @State var cachedDiffExportFileURL: URL?
+    @State var importState = ImportState()
+    @State var comparisonState = ComparisonState()
+    @State var exportState = ExportState()
     @State private var isShowingDeleteConfirmation = false
     @Environment(\.dismiss) private var dismiss
 
@@ -33,7 +27,7 @@ struct ListDetailView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbarContent)
-            .sheet(isPresented: $isShowingEditSheet) {
+            .sheet(isPresented: $importState.isShowingEditSheet) {
                 if let account = accountStore.activeAccount,
                    let appPassword = accountStore.appPassword(for: account)
                 {
@@ -52,16 +46,16 @@ struct ListDetailView: View {
                             ) {
                                 currentList = updatedList
                                 onListUpdated?(updatedList)
-                                isShowingEditSheet = false
+                                importState.isShowingEditSheet = false
                             }
                         }
                     }
                 }
             }
-            .sheet(isPresented: $isShowingImportSheet, content: importSheetContent)
+            .sheet(isPresented: $importState.isShowingImportSheet, content: importSheetContent)
             .sheet(isPresented: importPreviewPresentedBinding, content: importPreviewSheetContent)
             .fileImporter(
-                isPresented: $isShowingImportFilePicker,
+                isPresented: $importState.isShowingImportFilePicker,
                 allowedContentTypes: [.plainText, .commaSeparatedText]
             ) { result in
                 handleImportedFile(result)
@@ -168,10 +162,10 @@ struct ListDetailView: View {
             viewModel.updateMemberFilter(newQuery)
         }
         .onChange(of: viewModel.members) { _, _ in
-            cachedExportFileURL = nil
+            exportState.cachedExportFileURL = nil
         }
         .onChange(of: viewModel.comparisonReport) { _, _ in
-            cachedDiffExportFileURL = nil
+            exportState.cachedDiffExportFileURL = nil
         }
     }
 
@@ -179,7 +173,7 @@ struct ListDetailView: View {
     private func toolbarContent() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                isShowingEditSheet = true
+                importState.isShowingEditSheet = true
             } label: {
                 Label { Text(verbatim: loc("list.detail.edit")) } icon: { Image(systemName: "pencil") }
             }
@@ -273,8 +267,8 @@ struct ListDetailView: View {
                 currentList: currentList,
                 account: account,
                 appPassword: appPassword,
-                isShowingImportSheet: $isShowingImportSheet,
-                isShowingImportFilePicker: $isShowingImportFilePicker,
+                isShowingImportSheet: $importState.isShowingImportSheet,
+                isShowingImportFilePicker: $importState.isShowingImportFilePicker,
                 exportFileURL: exportFileURL,
                 syncSnapshot: { syncSnapshot() }
             )
@@ -290,7 +284,7 @@ struct ListDetailView: View {
 
             ListComparisonSection(
                 viewModel: viewModel,
-                selectedComparisonListID: $selectedComparisonListID,
+                selectedComparisonListID: $comparisonState.selectedComparisonListID,
                 currentList: currentList,
                 account: account,
                 appPassword: appPassword,
@@ -312,9 +306,9 @@ struct ListDetailView: View {
 
             ListSnapshotSection(
                 viewModel: viewModel,
-                snapshotSummary: snapshotSummary,
-                selectedNewerSnapshotID: $selectedNewerSnapshotID,
-                selectedOlderSnapshotID: $selectedOlderSnapshotID,
+                snapshotSummary: comparisonState.snapshotSummary,
+                selectedNewerSnapshotID: $comparisonState.selectedNewerSnapshotID,
+                selectedOlderSnapshotID: $comparisonState.selectedOlderSnapshotID,
                 snapshotHistory: snapshotHistory,
                 selectedSnapshotComparison: selectedSnapshotComparison
             )

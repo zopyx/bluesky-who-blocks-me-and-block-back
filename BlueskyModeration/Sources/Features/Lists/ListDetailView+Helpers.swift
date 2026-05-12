@@ -6,39 +6,39 @@ extension ListDetailView {
     }
 
     var selectedSnapshotComparison: ListMembershipSnapshotSummary? {
-        guard let selectedNewerSnapshotID,
-              let selectedOlderSnapshotID,
-              selectedNewerSnapshotID != selectedOlderSnapshotID
+        guard let newerID = comparisonState.selectedNewerSnapshotID,
+              let olderID = comparisonState.selectedOlderSnapshotID,
+              newerID != olderID
         else {
             return nil
         }
 
         return workspaceStore.compareSnapshots(
             listID: currentList.id,
-            newerSnapshotID: selectedNewerSnapshotID,
-            olderSnapshotID: selectedOlderSnapshotID
+            newerSnapshotID: newerID,
+            olderSnapshotID: olderID
         )
     }
 
     var comparisonList: BlueskyList? {
-        viewModel.availableLists.first { $0.id == selectedComparisonListID }
+        viewModel.availableLists.first { $0.id == comparisonState.selectedComparisonListID }
     }
 
     var exportFileURL: URL? {
-        if let cached = cachedExportFileURL { return cached }
+        if let cached = exportState.cachedExportFileURL { return cached }
         let url = fileURL(named: exportFileName, rows: ["handle,did,display_name"] + viewModel.exportRows())
-        cachedExportFileURL = url
+        exportState.cachedExportFileURL = url
         return url
     }
 
     var diffExportFileURL: URL? {
-        if let cached = cachedDiffExportFileURL { return cached }
+        if let cached = exportState.cachedDiffExportFileURL { return cached }
         guard viewModel.comparisonReport != nil else { return nil }
         let url = fileURL(
             named: "\(exportFileName.replacingOccurrences(of: "-members", with: ""))-diff.csv",
             rows: ["bucket,handle,did,display_name"] + viewModel.exportDiffRows()
         )
-        cachedDiffExportFileURL = url
+        exportState.cachedDiffExportFileURL = url
         return url
     }
 
@@ -78,26 +78,26 @@ extension ListDetailView {
 
         _ = await (membersTask, listsTask)
 
-        if selectedComparisonListID.isEmpty {
-            selectedComparisonListID = viewModel.availableLists.first?.id ?? ""
+        if comparisonState.selectedComparisonListID.isEmpty {
+            comparisonState.selectedComparisonListID = viewModel.availableLists.first?.id ?? ""
         }
         syncSnapshot()
         syncSnapshotSelection()
     }
 
     func syncSnapshot() {
-        snapshotSummary = workspaceStore.captureSnapshot(for: currentList, members: viewModel.members)
+        comparisonState.snapshotSummary = workspaceStore.captureSnapshot(for: currentList, members: viewModel.members)
         syncSnapshotSelection()
     }
 
     func syncSnapshotSelection() {
         let history = snapshotHistory
-        if selectedNewerSnapshotID == nil {
-            selectedNewerSnapshotID = history.first?.id
+        if comparisonState.selectedNewerSnapshotID == nil {
+            comparisonState.selectedNewerSnapshotID = history.first?.id
         }
 
-        if selectedOlderSnapshotID == nil {
-            selectedOlderSnapshotID = history.dropFirst().first?.id ?? history.first?.id
+        if comparisonState.selectedOlderSnapshotID == nil {
+            comparisonState.selectedOlderSnapshotID = history.dropFirst().first?.id ?? history.first?.id
         }
     }
 
