@@ -6,16 +6,7 @@ struct ListsView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = ListsViewModel()
-    @State private var isShowingAccountPicker = false
-    @State private var isShowingCreateList = false
-    @State private var createListKind: BlueskyList.Kind = .moderation
-    @State private var showProfile = false
-    @State private var showFollowers = false
-    @State private var showFollowing = false
-    @State private var showBlocking = false
-    @State private var showBlockedBy = false
-    @State private var isShowingBulkLookup = false
-    @State private var isShowingAccountManagement = false
+    @State private var presentationState = PresentationState()
 
     var body: some View {
         NavigationStack {
@@ -56,7 +47,7 @@ struct ListsView: View {
                         if let activeAccount = accountStore.activeAccount {
                             Section {
                                 Button {
-                                    showProfile = true
+                                    presentationState.showProfile = true
                                 } label: {
                                     AccountSummaryCard(
                                         account: activeAccount,
@@ -67,7 +58,7 @@ struct ListsView: View {
                                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                                 .listRowBackground(Color.clear)
                             }
-                            .navigationDestination(isPresented: $showProfile) {
+                            .navigationDestination(isPresented: $presentationState.showProfile) {
                                 BlueskyProfileView(
                                     member: activeAccountMember(activeAccount),
                                     list: nil
@@ -80,7 +71,7 @@ struct ListsView: View {
                         Section {
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading) {
                                 Button {
-                                    showFollowers = true
+                                    presentationState.showFollowers = true
                                 } label: {
                                     relationshipRow(
                                         icon: "person.3",
@@ -91,7 +82,7 @@ struct ListsView: View {
                                 .buttonStyle(.plain)
 
                                 Button {
-                                    showFollowing = true
+                                    presentationState.showFollowing = true
                                 } label: {
                                     relationshipRow(
                                         icon: "person.3.fill",
@@ -102,7 +93,7 @@ struct ListsView: View {
                                 .buttonStyle(.plain)
 
                                 Button {
-                                    showBlocking = true
+                                    presentationState.showBlocking = true
                                 } label: {
                                     relationshipRow(
                                         icon: "hand.raised",
@@ -113,7 +104,7 @@ struct ListsView: View {
                                 .buttonStyle(.plain)
 
                                 Button {
-                                    showBlockedBy = true
+                                    presentationState.showBlockedBy = true
                                 } label: {
                                     relationshipRow(
                                         icon: "hand.raised.slash",
@@ -126,22 +117,22 @@ struct ListsView: View {
                         } header: {
                             Text(loc("lists.relationships"))
                         }
-                        .navigationDestination(isPresented: $showFollowers) {
+                        .navigationDestination(isPresented: $presentationState.showFollowers) {
                             RelationshipsView(mode: .followers, initialCount: viewModel.activeProfile?.followersCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
                         }
-                        .navigationDestination(isPresented: $showFollowing) {
+                        .navigationDestination(isPresented: $presentationState.showFollowing) {
                             RelationshipsView(mode: .following, initialCount: viewModel.activeProfile?.followsCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
                         }
-                        .navigationDestination(isPresented: $showBlocking) {
+                        .navigationDestination(isPresented: $presentationState.showBlocking) {
                             RelationshipsView(mode: .blocking, initialCount: viewModel.blockingCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
                         }
-                        .navigationDestination(isPresented: $showBlockedBy) {
+                        .navigationDestination(isPresented: $presentationState.showBlockedBy) {
                             RelationshipsView(mode: .blockedBy, initialCount: viewModel.blockedByCount)
                                 .environmentObject(accountStore)
                                 .environmentObject(blueskyClient)
@@ -161,8 +152,8 @@ struct ListsView: View {
                                 }
                             } else {
                                 Button {
-                                    createListKind = .moderation
-                                    isShowingCreateList = true
+                                    presentationState.createListKind = .moderation
+                                    presentationState.isShowingCreateList = true
                                 } label: {
                                     HStack(spacing: 12) {
                                         Image(systemName: "plus.circle.fill")
@@ -194,8 +185,8 @@ struct ListsView: View {
                                 }
                             } else {
                                 Button {
-                                    createListKind = .regular
-                                    isShowingCreateList = true
+                                    presentationState.createListKind = .regular
+                                    presentationState.isShowingCreateList = true
                                 } label: {
                                     HStack(spacing: 12) {
                                         Image(systemName: "plus.circle.fill")
@@ -244,20 +235,20 @@ struct ListsView: View {
                     .disabled(accountStore.activeAccount == nil)
                 }
             }
-            .sheet(isPresented: $isShowingAccountPicker) {
-                AccountSwitcherSheet(isPresented: $isShowingAccountPicker)
+            .sheet(isPresented: $presentationState.isShowingAccountPicker) {
+                AccountSwitcherSheet(isPresented: $presentationState.isShowingAccountPicker)
                     .environmentObject(accountStore)
             }
 
-            .sheet(isPresented: $isShowingBulkLookup) {
+            .sheet(isPresented: $presentationState.isShowingBulkLookup) {
                 NavigationStack {
                     BulkProfileLookupView()
                         .environmentObject(accountStore)
                         .environmentObject(blueskyClient)
                 }
             }
-            .sheet(isPresented: $isShowingCreateList) {
-                CreateListSheet(kind: createListKind) { name, description, kind in
+            .sheet(isPresented: $presentationState.isShowingCreateList) {
+                CreateListSheet(kind: presentationState.createListKind) { name, description, kind in
                     if let account = accountStore.activeAccount,
                        let appPassword = accountStore.appPassword(for: account)
                     {
@@ -280,9 +271,9 @@ struct ListsView: View {
                 .environmentObject(accountStore)
                 .environmentObject(blueskyClient)
             }
-            .sheet(isPresented: $isShowingAccountManagement) {
+            .sheet(isPresented: $presentationState.isShowingAccountManagement) {
                 NavigationStack {
-                    AccountSwitcherSheet(isPresented: $isShowingAccountManagement)
+                    AccountSwitcherSheet(isPresented: $presentationState.isShowingAccountManagement)
                         .environmentObject(accountStore)
                         .environmentObject(blueskyClient)
                 }
@@ -330,8 +321,8 @@ struct ListsView: View {
                 .textCase(.none)
             Spacer()
             Button {
-                createListKind = kind
-                isShowingCreateList = true
+                presentationState.createListKind = kind
+                presentationState.isShowingCreateList = true
             } label: {
                 Image(systemName: "plus.circle.fill")
                     .font(.title3)
@@ -355,7 +346,7 @@ struct ListsView: View {
     }
 
     private func openAccountManagement() {
-        isShowingAccountManagement = true
+        presentationState.isShowingAccountManagement = true
     }
 }
 
