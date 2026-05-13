@@ -64,7 +64,7 @@ struct InfoView: View {
     private var heroCard: some View {
         VStack(spacing: 10) {
             Text("RULYX")
-                .font(.largeTitle.weight(.heavy))
+                .font(.system(.largeTitle, design: .rounded, weight: .heavy))
                 .foregroundStyle(.primary)
 
             Image("RulyxLogo")
