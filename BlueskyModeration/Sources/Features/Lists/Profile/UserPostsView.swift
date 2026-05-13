@@ -1,11 +1,15 @@
 import SwiftUI
 
 extension String: @retroactive Identifiable {
-    public var id: String { self }
+    public var id: String {
+        self
+    }
 }
 
 extension URL: @retroactive Identifiable {
-    public var id: String { absoluteString }
+    public var id: String {
+        absoluteString
+    }
 }
 
 struct UserPostsView: View {
@@ -18,6 +22,8 @@ struct UserPostsView: View {
     @State private var selectedPostURI: String?
     @State private var previewImageURL: URL?
     @State private var shareFileURL: URL?
+    @State private var initialLoadTask: Task<Void, Never>?
+    @State private var loadMoreTask: Task<Void, Never>?
 
     init(did: String) {
         self.did = did
@@ -27,7 +33,7 @@ struct UserPostsView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading && viewModel.posts.isEmpty {
+                if viewModel.isLoading, viewModel.posts.isEmpty {
                     LoadingPanel(message: loc("profile.posts.loading"))
                 } else if let error = viewModel.errorMessage, viewModel.posts.isEmpty {
                     ContentUnavailableView(
@@ -43,14 +49,14 @@ struct UserPostsView: View {
                     )
                 } else {
                     List {
-                        ForEach(Array(viewModel.posts.enumerated()), id: \.offset) { index, entry in
+                        ForEach(viewModel.posts, id: \.post.uri) { entry in
                             PostRowView(entry: entry, onTapThread: {
                                 selectedPostURI = entry.post.uri
                             }, onTapImage: { url in
                                 previewImageURL = url
                             })
                             .onAppear {
-                                if index == viewModel.posts.count - 1 {
+                                if entry.post.uri == viewModel.posts.last?.post.uri {
                                     Task { await loadMore() }
                                 }
                             }
@@ -64,7 +70,7 @@ struct UserPostsView: View {
                             }
                             .listRowSeparator(.hidden)
                         }
-                        if !viewModel.hasMore && !viewModel.posts.isEmpty {
+                        if !viewModel.hasMore, !viewModel.posts.isEmpty {
                             Text(verbatim: loc("profile.posts.end"))
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
@@ -123,19 +129,34 @@ struct UserPostsView: View {
             .task {
                 await loadInitial()
             }
+            .onDisappear {
+                initialLoadTask?.cancel()
+                loadMoreTask?.cancel()
+            }
         }
     }
 
     private func loadInitial() async {
         guard let account = accountStore.activeAccount,
               let appPassword = accountStore.appPassword(for: account) else { return }
-        await viewModel.loadPosts(account: account, appPassword: appPassword, using: blueskyClient)
+        initialLoadTask?.cancel()
+        let task = Task {
+            await viewModel.loadPosts(account: account, appPassword: appPassword, using: blueskyClient)
+        }
+        initialLoadTask = task
+        await task.value
     }
 
     private func loadMore() async {
         guard let account = accountStore.activeAccount,
               let appPassword = accountStore.appPassword(for: account) else { return }
-        await viewModel.loadMorePosts(account: account, appPassword: appPassword, using: blueskyClient)
+        guard loadMoreTask == nil else { return }
+        let task = Task {
+            await viewModel.loadMorePosts(account: account, appPassword: appPassword, using: blueskyClient)
+        }
+        loadMoreTask = task
+        await task.value
+        loadMoreTask = nil
     }
 
     private func refresh() async {
@@ -148,11 +169,11 @@ struct UserPostsView: View {
 private struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func updateUIViewController(_: UIActivityViewController, context: Context) {}
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }
 
 private struct ImagePreviewView: View {

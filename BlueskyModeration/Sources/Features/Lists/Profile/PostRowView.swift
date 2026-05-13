@@ -5,18 +5,22 @@ struct PostRowView: View {
     let onTapThread: () -> Void
     let onTapImage: (URL) -> Void
 
-    private var post: RichPost { entry.post }
-    private var author: RichAuthor { post.safeAuthor }
+    private var post: RichPost {
+        entry.post
+    }
+
+    private var author: RichAuthor {
+        post.safeAuthor
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 if let url = author.avatar.flatMap(URL.init) {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
+                    ThumbnailImageView(url: url, maxPixelSize: 72) {
                         Circle().fill(Color.skyPrimary.opacity(0.16))
                     }
+                    .scaledToFill()
                     .frame(width: 36, height: 36)
                     .clipShape(Circle())
                 } else {
@@ -61,11 +65,10 @@ struct PostRowView: View {
                     onTapImage(url)
                 } label: {
                     ZStack {
-                        AsyncImage(url: url) { image in
-                            image.resizable().scaledToFill()
-                        } placeholder: {
+                        ThumbnailImageView(url: url, maxPixelSize: 720) {
                             Rectangle().fill(Color.skyPrimary.opacity(0.08))
                         }
+                        .scaledToFill()
                         .frame(height: 200)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         Image(systemName: "play.circle.fill")
@@ -81,15 +84,14 @@ struct PostRowView: View {
                 let cols = images.count == 1 ? 1 : 2
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: cols), spacing: 4) {
                     ForEach(Array(images.prefix(4).enumerated()), id: \.offset) { _, item in
-                        if let fullsize = item.fullsize, let url = URL(string: fullsize) {
+                        if let previewURL = item.fullsize.flatMap(URL.init) {
                             Button {
-                                onTapImage(url)
+                                onTapImage(previewURL)
                             } label: {
-                                AsyncImage(url: url) { image in
-                                    image.resizable().scaledToFill()
-                                } placeholder: {
+                                ThumbnailImageView(url: item.thumb.flatMap(URL.init) ?? previewURL, maxPixelSize: 512) {
                                     Rectangle().fill(Color.skyPrimary.opacity(0.08))
                                 }
+                                .scaledToFill()
                                 .frame(height: 120)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                             }

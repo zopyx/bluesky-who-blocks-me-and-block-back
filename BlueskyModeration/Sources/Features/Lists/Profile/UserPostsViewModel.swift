@@ -26,31 +26,37 @@ final class UserPostsViewModel: ObservableObject {
         guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         do {
+            guard !Task.isCancelled else { return }
             let response = try await client.fetchRichFeed(did: did, cursor: nil, account: account, appPassword: appPassword)
             posts = response.feed
             cursor = response.cursor
             hasMore = cursor != nil
+        } catch is CancellationError {
+            return
         } catch {
             errorMessage = AppError.userMessage(from: error)
             AppLogger.moderation.error("Failed to load posts: \(error.localizedDescription, privacy: .public)")
         }
-        isLoading = false
     }
 
     func loadMorePosts(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
         guard !isLoadingMore, let cursor else { return }
         isLoadingMore = true
+        defer { isLoadingMore = false }
         do {
+            guard !Task.isCancelled else { return }
             let response = try await client.fetchRichFeed(did: did, cursor: cursor, account: account, appPassword: appPassword)
             posts += response.feed
             self.cursor = response.cursor
             hasMore = response.cursor != nil
+        } catch is CancellationError {
+            return
         } catch {
             errorMessage = AppError.userMessage(from: error)
             AppLogger.moderation.error("Failed to load more posts: \(error.localizedDescription, privacy: .public)")
         }
-        isLoadingMore = false
     }
 
     func exportCSV() -> String {

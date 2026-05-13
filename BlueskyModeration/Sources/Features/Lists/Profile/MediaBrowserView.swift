@@ -1,5 +1,5 @@
-import SwiftUI
 import AVKit
+import SwiftUI
 
 struct MediaBrowserView: View {
     let did: String
@@ -12,6 +12,9 @@ struct MediaBrowserView: View {
     @State private var isShowingFolderPicker = false
     @State private var selectedDownloadFolder: URL?
     @State private var previewItem: MediaItem?
+    @State private var initialLoadTask: Task<Void, Never>?
+    @State private var loadMoreTask: Task<Void, Never>?
+    @State private var downloadTask: Task<Void, Never>?
 
     init(did: String, handle: String) {
         self.did = did
@@ -30,6 +33,12 @@ struct MediaBrowserView: View {
                             Text("\(progress.current) / \(progress.total)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                            if let detail = viewModel.downloadStatusDetail, !detail.isEmpty {
+                                Text(detail)
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                    .lineLimit(1)
+                            }
                         }
                         .padding(.vertical, 8)
                         .background(.ultraThinMaterial)
@@ -39,12 +48,12 @@ struct MediaBrowserView: View {
                 if !viewModel.items.isEmpty || viewModel.isScanning {
                     if viewModel.availableFilters.count > 1 {
                         HStack(spacing: 8) {
-                        Picker("Filter", selection: $viewModel.filter) {
-                            ForEach(viewModel.availableFilters, id: \.self) { f in
-                                Text(filterLabel(f, count: f == .images ? viewModel.imageCount : viewModel.videoCount))
-                                    .tag(f)
+                            Picker("Filter", selection: $viewModel.filter) {
+                                ForEach(viewModel.availableFilters, id: \.self) { f in
+                                    Text(filterLabel(f, count: f == .images ? viewModel.imageCount : viewModel.videoCount))
+                                        .tag(f)
+                                }
                             }
-                        }
                             .pickerStyle(.segmented)
                             .frame(width: 240)
 
@@ -94,7 +103,7 @@ struct MediaBrowserView: View {
                 toolbar
 
                 Group {
-                    if viewModel.isLoading && viewModel.items.isEmpty {
+                    if viewModel.isLoading, viewModel.items.isEmpty {
                         Spacer()
                         LoadingPanel(message: loc("profile.posts.loading"))
                         Spacer()
@@ -113,11 +122,12 @@ struct MediaBrowserView: View {
                     } else {
                         ScrollView {
                             let displayItems = viewModel.filteredItems
+                            let loadMoreTriggerIDs = Set(displayItems.suffix(12).map(\.id))
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 2) {
-                                ForEach(Array(displayItems.enumerated()), id: \.offset) { index, item in
-                                    mediaThumbnail(item, index: index)
+                                ForEach(displayItems) { item in
+                                    mediaThumbnail(item)
                                         .onAppear {
-                                            if index >= displayItems.count - 12 {
+                                            if loadMoreTriggerIDs.contains(item.id) {
                                                 Task { await loadMore() }
                                             }
                                         }
@@ -157,27 +167,12 @@ struct MediaBrowserView: View {
                             }
                             LabeledContent(loc("profile.media.download_folder"), value: summary.directory.lastPathComponent)
                         }
-                        if !summary.files.isEmpty {
-                            Section {
-                                ForEach(summary.files, id: \.self) { file in
-                                    Text(file)
-                                        .font(.caption.monospaced())
-                                        .foregroundStyle(.secondary)
-                                }
-                            } header: {
-                                Text(verbatim: loc("profile.media.download_files"))
-                            }
-                        }
                         if !summary.errors.isEmpty {
                             Section {
-                                ForEach(summary.errors, id: \.name) { item in
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(item.name)
-                                            .font(.caption.weight(.semibold))
-                                        Text(item.error)
-                                            .font(.caption2)
-                                            .foregroundStyle(.red)
-                                    }
+                                ForEach(summary.errors, id: \.self) { error in
+                                    Text(error)
+                                        .font(.caption2)
+                                        .foregroundStyle(.red)
                                 }
                             } header: {
                                 Text(verbatim: loc("profile.media.download_errors"))
@@ -207,6 +202,11 @@ struct MediaBrowserView: View {
             }
             .task {
                 await loadInitial()
+            }
+            .onDisappear {
+                initialLoadTask?.cancel()
+                loadMoreTask?.cancel()
+                downloadTask?.cancel()
             }
         }
     }
@@ -251,19 +251,18 @@ struct MediaBrowserView: View {
     }
 
     @ViewBuilder
-    private func mediaThumbnail(_ item: MediaItem, index: Int) -> some View {
+    private func mediaThumbnail(_ item: MediaItem) -> some View {
         let isSelected = viewModel.selectedIDs.contains(item.id)
         let imageURL = URL(string: item.thumbnailURL ?? item.url)
 
         ZStack(alignment: .topTrailing) {
             if let url = imageURL {
-                AsyncImage(url: url) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
+                ThumbnailImageView(url: url, maxPixelSize: 360) {
                     Rectangle()
                         .fill(Color.skyPrimary.opacity(0.08))
                         .overlay { ProgressView().scaleEffect(0.5) }
                 }
+                .scaledToFill()
                 .frame(minWidth: 0, minHeight: 0)
                 .aspectRatio(1, contentMode: .fill)
                 .clipped()
@@ -319,36 +318,45 @@ struct MediaBrowserView: View {
     }
 
     private func ageText(for item: MediaItem) -> String? {
-        guard let raw = item.indexedAt, let date = parseDate(raw) else { return nil }
-        let interval = date.distance(to: .now)
-        if interval < 3600 { return "\(Int(interval / 60))m" }
-        if interval < 86400 { return "\(Int(interval / 3600))h" }
-        if interval < 604800 { return "\(Int(interval / 86400))d" }
-        if interval < 2592000 { return "\(Int(interval / 604800))w" }
-        if interval < 31536000 { return "\(Int(interval / 2592000))mo" }
-        return "\(Int(interval / 31536000))y"
+        item.ageText
     }
 
     private func loadInitial() async {
+        initialLoadTask?.cancel()
+        loadMoreTask?.cancel()
         guard let account = accountStore.activeAccount,
               let appPassword = accountStore.appPassword(for: account) else { return }
-        await viewModel.load(account: account, appPassword: appPassword, using: blueskyClient)
+        let task = Task {
+            await viewModel.load(account: account, appPassword: appPassword, using: blueskyClient)
+        }
+        initialLoadTask = task
+        await task.value
     }
 
     private func loadMore() async {
         guard let account = accountStore.activeAccount,
               let appPassword = accountStore.appPassword(for: account) else { return }
-        await viewModel.loadMore(account: account, appPassword: appPassword, using: blueskyClient)
+        guard loadMoreTask == nil else { return }
+        let task = Task {
+            await viewModel.loadMore(account: account, appPassword: appPassword, using: blueskyClient)
+        }
+        loadMoreTask = task
+        await task.value
+        loadMoreTask = nil
     }
 
     private func refresh() async {
-        guard let account = accountStore.activeAccount,
-              let appPassword = accountStore.appPassword(for: account) else { return }
-        await viewModel.load(account: account, appPassword: appPassword, using: blueskyClient)
+        guard accountStore.activeAccount != nil else { return }
+        await loadInitial()
     }
 
     private func performDownload(to directory: URL) async {
-        await viewModel.downloadSelected(to: directory, handle: handle)
+        downloadTask?.cancel()
+        let task = Task {
+            await viewModel.downloadSelected(to: directory, handle: handle)
+        }
+        downloadTask = task
+        await task.value
     }
 }
 
@@ -359,8 +367,8 @@ private struct MediaPreviewView: View {
     var body: some View {
         if item.type == .video, let playlist = item.playlistURL.flatMap(URL.init) {
             VideoPlayerView(url: playlist, onDismiss: onDismiss)
-        } else {
-            ImagePreviewView(url: item.thumbnailURL ?? item.url, onDismiss: onDismiss)
+        } else if let url = URL(string: item.url) {
+            ImagePreviewView(url: url.absoluteString, onDismiss: onDismiss)
         }
     }
 }
@@ -408,7 +416,7 @@ private struct VideoPlayerView: View {
 private struct AVPlayerControllerRepresentable: UIViewControllerRepresentable {
     let player: AVPlayer
 
-    func makeUIViewController(context: Context) -> AVPlayerViewController {
+    func makeUIViewController(context _: Context) -> AVPlayerViewController {
         let c = AVPlayerViewController()
         c.player = player
         c.showsPlaybackControls = true
@@ -416,7 +424,7 @@ private struct AVPlayerControllerRepresentable: UIViewControllerRepresentable {
         return c
     }
 
-    func updateUIViewController(_: AVPlayerViewController, context: Context) {}
+    func updateUIViewController(_: AVPlayerViewController, context _: Context) {}
 }
 
 private struct ImagePreviewView: View {
@@ -512,7 +520,10 @@ private struct FolderPicker: UIViewControllerRepresentable {
 
     final class Coordinator: NSObject, UIDocumentPickerDelegate {
         let onPick: (URL) -> Void
-        init(onPick: @escaping (URL) -> Void) { self.onPick = onPick }
+        init(onPick: @escaping (URL) -> Void) {
+            self.onPick = onPick
+        }
+
         func documentPicker(_: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
             guard let url = urls.first else { return }
             onPick(url)

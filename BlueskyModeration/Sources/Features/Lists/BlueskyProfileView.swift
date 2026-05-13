@@ -12,6 +12,9 @@ struct BlueskyProfileView: View {
     @State private var showPostBrowser = false
     @State private var showMediaBrowser = false
     @State private var shareFileURL: URL?
+    @State private var loadTask: Task<Void, Never>?
+    @State private var moderationTask: Task<Void, Never>?
+    @State private var exportTask: Task<Void, Never>?
 
     var body: some View {
         Group {
@@ -113,20 +116,12 @@ struct BlueskyProfileView: View {
                             .foregroundStyle(.secondary)
                         Menu {
                             Button {
-                                Task {
-                                    if let url = await viewModel.exportPosts(as: .csv, account: account, appPassword: appPassword, using: blueskyClient) {
-                                        shareFileURL = url
-                                    }
-                                }
+                                runExport(.csv, account: account, appPassword: appPassword)
                             } label: {
                                 Label("CSV", systemImage: "doc.text")
                             }
                             Button {
-                                Task {
-                                    if let url = await viewModel.exportPosts(as: .json, account: account, appPassword: appPassword, using: blueskyClient) {
-                                        shareFileURL = url
-                                    }
-                                }
+                                runExport(.json, account: account, appPassword: appPassword)
                             } label: {
                                 Label("JSON", systemImage: "doc")
                             }
@@ -177,7 +172,7 @@ struct BlueskyProfileView: View {
                             Toggle(isOn: Binding(
                                 get: { viewerState.isBlocking },
                                 set: { _ in
-                                    Task {
+                                    runModeration {
                                         await viewModel.toggleBlock(
                                             account: account,
                                             appPassword: appPassword,
@@ -194,7 +189,7 @@ struct BlueskyProfileView: View {
                             Toggle(isOn: Binding(
                                 get: { viewerState.muted },
                                 set: { _ in
-                                    Task {
+                                    runModeration {
                                         await viewModel.toggleMute(
                                             account: account,
                                             appPassword: appPassword,
@@ -226,7 +221,7 @@ struct BlueskyProfileView: View {
                             Toggle(isOn: Binding(
                                 get: { membership.isMember },
                                 set: { _ in
-                                    Task {
+                                    runModeration {
                                         await viewModel.toggleListMembership(
                                             membership,
                                             account: account,
@@ -348,7 +343,7 @@ struct BlueskyProfileView: View {
                             }
                         } else {
                             Button(role: .destructive) {
-                                Task {
+                                runModeration {
                                     await viewModel.blockAllFollowers(
                                         account: account,
                                         appPassword: appPassword,
@@ -395,7 +390,7 @@ struct BlueskyProfileView: View {
             if let errorMessage = viewModel.errorMessage {
                 ErrorRetryBanner(message: errorMessage) {
                     viewModel.errorMessage = nil
-                    Task {
+                    startLoadTask {
                         await viewModel.load(
                             did: member.actor.did,
                             account: account,
@@ -408,20 +403,29 @@ struct BlueskyProfileView: View {
         }
         .listStyle(.insetGrouped)
         .refreshable {
-            await viewModel.load(
-                did: member.actor.did,
-                account: account,
-                appPassword: appPassword,
-                using: blueskyClient
-            )
+            await runLoad {
+                await viewModel.load(
+                    did: member.actor.did,
+                    account: account,
+                    appPassword: appPassword,
+                    using: blueskyClient
+                )
+            }
         }
         .task {
-            await viewModel.loadIfNeeded(
-                did: member.actor.did,
-                account: account,
-                appPassword: appPassword,
-                using: blueskyClient
-            )
+            await runLoad {
+                await viewModel.loadIfNeeded(
+                    did: member.actor.did,
+                    account: account,
+                    appPassword: appPassword,
+                    using: blueskyClient
+                )
+            }
+        }
+        .onDisappear {
+            loadTask?.cancel()
+            moderationTask?.cancel()
+            exportTask?.cancel()
         }
     }
 
@@ -430,13 +434,10 @@ struct BlueskyProfileView: View {
             isShowingAvatarPreview = true
         } label: {
             if let avatarURL = profile.avatarURL {
-                AsyncImage(url: avatarURL) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
+                ThumbnailImageView(url: avatarURL, maxPixelSize: 144) {
                     avatarPlaceholder(for: profile)
                 }
+                .scaledToFill()
                 .frame(width: 72, height: 72)
                 .clipShape(Circle())
                 .overlay {
@@ -488,16 +489,51 @@ struct BlueskyProfileView: View {
                 }
             }
     }
+
+    private func runModeration(_ operation: @escaping @Sendable () async -> Void) {
+        moderationTask?.cancel()
+        moderationTask = Task {
+            await operation()
+        }
+    }
+
+    private func runExport(_ format: ExportFileFormat, account: AppAccount, appPassword: String) {
+        exportTask?.cancel()
+        exportTask = Task {
+            if let url = await viewModel.exportPosts(as: format, account: account, appPassword: appPassword, using: blueskyClient) {
+                shareFileURL = url
+            }
+        }
+    }
+
+    private func runLoad(
+        operation: @escaping @Sendable () async -> Void
+    ) async {
+        let task = startLoadTask(operation: operation)
+        await task.value
+    }
+
+    @discardableResult
+    private func startLoadTask(
+        operation: @escaping @Sendable () async -> Void
+    ) -> Task<Void, Never> {
+        loadTask?.cancel()
+        let task = Task {
+            await operation()
+        }
+        loadTask = task
+        return task
+    }
 }
 
 private struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func updateUIViewController(_: UIActivityViewController, context: Context) {}
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }
 
 #Preview {

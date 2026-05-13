@@ -75,7 +75,6 @@ struct InfoView: View {
             Text(verbatim: localizationManager.localized("onboarding.title"))
                 .font(.body)
                 .foregroundStyle(.secondary)
-
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
@@ -174,11 +173,11 @@ struct InfoView: View {
             featureCard(
                 icon: "rectangle.split.3x1",
                 color: .skyOrange,
-                title: localizationManager.localized("info.feature.compare"),
+                title: localizationManager.localized("info.feature.export"),
                 items: [
-                    loc("info.feature.compare.compare"),
-                    loc("info.feature.compare.transfer"),
-                    loc("info.feature.compare.export"),
+                    loc("info.feature.export.posts"),
+                    loc("info.feature.export.media"),
+                    loc("info.feature.export.download"),
                 ]
             )
 
@@ -190,18 +189,6 @@ struct InfoView: View {
                     loc("info.feature.moderation.block"),
                     loc("info.feature.moderation.block_all"),
                     loc("info.feature.moderation.membership"),
-                ]
-            )
-
-            featureCard(
-                icon: "clock.arrow.trianglehead.counterclockwise.rotate.90",
-                color: .skyPurple,
-                title: localizationManager.localized("info.feature.audit"),
-                items: [
-                    loc("info.feature.audit.snapshots"),
-                    loc("info.feature.audit.log"),
-                    loc("info.feature.audit.pending"),
-                    loc("info.feature.audit.searches"),
                 ]
             )
         }

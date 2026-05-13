@@ -14,6 +14,7 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published private(set) var isExportingPosts = false
 
     private var hasLoadedOnce = false
+    private let downloadService = MediaDownloadService.shared
 
     var profile: BlueskyProfile? {
         inspection?.profile
@@ -71,13 +72,16 @@ final class BlueskyProfileViewModel: ObservableObject {
 
     private func countMedia(for did: String, account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
         isScanningMedia = true
+        defer { isScanningMedia = false }
         var cursor: String?
         var images = 0
         var videos = 0
         while true {
             do {
+                guard !Task.isCancelled else { return }
                 let response = try await client.fetchRichFeed(did: did, cursor: cursor, account: account, appPassword: appPassword)
                 for entry in response.feed {
+                    guard !Task.isCancelled else { return }
                     if let embed = entry.post.embed {
                         images += embed.images?.count ?? 0
                         if embed.video != nil { videos += 1 }
@@ -85,13 +89,14 @@ final class BlueskyProfileViewModel: ObservableObject {
                 }
                 guard let next = response.cursor else { break }
                 cursor = next
+            } catch is CancellationError {
+                return
             } catch {
                 break
             }
         }
         mediaImageCount = images
         mediaVideoCount = videos
-        isScanningMedia = false
     }
 
     func toggleMute(
@@ -149,8 +154,10 @@ final class BlueskyProfileViewModel: ObservableObject {
 
         while allImageURLs.count < 500 {
             do {
+                guard !Task.isCancelled else { return }
                 let page = try await client.fetchAuthorFeed(did: profile.did, cursor: cursor, account: account, appPassword: appPassword)
                 for feedPost in page.feed {
+                    guard !Task.isCancelled else { return }
                     guard let images = feedPost.post.embed?.images else { continue }
                     for img in images where allImageURLs.count < 500 {
                         allImageURLs.append(img.fullsize)
@@ -158,6 +165,8 @@ final class BlueskyProfileViewModel: ObservableObject {
                 }
                 guard let nextCursor = page.cursor else { break }
                 cursor = nextCursor
+            } catch is CancellationError {
+                return
             } catch {
                 break
             }
@@ -169,30 +178,26 @@ final class BlueskyProfileViewModel: ObservableObject {
         }
 
         let totalBatches = (allImageURLs.count + 9) / 10
-
-        for batchStart in stride(from: 0, to: allImageURLs.count, by: 10) {
-            let batch = Array(allImageURLs[batchStart ..< min(batchStart + 10, allImageURLs.count)])
-            let batchIndex = (batchStart / 10) + 1
-            downloadProgress = (batchIndex, totalBatches, allImageURLs.count)
-
-            let urls = batch.compactMap { URL(string: $0) }
-            await withTaskGroup(of: (Int, Data?).self) { group in
-                for (i, url) in urls.enumerated() {
-                    group.addTask {
-                        let data = try? Data(contentsOf: url)
-                        return (batchStart + i, data)
-                    }
-                }
-                for await (index, data) in group {
-                    guard let data else { continue }
-                    let ext = allImageURLs[index].hasSuffix(".png") ? "png" : "jpg"
-                    let fileURL = targetDir.appendingPathComponent("image-\(index + 1).\(ext)")
-                    try? data.write(to: fileURL)
-                }
-            }
+        let assets = allImageURLs.enumerated().compactMap { index, urlString -> MediaAssetDownload? in
+            guard let url = URL(string: urlString) else { return nil }
+            let preferredExtension = url.pathExtension.isEmpty ? nil : url.pathExtension
+            return MediaAssetDownload(
+                index: index,
+                filenameStem: "image-\(index + 1)",
+                source: .image(url: url, preferredExtension: preferredExtension)
+            )
         }
 
-        statusMessage = "Downloaded \(allImageURLs.count) images to \(profile.handle)/."
+        let results = await downloadService.downloadImages(assets, to: targetDir) { completed, _, _ in
+            await MainActor.run {
+                let currentBatch = min(totalBatches, max(1, (completed + 9) / 10))
+                self.downloadProgress = (currentBatch, totalBatches, allImageURLs.count)
+            }
+        }
+        guard !Task.isCancelled else { return }
+
+        let succeeded = results.count(where: { $0.savedFilename != nil })
+        statusMessage = "Downloaded \(succeeded) images to \(profile.handle)/."
     }
 
     func toggleBlock(
@@ -336,10 +341,13 @@ final class BlueskyProfileViewModel: ObservableObject {
         var cursor: String?
         while true {
             do {
+                guard !Task.isCancelled else { return nil }
                 let response = try await client.fetchRichFeed(did: profile.did, cursor: cursor, account: account, appPassword: appPassword)
                 allPosts += response.feed
                 guard let next = response.cursor else { break }
                 cursor = next
+            } catch is CancellationError {
+                return nil
             } catch {
                 break
             }
