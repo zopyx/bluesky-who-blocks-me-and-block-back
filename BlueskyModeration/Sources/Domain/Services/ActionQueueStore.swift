@@ -96,7 +96,6 @@ final class ActionQueueStore: ObservableObject {
                         self.actions[i].status = .running(progress.completedCount, progress.totalCount, progress.currentHandle)
                     }
                 },
-                onActorStart: nil,
                 onActorComplete: nil,
                 action: action.action
             )

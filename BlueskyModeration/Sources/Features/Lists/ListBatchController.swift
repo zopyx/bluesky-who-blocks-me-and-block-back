@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 final class ListBatchController {
     private let baseDelay: UInt64
+    private let batchSize = 5
 
     init(baseDelay: UInt64 = 300_000_000) {
         self.baseDelay = baseDelay
@@ -13,57 +14,75 @@ final class ListBatchController {
         actors: [BlueskyActor],
         operation: ListBulkActionResult.Operation,
         onProgress: ((BatchProgress) -> Void)? = nil,
-        onActorStart: ((BlueskyActor) -> Void)? = nil,
         onActorComplete: ((BlueskyActor) -> Void)? = nil,
         isCancelled: @escaping () -> Bool = { false },
         action: @escaping (BlueskyActor) async throws -> Void
     ) async -> ListBulkActionResult {
         var succeededActors: [BlueskyActor] = []
         var failures: [ListBulkActionResult.Failure] = []
+        var completedCount = 0
 
-        for (index, actor) in actors.enumerated() {
+        let totalCount = actors.count
+        var batchStart = 0
+        let actionBox = ActionBox(action: action)
+
+        while batchStart < totalCount {
             guard !Task.isCancelled, !isCancelled() else { break }
 
-            onProgress?(
-                BatchProgress(
-                    title: title,
-                    completedCount: index,
-                    totalCount: actors.count,
-                    currentHandle: actor.handle
-                )
-            )
-            onActorStart?(actor)
+            let batchEnd = min(batchStart + batchSize, totalCount)
+            let batch = Array(actors[batchStart ..< batchEnd])
 
-            // Attempt with retry
-            var lastError: Error?
-            for _ in 0 ..< 3 {
-                guard !Task.isCancelled else { break }
-                do {
-                    try await action(actor)
+            let results = await withTaskGroup(
+                of: (BlueskyActor, String?).self,
+                returning: [(BlueskyActor, String?)].self
+            ) { group in
+                for actor in batch {
+                    group.addTask { [baseDelay] in
+                        var lastError: String?
+                        for attempt in 0 ..< 3 {
+                            guard !Task.isCancelled else { break }
+                            do {
+                                try await actionBox.action(actor)
+                                lastError = nil
+                                break
+                            } catch {
+                                lastError = error.localizedDescription
+                                if attempt < 2 {
+                                    try? await Task.sleep(for: .nanoseconds(baseDelay))
+                                }
+                            }
+                        }
+                        return (actor, lastError)
+                    }
+                }
+                var collected: [(BlueskyActor, String?)] = []
+                for await result in group {
+                    collected.append(result)
+                }
+                return collected
+            }
+
+            for (actor, errorMessage) in results {
+                onActorComplete?(actor)
+                completedCount += 1
+                onProgress?(
+                    BatchProgress(
+                        title: title,
+                        completedCount: completedCount,
+                        totalCount: totalCount,
+                        currentHandle: actor.handle
+                    )
+                )
+                if let errorMessage {
+                    failures.append(.init(actor: actor, message: errorMessage))
+                } else {
                     succeededActors.append(actor)
-                    lastError = nil
-                    break
-                } catch {
-                    lastError = error
-                    try? await Task.sleep(for: .nanoseconds(baseDelay))
                 }
             }
 
-            if let lastError {
-                failures.append(.init(actor: actor, message: lastError.localizedDescription))
-            }
+            batchStart += batchSize
 
-            onActorComplete?(actor)
-            onProgress?(
-                BatchProgress(
-                    title: title,
-                    completedCount: index + 1,
-                    totalCount: actors.count,
-                    currentHandle: actor.handle
-                )
-            )
-
-            if index < actors.count - 1 {
+            if batchStart < totalCount {
                 try? await Task.sleep(for: .nanoseconds(baseDelay))
             }
         }
@@ -74,4 +93,8 @@ final class ListBatchController {
             failures: failures
         )
     }
+}
+
+private struct ActionBox: @unchecked Sendable {
+    let action: (BlueskyActor) async throws -> Void
 }

@@ -3,6 +3,7 @@ import SwiftUI
 extension ListDetailView {
     struct ListMembersSection: View {
         @ObservedObject var viewModel: ListDetailViewModel
+        @ObservedObject var batchState: ListBatchProgressState
         @Binding var memberSearchQuery: String
         let currentList: BlueskyList
         let account: AppAccount
@@ -88,7 +89,7 @@ extension ListDetailView {
                             } label: {
                                 Label { Text(verbatim: loc("actions.remove")) } icon: { Image(systemName: "person.crop.circle.badge.minus") }
                             }
-                            .disabled(viewModel.isRemoving(member) || viewModel.isPerformingBulkAction)
+                            .disabled(viewModel.isRemoving(member) || batchState.isPerformingBulkAction)
                             .accessibilityHint("This action cannot be undone.")
                         }
                     }

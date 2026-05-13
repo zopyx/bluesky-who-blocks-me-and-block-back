@@ -86,17 +86,14 @@ final class ListBatchControllerTests: XCTestCase {
             makeActor(did: "did:plc:1", handle: "a.bsky.social"),
             makeActor(did: "did:plc:2", handle: "b.bsky.social"),
         ]
-        var started: [BlueskyActor] = []
         var completed: [BlueskyActor] = []
         _ = await controller.performBatch(
             title: "Test",
             actors: actors,
             operation: .add,
-            onActorStart: { actor in started.append(actor) },
             onActorComplete: { actor in completed.append(actor) },
             action: { _ in }
         )
-        XCTAssertEqual(started.count, 2)
         XCTAssertEqual(completed.count, 2)
     }
 

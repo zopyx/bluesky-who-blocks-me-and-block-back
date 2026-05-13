@@ -163,7 +163,7 @@ final class ViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoadingMembers)
         XCTAssertFalse(viewModel.isLoadingMoreMembers)
         XCTAssertFalse(viewModel.hasMoreMembers)
-        XCTAssertFalse(viewModel.isPerformingBulkAction)
+        XCTAssertFalse(viewModel.batchProgressState.isPerformingBulkAction)
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.membersErrorMessage)
         XCTAssertNil(viewModel.searchErrorMessage)

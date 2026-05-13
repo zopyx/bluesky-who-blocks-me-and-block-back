@@ -449,7 +449,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                 let chunk = dids[offset ..< min(offset + 25, dids.count)]
                 offset += 25
                 group.addTask {
-                    try await Self.fetchProfileBatch(dids: Array(chunk), session: urlSession)
+                    try await Self.fetchProfileBatch(identifiers: Array(chunk), session: urlSession)
                 }
             }
             var actors: [BlueskyActor] = []
@@ -460,8 +460,8 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
-    private static func fetchProfileBatch(dids: [String], session: URLSession) async throws -> [BlueskyActor] {
-        let actorsParam = dids.map { URLQueryItem(name: "actors", value: $0) }
+    static func fetchProfileBatch(identifiers: [String], session: URLSession) async throws -> [BlueskyActor] {
+        let actorsParam = identifiers.map { URLQueryItem(name: "actors", value: $0) }
         guard let profilesURL = URL(string: "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfiles") else {
             throw BlueskyAPIError.invalidURL
         }

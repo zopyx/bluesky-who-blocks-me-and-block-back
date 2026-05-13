@@ -30,6 +30,7 @@
 		1DA0FC8F4581766D25B60549 /* zh.json in Resources */ = {isa = PBXBuildFile; fileRef = 9578C9B9E8F8757B22186261 /* zh.json */; };
 		21F961EE9D4E554A91E4AC70 /* BlueskySessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03561C1580449FBB58D3E623 /* BlueskySessionService.swift */; };
 		23529560224DEA5BC267E083 /* AccountStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10D07E6C7A66F0B643E889E0 /* AccountStoreTests.swift */; };
+		26204F9044A1B63DC8886D09 /* ListBatchProgressState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003DB1B6D237800AF7B512DB /* ListBatchProgressState.swift */; };
 		28E181A6E033F1C11E826D5E /* ja.json in Resources */ = {isa = PBXBuildFile; fileRef = 45CEE6236351BA26E2D69FBE /* ja.json */; };
 		2A361832265E870EAA9D4997 /* WorkspacePreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F299400BF2699443484B /* WorkspacePreferencesStore.swift */; };
 		2A5C54BEF7D9B3596765D3B7 /* ListRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5726B67E2FB6C49AD66393D0 /* ListRowView.swift */; };
@@ -190,6 +191,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		003DB1B6D237800AF7B512DB /* ListBatchProgressState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBatchProgressState.swift; sourceTree = "<group>"; };
 		02FC50CF9A8B3F6134C00AAF /* MediaBrowserViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBrowserViewModelTests.swift; sourceTree = "<group>"; };
 		03561C1580449FBB58D3E623 /* BlueskySessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskySessionService.swift; sourceTree = "<group>"; };
 		04DA319C638081F040D7489C /* ThumbnailImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailImageView.swift; sourceTree = "<group>"; };
@@ -507,6 +509,7 @@
 				6B1F6017FABE697E2F1D8BDC /* CreateListSheet.swift */,
 				1428B2B7544B3F6DDABF69BA /* DashboardView.swift */,
 				1D071F1CF3D62971E99E7446 /* ListBatchController.swift */,
+				003DB1B6D237800AF7B512DB /* ListBatchProgressState.swift */,
 				24F5E39018B0F8FEF488527C /* ListDetailComparisonSection.swift */,
 				7930ABCB9DDA0325197A398A /* ListDetailMembersSection.swift */,
 				A63773A69DCC33A8E4CF380A /* ListDetailModels.swift */,
@@ -943,6 +946,7 @@
 				BCB345A8FC2C437F7F8D790D /* InfoView.swift in Sources */,
 				4DD5A9A61D05C01F947D6B26 /* KeychainService.swift in Sources */,
 				D1A943CFC4E34A0720ADF9DD /* ListBatchController.swift in Sources */,
+				26204F9044A1B63DC8886D09 /* ListBatchProgressState.swift in Sources */,
 				ABBCDDBB713AD546DADE2858 /* ListDetailComparisonSection.swift in Sources */,
 				78FB60ACB6D4E62D9A06E700 /* ListDetailMembersSection.swift in Sources */,
 				668F2BDCA14645A65832BEF9 /* ListDetailModels.swift in Sources */,

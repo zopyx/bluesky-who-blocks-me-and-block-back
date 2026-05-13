@@ -19,8 +19,9 @@ final class ListImportController {
         var seenTokens: Set<String> = []
         var seenResolvedDIDs: Set<String> = []
         var items: [ImportPreviewItem] = []
+        var tokensToResolve: [(index: Int, token: String)] = []
 
-        for token in tokens {
+        for (index, token) in tokens.enumerated() {
             let normalizedToken = token.lowercased()
             if !seenTokens.insert(normalizedToken).inserted {
                 items.append(
@@ -33,57 +34,67 @@ final class ListImportController {
                 )
                 continue
             }
+            tokensToResolve.append((index, token))
+            items.append(.init(token: token, actor: nil, classification: .unresolved, message: nil))
+        }
 
-            do {
-                let profile = try await client.fetchProfile(
-                    did: token,
-                    account: account,
-                    appPassword: appPassword
-                )
-                let actor = BlueskyActor(
-                    did: profile.did,
-                    handle: profile.handle,
-                    displayName: profile.displayName,
-                    avatarURL: profile.avatarURL
-                )
+        let session = URLSession.shared
+        let apiBatchSize = 25
 
-                if existingMemberDIDs.contains(actor.did) {
-                    items.append(
-                        ImportPreviewItem(
-                            token: token,
-                            actor: actor,
-                            classification: .alreadyPresent,
-                            message: "Already a member of this list."
+        if !tokensToResolve.isEmpty {
+            try await withThrowingTaskGroup(of: [(index: Int, actor: BlueskyActor?)].self) { group in
+                var offset = 0
+                while offset < tokensToResolve.count {
+                    let chunk = tokensToResolve[offset ..< min(offset + apiBatchSize, tokensToResolve.count)]
+                    offset += apiBatchSize
+                    let batchIndices = Array(chunk)
+                    group.addTask {
+                        let batchTokens = batchIndices.map(\.token)
+                        let profiles = (try? await LiveBlueskyClient.fetchProfileBatch(identifiers: batchTokens, session: session)) ?? []
+                        let byHandle: [String: BlueskyActor] = Dictionary(
+                            uniqueKeysWithValues: profiles.map { ($0.handle.lowercased(), $0) }
                         )
-                    )
-                } else if !seenResolvedDIDs.insert(actor.did).inserted {
-                    items.append(
-                        ImportPreviewItem(
-                            token: token,
-                            actor: actor,
-                            classification: .duplicate,
-                            message: "Another entry in this import resolves to the same account."
+                        let byDID: [String: BlueskyActor] = Dictionary(
+                            uniqueKeysWithValues: profiles.map { ($0.did, $0) }
                         )
-                    )
-                } else {
-                    items.append(
-                        ImportPreviewItem(
-                            token: token,
-                            actor: actor,
-                            classification: .ready,
-                            message: nil
-                        )
-                    )
+                        return batchIndices.map { entry in
+                            let lowerToken = entry.token.lowercased()
+                            if let actor = byDID[lowerToken] ?? byHandle[lowerToken] {
+                                return (entry.index, actor)
+                            }
+                            return (entry.index, nil as BlueskyActor?)
+                        }
+                    }
                 }
-            } catch {
-                items.append(
-                    ImportPreviewItem(
-                        token: token,
-                        actor: nil,
-                        classification: .unresolved,
-                        message: error.localizedDescription
-                    )
-                )
+
+                for try await batch in group {
+                    for (index, resolved) in batch {
+                        guard let actor = resolved else { continue }
+
+                        if existingMemberDIDs.contains(actor.did) {
+                            items[index] = ImportPreviewItem(
+                                token: tokens[index],
+                                actor: actor,
+                                classification: .alreadyPresent,
+                                message: "Already a member of this list."
+                            )
+                        } else if !seenResolvedDIDs.insert(actor.did).inserted {
+                            items[index] = ImportPreviewItem(
+                                token: tokens[index],
+                                actor: actor,
+                                classification: .duplicate,
+                                message: "Another entry in this import resolves to the same account."
+                            )
+                        } else {
+                            items[index] = ImportPreviewItem(
+                                token: tokens[index],
+                                actor: actor,
+                                classification: .ready,
+                                message: nil
+                            )
+                        }
+                    }
+                }
             }
         }
 

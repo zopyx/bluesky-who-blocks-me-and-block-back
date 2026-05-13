@@ -28,11 +28,9 @@ final class ListMergeController {
             actors: actors,
             operation: .copy,
             onProgress: nil,
-            onActorStart: nil,
             onActorComplete: nil
         ) { actor in
             _ = try await client.addActor(did: actor.did, to: targetList, account: account, appPassword: appPassword)
-            try await Task.sleep(for: .milliseconds(300))
         }
     }
 

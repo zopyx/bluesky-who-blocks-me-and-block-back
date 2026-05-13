@@ -8,6 +8,7 @@ struct ListDetailView: View {
     @EnvironmentObject var blueskyClient: LiveBlueskyClient
     @EnvironmentObject var workspaceStore: ModerationWorkspaceStore
     @StateObject var viewModel = ListDetailViewModel()
+    @StateObject var batchState = ListBatchProgressState()
     @State var currentList: BlueskyList
     @State var searchQuery = ""
     @State var memberSearchQuery = ""
@@ -323,22 +324,11 @@ struct ListDetailView: View {
                 .padding(.vertical, 4)
             }
 
-            if let batchProgress = viewModel.batchProgress {
-                Section {
-                    BatchProgressCard(
-                        title: batchProgress.title,
-                        completedCount: batchProgress.completedCount,
-                        totalCount: batchProgress.totalCount,
-                        currentHandle: batchProgress.currentHandle,
-                        onCancel: { viewModel.cancelBatch() }
-                    )
-                } header: {
-                    Text(verbatim: loc("list.detail.bulk_operation"))
-                }
-            }
+            BatchProgressSection(batchState: batchState, viewModel: viewModel)
 
             ListSearchSection(
                 viewModel: viewModel,
+                batchState: batchState,
                 searchQuery: $searchQuery,
                 currentList: currentList,
                 account: account,
@@ -351,6 +341,7 @@ struct ListDetailView: View {
 
             ListMembersSection(
                 viewModel: viewModel,
+                batchState: batchState,
                 memberSearchQuery: $memberSearchQuery,
                 currentList: currentList,
                 account: account,
@@ -360,6 +351,7 @@ struct ListDetailView: View {
 
             ListComparisonSection(
                 viewModel: viewModel,
+                batchState: batchState,
                 selectedComparisonListID: $comparisonState.selectedComparisonListID,
                 currentList: currentList,
                 account: account,
@@ -551,6 +543,29 @@ struct ListDetailView: View {
 extension ListDetailView {
     enum ExportFormat: String, CaseIterable {
         case csv, json, xlsx, ods
+    }
+}
+
+extension ListDetailView {
+    struct BatchProgressSection: View {
+        @ObservedObject var batchState: ListBatchProgressState
+        let viewModel: ListDetailViewModel
+
+        var body: some View {
+            if let batchProgress = batchState.batchProgress {
+                Section {
+                    BatchProgressCard(
+                        title: batchProgress.title,
+                        completedCount: batchProgress.completedCount,
+                        totalCount: batchProgress.totalCount,
+                        currentHandle: batchProgress.currentHandle,
+                        onCancel: { batchState.cancelBatch() }
+                    )
+                } header: {
+                    Text(verbatim: loc("list.detail.bulk_operation"))
+                }
+            }
+        }
     }
 }
 

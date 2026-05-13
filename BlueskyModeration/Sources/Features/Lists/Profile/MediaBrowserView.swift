@@ -30,9 +30,6 @@ struct MediaBrowserView: View {
                         VStack(spacing: 4) {
                             ProgressView(value: Double(progress.current), total: Double(progress.total))
                                 .padding(.horizontal)
-                            Text("\(progress.current) / \(progress.total)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
                             if let detail = viewModel.downloadStatusDetail, !detail.isEmpty {
                                 Text(detail)
                                     .font(.caption2)
@@ -94,10 +91,10 @@ struct MediaBrowserView: View {
 
                 if !viewModel.items.isEmpty {
                     Text("Tap to select · Double-tap to preview")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 6)
                 }
 
                 toolbar

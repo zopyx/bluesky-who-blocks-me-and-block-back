@@ -3,6 +3,7 @@ import SwiftUI
 extension ListDetailView {
     struct ListComparisonSection: View {
         @ObservedObject var viewModel: ListDetailViewModel
+        @ObservedObject var batchState: ListBatchProgressState
         @Binding var selectedComparisonListID: String
         let currentList: BlueskyList
         let account: AppAccount
@@ -77,7 +78,7 @@ extension ListDetailView {
                     } label: {
                         Label { Text(verbatim: loc("list.compare.copy")) } icon: { Image(systemName: "square.on.square") }
                     }
-                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
+                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || batchState.isPerformingBulkAction)
                     .accessibilityHint("Copies selected members to the other list without removing them from this list")
 
                     Button {
@@ -96,7 +97,7 @@ extension ListDetailView {
                     } label: {
                         Label { Text(verbatim: loc("list.compare.move")) } icon: { Image(systemName: "arrow.right.square") }
                     }
-                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
+                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || batchState.isPerformingBulkAction)
                     .accessibilityHint("Moves selected members to the other list and removes them from this list")
 
                     Button {
@@ -116,7 +117,7 @@ extension ListDetailView {
                     } label: {
                         Label { Text(verbatim: loc("list.compare.move")) } icon: { Image(systemName: "arrow.right.square") }
                     }
-                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || viewModel.isPerformingBulkAction)
+                    .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || batchState.isPerformingBulkAction)
 
                     if let comparisonReport = viewModel.comparisonReport {
                         comparisonSummary(report: comparisonReport)
@@ -222,7 +223,7 @@ extension ListDetailView {
                 } label: {
                     Label { Text(verbatim: loc("list.compare.add_here")) } icon: { Image(systemName: "arrow.down.left.and.arrow.up.right") }
                 }
-                .disabled(viewModel.selectedComparisonActorDIDs.isEmpty || viewModel.isPerformingBulkAction)
+                .disabled(viewModel.selectedComparisonActorDIDs.isEmpty || batchState.isPerformingBulkAction)
                 .accessibilityHint("Adds all selected comparison actors to this list")
 
                 if let diffExportFileURL {

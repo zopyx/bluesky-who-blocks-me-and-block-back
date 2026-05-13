@@ -3,6 +3,7 @@ import SwiftUI
 extension ListDetailView {
     struct ListSearchSection: View {
         @ObservedObject var viewModel: ListDetailViewModel
+        @ObservedObject var batchState: ListBatchProgressState
         @Binding var searchQuery: String
         let currentList: BlueskyList
         let account: AppAccount
@@ -120,7 +121,7 @@ extension ListDetailView {
                             viewModel.selectAllSearchResults()
                         }
                     }
-                    .disabled(viewModel.isPerformingBulkAction)
+                    .disabled(batchState.isPerformingBulkAction)
                     .accessibilityHint(viewModel.selectedSearchActorIDs.count == viewModel.searchResults.count && !viewModel.searchResults.isEmpty ? "Deselects all search results" : "Selects every account in the search results")
 
                     Spacer()
@@ -145,7 +146,7 @@ extension ListDetailView {
                 } label: {
                     Label { Text(verbatim: loc("list.search.add_selected")) } icon: { Image(systemName: "person.crop.circle.badge.plus") }
                 }
-                .disabled(viewModel.selectedSearchActorIDs.isEmpty || viewModel.isPerformingBulkAction)
+                .disabled(viewModel.selectedSearchActorIDs.isEmpty || batchState.isPerformingBulkAction)
                 .accessibilityHint("Adds all selected accounts to this list")
             }
         }

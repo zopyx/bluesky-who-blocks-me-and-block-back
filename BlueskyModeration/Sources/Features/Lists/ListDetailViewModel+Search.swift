@@ -102,8 +102,8 @@ extension ListDetailViewModel {
         appPassword: String,
         using client: LiveBlueskyClient
     ) async {
-        addingActorIDs.insert(actor.did)
-        defer { addingActorIDs.remove(actor.did) }
+        batchProgressState.addingActorIDs.insert(actor.did)
+        defer { batchProgressState.addingActorIDs.remove(actor.did) }
 
         do {
             let recordURI = try await client.addActor(
@@ -128,8 +128,8 @@ extension ListDetailViewModel {
         appPassword: String,
         using client: LiveBlueskyClient
     ) async {
-        removingMemberIDs.insert(member.id)
-        defer { removingMemberIDs.remove(member.id) }
+        batchProgressState.removingMemberIDs.insert(member.id)
+        defer { batchProgressState.removingMemberIDs.remove(member.id) }
 
         do {
             try await client.removeMember(
@@ -146,11 +146,11 @@ extension ListDetailViewModel {
     }
 
     func isAdding(_ actor: BlueskyActor) -> Bool {
-        addingActorIDs.contains(actor.did)
+        batchProgressState.isAdding(actor)
     }
 
     func isRemoving(_ member: BlueskyListMember) -> Bool {
-        removingMemberIDs.contains(member.id)
+        batchProgressState.isRemoving(member)
     }
 
     func filteredSearchResults(_ actors: [BlueskyActor]) -> [BlueskyActor] {

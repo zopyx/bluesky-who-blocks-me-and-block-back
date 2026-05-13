@@ -19,10 +19,6 @@ final class ListDetailViewModel: ObservableObject {
     @Published var isPreparingImportPreview = false
     @Published var isImportingHandles = false
     @Published var isUpdatingMetadata = false
-    @Published var isPerformingBulkAction = false
-    @Published var batchProgress: BatchProgress?
-    @Published var addingActorIDs: Set<String> = []
-    @Published var removingMemberIDs: Set<String> = []
     @Published var selectedSearchActorIDs: Set<String> = []
     @Published var selectedMemberIDs: Set<String> = []
     @Published var selectedComparisonActorDIDs: Set<String> = []
@@ -31,6 +27,7 @@ final class ListDetailViewModel: ObservableObject {
     @Published var membersErrorMessage: String?
     @Published var searchErrorMessage: String?
 
+    let batchProgressState = ListBatchProgressState()
     let membersController = ListMembersController()
     var searchCursor: String?
     var lastSearchQuery = ""
@@ -38,19 +35,4 @@ final class ListDetailViewModel: ObservableObject {
     let importController = ListImportController()
     let diffController = ListDiffController()
     let batchController = ListBatchController()
-
-    /// Flag set to true when the user requests batch cancellation.
-    /// Checked by the batch controller via the isCancelled closure.
-    private(set) var isBatchCancelled = false
-
-    /// Cancels the currently running batch operation, if any.
-    func cancelBatch() {
-        isBatchCancelled = true
-        isPerformingBulkAction = false
-    }
-
-    /// Resets the cancellation flag before starting a new batch.
-    func resetBatchCancellation() {
-        isBatchCancelled = false
-    }
 }

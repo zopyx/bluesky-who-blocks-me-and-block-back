@@ -454,37 +454,40 @@ extension ListDetailViewModel {
         removingMemberIDsByActorDID: [String: String] = [:],
         action: @escaping (BlueskyActor) async throws -> Void
     ) async -> ListBulkActionResult {
-        resetBatchCancellation()
-        isPerformingBulkAction = true
+        let state = batchProgressState
+        state.resetBatchCancellation()
+        state.isPerformingBulkAction = true
+        if addingActorState {
+            for actor in actors {
+                state.addingActorIDs.insert(actor.did)
+            }
+        }
+        for (did, memberID) in removingMemberIDsByActorDID {
+            state.removingMemberIDs.insert(memberID)
+        }
         defer {
-            isPerformingBulkAction = false
-            batchProgress = nil
+            state.isPerformingBulkAction = false
+            state.batchProgress = nil
+            state.addingActorIDs.removeAll()
+            state.removingMemberIDs.removeAll()
         }
 
         return await batchController.performBatch(
             title: title,
             actors: actors,
             operation: operation,
-            onProgress: { [weak self] progress in
-                self?.batchProgress = progress
+            onProgress: { progress in
+                state.batchProgress = progress
             },
-            onActorStart: { [weak self] actor in
+            onActorComplete: { actor in
                 if addingActorState {
-                    self?.addingActorIDs.insert(actor.did)
+                    state.addingActorIDs.remove(actor.did)
                 }
                 if let memberID = removingMemberIDsByActorDID[actor.did] {
-                    self?.removingMemberIDs.insert(memberID)
+                    state.removingMemberIDs.remove(memberID)
                 }
             },
-            onActorComplete: { [weak self] actor in
-                if addingActorState {
-                    self?.addingActorIDs.remove(actor.did)
-                }
-                if let memberID = removingMemberIDsByActorDID[actor.did] {
-                    self?.removingMemberIDs.remove(memberID)
-                }
-            },
-            isCancelled: { [weak self] in self?.isBatchCancelled ?? false },
+            isCancelled: { state.isBatchCancelled },
             action: action
         )
     }
