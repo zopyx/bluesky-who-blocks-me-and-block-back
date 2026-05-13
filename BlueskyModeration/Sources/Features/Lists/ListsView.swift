@@ -147,7 +147,16 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            Text(loc("lists.moderation_lists"))
+                            HStack {
+                                Text(loc("lists.moderation_lists"))
+                                Spacer()
+                                Button {
+                                    presentationState.createListKind = .moderation
+                                    presentationState.isShowingCreateList = true
+                                } label: {
+                                    Image(systemName: "plus")
+                                }
+                            }
                         }
 
                         Section {
@@ -180,7 +189,16 @@ struct ListsView: View {
                                 }
                             }
                         } header: {
-                            Text(loc("lists.lists"))
+                            HStack {
+                                Text(loc("lists.lists"))
+                                Spacer()
+                                Button {
+                                    presentationState.createListKind = .regular
+                                    presentationState.isShowingCreateList = true
+                                } label: {
+                                    Image(systemName: "plus")
+                                }
+                            }
                         }
 
                         if let errorMessage = viewModel.errorMessage {
@@ -202,86 +220,14 @@ struct ListsView: View {
             .navigationTitle("")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    let hasLists = viewModel.listsByKind.values.contains { !$0.isEmpty }
-                    if hasLists {
-                        Menu {
-                            Button {
-                                presentationState.createListKind = .moderation
-                                presentationState.isShowingCreateList = true
-                            } label: {
-                                Label("New Moderation List", systemImage: "hand.raised")
-                            }
-
-                            Button {
-                                presentationState.createListKind = .regular
-                                presentationState.isShowingCreateList = true
-                            } label: {
-                                Label("New Regular List", systemImage: "list.bullet")
-                            }
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.body.weight(.semibold))
-                        }
-                    }
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 16) {
-                        Menu {
-                            Button {
-                                exportFormat = .csv
-                                isShowingListPicker = true
-                            } label: {
-                                Label { Text(verbatim: loc("list.search.export_csv_all")) } icon: { Image(systemName: "square.and.arrow.up") }
-                            }
-
-                            Button {
-                                exportFormat = .json
-                                isShowingListPicker = true
-                            } label: {
-                                Label { Text(verbatim: loc("list.search.export_json_all")) } icon: { Image(systemName: "square.and.arrow.up") }
-                            }
-
-                            Button {
-                                exportFormat = .xlsx
-                                isShowingListPicker = true
-                            } label: {
-                                Label("Export All to Excel", systemImage: "tablecells")
-                            }
-
-                            Button {
-                                exportFormat = .ods
-                                isShowingListPicker = true
-                            } label: {
-                                Label("Export All to ODS", systemImage: "doc.text")
-                            }
-                        } label: {
-                            if isExporting {
-                                HStack(spacing: 6) {
-                                    if let fraction = exportProgressFraction {
-                                        ProgressView(value: fraction)
-                                            .frame(width: 40)
-                                            .scaleEffect(x: 1, y: 0.6)
-                                    } else {
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                    }
-                                }
-                            } else {
-                                Image(systemName: "square.and.arrow.up")
-                            }
-                        }
-                        .disabled(accountStore.activeAccount == nil || isExporting)
-
-                        Button {
-                            Task { await reload() }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        .accessibilityLabel(loc("lists.refresh.label"))
-                        .disabled(accountStore.activeAccount == nil || isExporting)
+                    Button {
+                        Task { await reload() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityLabel(loc("lists.refresh.label"))
+                    .disabled(accountStore.activeAccount == nil)
                 }
             }
             .sheet(isPresented: $presentationState.isShowingAccountPicker) {
@@ -493,7 +439,7 @@ struct ListsView: View {
         }
 
         let dids = members.map(\.actor.did)
-        let totalBatches = (dids.count + 24) / 25
+        _ = (dids.count + 24) / 25
         exportProgressFraction = 0
         let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
             Task { @MainActor in

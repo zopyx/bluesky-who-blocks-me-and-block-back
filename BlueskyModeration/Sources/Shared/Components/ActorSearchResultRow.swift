@@ -27,22 +27,14 @@ struct ActorSearchResultRow: View {
                     ProgressView()
                         .frame(width: 24, height: 24)
                 } else {
-                    Text(loc("actor_search.add"))
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background {
-                            if #available(iOS 26, *) {
-                                Color.clear.glassEffect(.regular.tint(.skyPrimary), in: .rect(cornerRadius: .infinity))
-                            } else {
-                                Color.clear.background(Color.skyPrimary.opacity(0.14), in: Capsule())
-                            }
-                        }
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
                         .foregroundStyle(Color.skyPrimary)
                 }
             }
             .buttonStyle(.plain)
             .disabled(isAdding)
+            .accessibilityLabel(loc("actor_search.add"))
             .accessibilityHint("Adds \(actor.handle) to the list")
         }
     }

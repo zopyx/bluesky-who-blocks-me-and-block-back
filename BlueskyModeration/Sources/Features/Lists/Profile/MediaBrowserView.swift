@@ -145,12 +145,58 @@ struct MediaBrowserView: View {
             .fullScreenCover(item: $previewItem) { item in
                 MediaPreviewView(item: item) { previewItem = nil }
             }
-            .onChange(of: viewModel.filter) { _, _ in viewModel.pruneSelection() }
-            .onChange(of: viewModel.isDownloading) { _, isDownloading in
-                if !isDownloading, let progress = viewModel.downloadProgress, progress.current == progress.total {
-                    dismiss()
+            .sheet(item: $viewModel.downloadSummary) { summary in
+                NavigationStack {
+                    List {
+                        Section {
+                            LabeledContent(loc("profile.media.download_total"), value: "\(summary.total)")
+                            LabeledContent(loc("profile.media.download_succeeded"), value: "\(summary.succeeded)")
+                            if summary.failed > 0 {
+                                LabeledContent(loc("profile.media.download_failed"), value: "\(summary.failed)")
+                                    .foregroundStyle(.red)
+                            }
+                            LabeledContent(loc("profile.media.download_folder"), value: summary.directory.lastPathComponent)
+                        }
+                        if !summary.files.isEmpty {
+                            Section {
+                                ForEach(summary.files, id: \.self) { file in
+                                    Text(file)
+                                        .font(.caption.monospaced())
+                                        .foregroundStyle(.secondary)
+                                }
+                            } header: {
+                                Text(verbatim: loc("profile.media.download_files"))
+                            }
+                        }
+                        if !summary.errors.isEmpty {
+                            Section {
+                                ForEach(summary.errors, id: \.name) { item in
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(item.name)
+                                            .font(.caption.weight(.semibold))
+                                        Text(item.error)
+                                            .font(.caption2)
+                                            .foregroundStyle(.red)
+                                    }
+                                }
+                            } header: {
+                                Text(verbatim: loc("profile.media.download_errors"))
+                            }
+                        }
+                    }
+                    .navigationTitle(loc("profile.media.download_complete"))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(loc("actions.done")) {
+                                viewModel.clearDownloadSummary()
+                                dismiss()
+                            }
+                        }
+                    }
                 }
             }
+            .onChange(of: viewModel.filter) { _, _ in viewModel.pruneSelection() }
             .onChange(of: selectedDownloadFolder) { _, url in
                 guard let url else { return }
                 guard url.startAccessingSecurityScopedResource() else { return }
