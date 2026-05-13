@@ -56,6 +56,27 @@ struct PostRowView: View {
             }
             .buttonStyle(.plain)
 
+            if let video = post.embed?.video, let thumb = video.thumbnail, let url = URL(string: thumb) {
+                Button {
+                    onTapImage(url)
+                } label: {
+                    ZStack {
+                        AsyncImage(url: url) { image in
+                            image.resizable().scaledToFill()
+                        } placeholder: {
+                            Rectangle().fill(Color.skyPrimary.opacity(0.08))
+                        }
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(.white)
+                            .shadow(radius: 4)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+
             if let images = post.embed?.images, !images.isEmpty {
                 let cols = images.count == 1 ? 1 : 2
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: cols), spacing: 4) {

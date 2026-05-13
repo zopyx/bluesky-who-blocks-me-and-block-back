@@ -431,11 +431,51 @@ struct RichRecord: Decodable {
 
 struct RichEmbed: Decodable {
     let images: [RichEmbedImage]?
+    let video: RichEmbedVideo?
+
+    enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case images
+        case thumbnail
+        case playlist
+        case aspectRatio
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decodeIfPresent(String.self, forKey: .type)
+        if type == "app.bsky.embed.images#view" {
+            images = try container.decodeIfPresent([RichEmbedImage].self, forKey: .images)
+            video = nil
+        } else if type == "app.bsky.embed.video#view" {
+            images = nil
+            video = RichEmbedVideo(
+                thumbnail: try container.decodeIfPresent(String.self, forKey: .thumbnail),
+                playlist: try container.decodeIfPresent(String.self, forKey: .playlist),
+                aspectRatio: try container.decodeIfPresent(RichAspectRatio.self, forKey: .aspectRatio)
+            )
+        } else {
+            images = nil
+            video = nil
+        }
+    }
 }
 
 struct RichEmbedImage: Decodable {
     let fullsize: String?
+    let thumb: String?
     let alt: String?
+}
+
+struct RichEmbedVideo {
+    let thumbnail: String?
+    let playlist: String?
+    let aspectRatio: RichAspectRatio?
+}
+
+struct RichAspectRatio: Decodable {
+    let width: Int?
+    let height: Int?
 }
 
 // MARK: - Post Thread

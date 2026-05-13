@@ -17,6 +17,7 @@ struct UserPostsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedPostURI: String?
     @State private var previewImageURL: URL?
+    @State private var shareFileURL: URL?
 
     init(did: String) {
         self.did = did
@@ -83,11 +84,38 @@ struct UserPostsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(loc("actions.close")) { dismiss() }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !viewModel.posts.isEmpty {
+                        Menu {
+                            Button {
+                                let csv = viewModel.exportCSV()
+                                let url = FileManager.default.temporaryDirectory.appendingPathComponent("posts.csv")
+                                try? csv.write(to: url, atomically: true, encoding: .utf8)
+                                shareFileURL = url
+                            } label: {
+                                Label("CSV", systemImage: "doc.text")
+                            }
+                            Button {
+                                let json = viewModel.exportJSON()
+                                let url = FileManager.default.temporaryDirectory.appendingPathComponent("posts.json")
+                                try? json.write(to: url, options: .atomic)
+                                shareFileURL = url
+                            } label: {
+                                Label("JSON", systemImage: "doc")
+                            }
+                        } label: {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                }
             }
             .sheet(item: $selectedPostURI) { uri in
                 ThreadView(postURI: uri)
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
+            }
+            .sheet(item: $shareFileURL) { url in
+                ShareSheet(activityItems: [url])
             }
             .fullScreenCover(item: $previewImageURL) { url in
                 ImagePreviewView(url: url) { previewImageURL = nil }
@@ -115,6 +143,16 @@ struct UserPostsView: View {
               let appPassword = accountStore.appPassword(for: account) else { return }
         await viewModel.refresh(account: account, appPassword: appPassword, using: blueskyClient)
     }
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_: UIActivityViewController, context: Context) {}
 }
 
 private struct ImagePreviewView: View {

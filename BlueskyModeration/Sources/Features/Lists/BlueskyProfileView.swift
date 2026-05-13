@@ -9,9 +9,9 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
     @State private var isShowingAvatarPreview = false
-    @State private var isShowingFolderPicker = false
-    @State private var selectedDownloadFolder: URL?
     @State private var showPostBrowser = false
+    @State private var showMediaBrowser = false
+    @State private var shareFileURL: URL?
 
     var body: some View {
         Group {
@@ -58,30 +58,19 @@ struct BlueskyProfileView: View {
                     .transition(.opacity.animation(UIAccessibility.isReduceMotionEnabled ? nil : .easeInOut))
             }
         }
-        .onChange(of: selectedDownloadFolder) { _, url in
-            guard let url else { return }
-            let acc = accountStore.activeAccount
-            let pw = acc.flatMap { accountStore.appPassword(for: $0) }
-            guard let account = acc, let appPassword = pw else { return }
-            guard url.startAccessingSecurityScopedResource() else { return }
-            Task {
-                await viewModel.downloadLatestImages(
-                    to: url,
-                    account: account,
-                    appPassword: appPassword,
-                    using: blueskyClient
-                )
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
-        .sheet(isPresented: $isShowingFolderPicker) {
-            FolderPicker { url in
-                selectedDownloadFolder = url
-            }
-        }
         .sheet(isPresented: $showPostBrowser) {
             if let profile = viewModel.profile {
                 UserPostsView(did: profile.did)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
+        }
+        .sheet(item: $shareFileURL) { url in
+            ShareSheet(activityItems: [url])
+        }
+        .sheet(isPresented: $showMediaBrowser) {
+            if let profile = viewModel.profile {
+                MediaBrowserView(did: profile.did, handle: profile.handle)
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
             }
@@ -117,7 +106,66 @@ struct BlueskyProfileView: View {
                 Section {
                     LabeledContent(loc("profile.stats.followers"), value: statText(profile.followersCount))
                     LabeledContent(loc("profile.stats.following"), value: statText(profile.followsCount))
-                    LabeledContent(loc("profile.stats.posts"), value: statText(profile.postsCount))
+                    HStack {
+                        Text(loc("profile.stats.posts"))
+                        Spacer()
+                        Text(statText(profile.postsCount))
+                            .foregroundStyle(.secondary)
+                        Menu {
+                            Button {
+                                Task {
+                                    if let url = await viewModel.exportPosts(as: .csv, account: account, appPassword: appPassword, using: blueskyClient) {
+                                        shareFileURL = url
+                                    }
+                                }
+                            } label: {
+                                Label("CSV", systemImage: "doc.text")
+                            }
+                            Button {
+                                Task {
+                                    if let url = await viewModel.exportPosts(as: .json, account: account, appPassword: appPassword, using: blueskyClient) {
+                                        shareFileURL = url
+                                    }
+                                }
+                            } label: {
+                                Label("JSON", systemImage: "doc")
+                            }
+                        } label: {
+                            if viewModel.isExportingPosts {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    Button {
+                        showMediaBrowser = true
+                    } label: {
+                        HStack {
+                            Text(loc("profile.stats.media"))
+                            Spacer()
+                            HStack(spacing: 4) {
+                                if viewModel.isScanningMedia {
+                                    ProgressView()
+                                        .scaleEffect(0.6)
+                                } else if viewModel.mediaImageCount > 0 || viewModel.mediaVideoCount > 0 {
+                                    Text("\(viewModel.mediaImageCount) images · \(viewModel.mediaVideoCount) videos")
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    Text("-")
+                                        .foregroundStyle(.secondary)
+                                }
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
                 } header: {
                     Text(verbatim: loc("profile.stats"))
                         .onTapGesture(count: 2) { showPostBrowser = true }
@@ -289,41 +337,6 @@ struct BlueskyProfileView: View {
 
                 if !isOwnProfile {
                     Section {
-                        if viewModel.isDownloadingImages {
-                            if let progress = viewModel.downloadProgress {
-                                BatchProgressCard(
-                                    title: "Downloading images",
-                                    completedCount: progress.currentBatch,
-                                    totalCount: progress.totalBatches,
-                                    currentHandle: "\(progress.totalImages) images"
-                                )
-                            }
-                        } else {
-                            Button {
-                                isShowingFolderPicker = true
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "arrow.down.circle")
-                                    Text("Download images")
-                                    Text("BETA")
-                                        .font(.caption2.weight(.bold))
-                                        .foregroundStyle(.white)
-                                        .padding(.horizontal, 5)
-                                        .padding(.vertical, 2)
-                                        .background(Capsule().fill(.orange))
-                                }
-                            }
-                            .disabled(viewModel.isDownloadingImages)
-
-                            HStack(spacing: 8) {
-                                Image(systemName: "arrow.down.circle")
-                                    .hidden()
-                                Text("Downloads up to 500 latest media files into a <handle> subfolder.")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
                         if viewModel.isBlockingFollowers {
                             if let progress = viewModel.blockFollowersProgress {
                                 BatchProgressCard(
@@ -394,8 +407,16 @@ struct BlueskyProfileView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .task {
+        .refreshable {
             await viewModel.load(
+                did: member.actor.did,
+                account: account,
+                appPassword: appPassword,
+                using: blueskyClient
+            )
+        }
+        .task {
+            await viewModel.loadIfNeeded(
                 did: member.actor.did,
                 account: account,
                 appPassword: appPassword,
@@ -469,29 +490,14 @@ struct BlueskyProfileView: View {
     }
 }
 
-private struct FolderPicker: UIViewControllerRepresentable {
-    let onPick: (URL) -> Void
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
 
-    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
-        picker.delegate = context.coordinator
-        return picker
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func updateUIViewController(_: UIDocumentPickerViewController, context _: Context) {}
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onPick: onPick)
-    }
-
-    final class Coordinator: NSObject, UIDocumentPickerDelegate {
-        let onPick: (URL) -> Void
-        init(onPick: @escaping (URL) -> Void) { self.onPick = onPick }
-        func documentPicker(_: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-            guard let url = urls.first else { return }
-            onPick(url)
-        }
-    }
+    func updateUIViewController(_: UIActivityViewController, context: Context) {}
 }
 
 #Preview {

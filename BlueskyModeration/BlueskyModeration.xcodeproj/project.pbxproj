@@ -15,6 +15,7 @@
 		0AFF9FE27EBBC108A9850FC6 /* BlueskyProfileServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BCC2E559B5C44D603CAEA0 /* BlueskyProfileServiceTests.swift */; };
 		0C74C79DDA9AEB3CA73E3821 /* iPadAccountSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDA648ACF44338C909DB844 /* iPadAccountSwitcher.swift */; };
 		0CDE73C765E0AA5A32B64299 /* ListMergeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C60C15662D60CF7BFAAC63C /* ListMergeController.swift */; };
+		0EC724B760C9C8C790D37014 /* MediaBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AD756AB1A0EA3BD6431F38 /* MediaBrowserView.swift */; };
 		121BF1E5DD44EEE41545C343 /* BlueskyListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A66DCBAD6A830220641347 /* BlueskyListService.swift */; };
 		13BF687163F3A2FC9A88AA04 /* AccountSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */; };
 		1451E14BA474137BB905A6A6 /* URL+Bluesky.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04D96EE5014E7DB9DA13C19 /* URL+Bluesky.swift */; };
@@ -157,6 +158,7 @@
 		F378CA1E826452987C7DD4BD /* GlassSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BAF53C4D6DADF913DDED6F /* GlassSupport.swift */; };
 		F669D46B90E1AFCB9D4CBF7A /* ListMembersControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E32BF0E02305FC55C06C7E6 /* ListMembersControllerTests.swift */; };
 		F6E8BEBC5F4AAF958D96F500 /* LoadableStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93C2D6888CF84DB352701672 /* LoadableStateTests.swift */; };
+		F79DD3DC6A7A174937A6A049 /* MediaBrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEF7815A09DBD39511E02317 /* MediaBrowserViewModel.swift */; };
 		F7DF51DB4D27D02966598BF4 /* SpreadsheetExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D928E3C0D1EF1A0CA300A4D9 /* SpreadsheetExport.swift */; };
 		F8E60C9C5249C1FE0742E8D9 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25EB876DB3431556F62F89C /* TestHelpers.swift */; };
 		FA4E45A6CCB838DD52136561 /* StatePanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */; };
@@ -198,6 +200,7 @@
 		126E29C1EE615694DF95553D /* ListDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDetailView.swift; sourceTree = "<group>"; };
 		1428B2B7544B3F6DDABF69BA /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		14DE786D2B4CE7E71271F0D6 /* ViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelTests.swift; sourceTree = "<group>"; };
+		17AD756AB1A0EA3BD6431F38 /* MediaBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBrowserView.swift; sourceTree = "<group>"; };
 		19BA605E31B60F1A71763C15 /* ListDetailViewModel+Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Search.swift"; sourceTree = "<group>"; };
 		19EE5A3071D4DA37CEC8DBE6 /* ListDetailView+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailView+State.swift"; sourceTree = "<group>"; };
 		1A910BA174672E7A0D03AFED /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -295,6 +298,7 @@
 		AA8D879CEE0CCABEBCC5C909 /* BlueskyModerationTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BlueskyModerationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB79ABBA6F2ED069100538D3 /* ProfileMembershipModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMembershipModels.swift; sourceTree = "<group>"; };
 		AC53589A50B1C167E514A800 /* ProfileInspectorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInspectorViewModelTests.swift; sourceTree = "<group>"; };
+		AEF7815A09DBD39511E02317 /* MediaBrowserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBrowserViewModel.swift; sourceTree = "<group>"; };
 		AF5292156492A363FF0B7F56 /* AppStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStyling.swift; sourceTree = "<group>"; };
 		AF69C498C96A3D2D3FC09B29 /* ListImportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListImportController.swift; sourceTree = "<group>"; };
 		B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailView+Helpers.swift"; sourceTree = "<group>"; };
@@ -661,6 +665,8 @@
 		EB3107F885296BBB3C3EAC7D /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				17AD756AB1A0EA3BD6431F38 /* MediaBrowserView.swift */,
+				AEF7815A09DBD39511E02317 /* MediaBrowserViewModel.swift */,
 				8C019F4267ED7725AD8F55DB /* PostRowView.swift */,
 				6C3A64461CD00A9DF8DA33D3 /* ThreadView.swift */,
 				54BB2F84A0FBCD527B74F54E /* UserPostsView.swift */,
@@ -950,6 +956,8 @@
 				1B76BA3E7743655F026C83CE /* LocalizationManager.swift in Sources */,
 				CE40555E7A2356431DA783BD /* LocalizedText.swift in Sources */,
 				B918AEFC013B9E1E0212B6B7 /* LockScreenView.swift in Sources */,
+				0EC724B760C9C8C790D37014 /* MediaBrowserView.swift in Sources */,
+				F79DD3DC6A7A174937A6A049 /* MediaBrowserViewModel.swift in Sources */,
 				C4A09AF0287AFF8D082510A1 /* MockBlueskyListService.swift in Sources */,
 				CCC4DAC3D5FB15D0CD9C50A5 /* MockBlueskyProfileService.swift in Sources */,
 				FD5A0A546B8B9B5F59AA9E19 /* ModerationAuditStore.swift in Sources */,

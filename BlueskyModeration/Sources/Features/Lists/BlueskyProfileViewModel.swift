@@ -6,8 +6,14 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var isUpdatingModeration = false
     @Published private(set) var handleHistory: [HandleChange] = []
+    @Published private(set) var mediaImageCount = 0
+    @Published private(set) var mediaVideoCount = 0
+    @Published private(set) var isScanningMedia = false
     @Published var statusMessage: String?
     @Published var errorMessage: String?
+    @Published private(set) var isExportingPosts = false
+
+    private var hasLoadedOnce = false
 
     var profile: BlueskyProfile? {
         inspection?.profile
@@ -15,6 +21,16 @@ final class BlueskyProfileViewModel: ObservableObject {
 
     var listMemberships: [ProfileListMembership] {
         inspection?.listMemberships ?? []
+    }
+
+    func loadIfNeeded(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        guard !hasLoadedOnce else { return }
+        await load(did: actorDID, account: account, appPassword: appPassword, using: client)
     }
 
     func load(
@@ -26,6 +42,7 @@ final class BlueskyProfileViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         statusMessage = nil
+        hasLoadedOnce = true
 
         do {
             inspection = try await client.inspectProfile(
@@ -40,12 +57,41 @@ final class BlueskyProfileViewModel: ObservableObject {
                 }
             }
         } catch {
+            hasLoadedOnce = false
             inspection = nil
             handleHistory = []
             errorMessage = AppError.userMessage(from: error)
         }
 
         isLoading = false
+        if let profile {
+            await countMedia(for: profile.did, account: account, appPassword: appPassword, using: client)
+        }
+    }
+
+    private func countMedia(for did: String, account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        isScanningMedia = true
+        var cursor: String?
+        var images = 0
+        var videos = 0
+        while true {
+            do {
+                let response = try await client.fetchRichFeed(did: did, cursor: cursor, account: account, appPassword: appPassword)
+                for entry in response.feed {
+                    if let embed = entry.post.embed {
+                        images += embed.images?.count ?? 0
+                        if embed.video != nil { videos += 1 }
+                    }
+                }
+                guard let next = response.cursor else { break }
+                cursor = next
+            } catch {
+                break
+            }
+        }
+        mediaImageCount = images
+        mediaVideoCount = videos
+        isScanningMedia = false
     }
 
     func toggleMute(
@@ -280,4 +326,74 @@ final class BlueskyProfileViewModel: ObservableObject {
             errorMessage = AppError.userMessage(from: error)
         }
     }
+
+    func exportPosts(as format: ExportFileFormat, account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async -> URL? {
+        guard let profile else { return nil }
+        isExportingPosts = true
+        defer { isExportingPosts = false }
+
+        var allPosts: [RichFeedEntry] = []
+        var cursor: String?
+        while true {
+            do {
+                let response = try await client.fetchRichFeed(did: profile.did, cursor: cursor, account: account, appPassword: appPassword)
+                allPosts += response.feed
+                guard let next = response.cursor else { break }
+                cursor = next
+            } catch {
+                break
+            }
+        }
+
+        let sanitized = profile.handle.replacingOccurrences(of: ".", with: "-")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(sanitized)-posts.\(format.rawValue)")
+
+        switch format {
+        case .csv:
+            let header = "uri,author_did,author_handle,text,created_at,reply_count,repost_count,like_count"
+            let rows = allPosts.map { entry -> String in
+                let p = entry.post
+                let a = p.safeAuthor
+                let text = (p.safeRecord.text ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+                return [
+                    p.uri,
+                    a.did ?? "",
+                    a.handle ?? "",
+                    "\"\(text)\"",
+                    p.safeRecord.createdAt ?? "",
+                    "\(p.replyCount ?? 0)",
+                    "\(p.repostCount ?? 0)",
+                    "\(p.likeCount ?? 0)",
+                ].joined(separator: ",")
+            }
+            let csv = ([header] + rows).joined(separator: "\n")
+            try? csv.write(to: url, atomically: true, encoding: .utf8)
+        case .json:
+            let objects = allPosts.map { entry -> [String: Any] in
+                let p = entry.post
+                let a = p.safeAuthor
+                return [
+                    "uri": p.uri,
+                    "author_did": a.did ?? "",
+                    "author_handle": a.handle ?? "",
+                    "author_display_name": a.displayName ?? "",
+                    "text": p.safeRecord.text ?? "",
+                    "created_at": p.safeRecord.createdAt ?? "",
+                    "reply_count": p.replyCount ?? 0,
+                    "repost_count": p.repostCount ?? 0,
+                    "like_count": p.likeCount ?? 0,
+                    "has_images": p.embed?.images?.isEmpty == false,
+                    "has_video": p.embed?.video != nil,
+                ] as [String: Any]
+            }
+            let data = (try? JSONSerialization.data(withJSONObject: objects, options: [.prettyPrinted, .sortedKeys])) ?? Data()
+            try? data.write(to: url, options: .atomic)
+        }
+        return url
+    }
+}
+
+enum ExportFileFormat: String, CaseIterable {
+    case csv
+    case json
 }

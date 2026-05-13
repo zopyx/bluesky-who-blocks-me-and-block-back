@@ -52,4 +52,46 @@ final class UserPostsViewModel: ObservableObject {
         }
         isLoadingMore = false
     }
+
+    func exportCSV() -> String {
+        let header = "uri,author_did,author_handle,text,created_at,reply_count,repost_count,like_count"
+        let rows = posts.map { entry -> String in
+            let p = entry.post
+            let author = p.safeAuthor
+            let text = (p.safeRecord.text ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+            let fields = [
+                p.uri,
+                author.did ?? "",
+                author.handle ?? "",
+                "\"\(text)\"",
+                p.safeRecord.createdAt ?? "",
+                "\(p.replyCount ?? 0)",
+                "\(p.repostCount ?? 0)",
+                "\(p.likeCount ?? 0)",
+            ]
+            return fields.joined(separator: ",")
+        }
+        return ([header] + rows).joined(separator: "\n")
+    }
+
+    func exportJSON() -> Data {
+        let objects = posts.map { entry -> [String: Any] in
+            let p = entry.post
+            let author = p.safeAuthor
+            return [
+                "uri": p.uri,
+                "author_did": author.did ?? "",
+                "author_handle": author.handle ?? "",
+                "author_display_name": author.displayName ?? "",
+                "text": p.safeRecord.text ?? "",
+                "created_at": p.safeRecord.createdAt ?? "",
+                "reply_count": p.replyCount ?? 0,
+                "repost_count": p.repostCount ?? 0,
+                "like_count": p.likeCount ?? 0,
+                "has_images": p.embed?.images?.isEmpty == false,
+                "has_video": p.embed?.video != nil,
+            ] as [String: Any]
+        }
+        return (try? JSONSerialization.data(withJSONObject: objects, options: [.prettyPrinted, .sortedKeys])) ?? Data()
+    }
 }

@@ -459,7 +459,7 @@ struct ListDetailView: View {
         }
 
         let dids = members.map(\.actor.did)
-        let totalBatches = (dids.count + 24) / 25
+        _ = (dids.count + 24) / 25
         exportProgressFraction = 0
         let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
             Task { @MainActor in
