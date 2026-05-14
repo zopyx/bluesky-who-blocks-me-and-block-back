@@ -18,6 +18,18 @@ struct SplashScreenView: View {
     @State private var footerOpacity: CGFloat = 0
     @State private var showParticles = false
 
+    private var buildDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        if let url = Bundle.main.executableURL,
+           let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let date = attrs[.modificationDate] as? Date
+        {
+            return formatter.string(from: date)
+        }
+        return "Unknown"
+    }
+
     var body: some View {
         ZStack {
             SplashBackground()
@@ -72,9 +84,9 @@ struct SplashScreenView: View {
 
                 Spacer()
 
-                Text(verbatim: loc("splash.footer"))
+                Text(verbatim: "Build: \(buildDate)")
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(.white.opacity(0.3))
                     .opacity(footerOpacity)
                     .padding(.bottom, 44)
             }
@@ -115,6 +127,10 @@ struct SplashScreenView: View {
         withAnimation(.easeOut(duration: 0.5)) {
             subtaglineOffset = 0
             subtaglineOpacity = 1
+        }
+
+        withAnimation(.easeOut(duration: 0.6).delay(0.3)) {
+            footerOpacity = 1
         }
 
         phase = 2
