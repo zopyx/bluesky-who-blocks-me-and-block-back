@@ -2,17 +2,29 @@ import Foundation
 
 @MainActor
 final class FeedTimelineViewModel: ObservableObject {
-    let mutedWords = MutedWordsStore()
-    let feedStore = FeedStore()
-    let analytics = AnalyticsStore()
+    let mutedWords: MutedWordsStore
+    let feedStore: FeedStore
+    let analytics: AnalyticsStore
     @Published private(set) var entries: [RichFeedEntry] = []
-    @Published private(set) var isLoading = false
-    @Published private(set) var isLoadingMore = false
-    @Published private(set) var hasMore = true
-    @Published var errorMessage: String?
+    @Published private(set) var state: TimelineState = .initialLoading
     @Published var newPostCount = 0
 
+    init(
+        mutedWords: MutedWordsStore = MutedWordsStore(),
+        feedStore: FeedStore = FeedStore(),
+        analytics: AnalyticsStore = AnalyticsStore()
+    ) {
+        self.mutedWords = mutedWords
+        self.feedStore = feedStore
+        self.analytics = analytics
+    }
+
+    var visibleEntries: [RichFeedEntry] {
+        entries.filter { !mutedWords.contains($0.post.safeRecord.text ?? "") }
+    }
+
     private var cursor: String?
+    private var knownURIs: Set<String> = []
     private var lastRefreshHadPosts = false
 
     private func fetchFeed(account: AppAccount, appPassword: String, cursor: String?, using client: LiveBlueskyClient) async throws -> RichFeedResponse {
@@ -22,51 +34,89 @@ final class FeedTimelineViewModel: ObservableObject {
         return try await client.fetchTimeline(cursor: cursor, account: account, appPassword: appPassword)
     }
 
-    func refresh(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
-        guard !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        let oldCount = entries.count
-        let oldCursor = cursor
-        let oldHasMore = hasMore
-        cursor = nil
-        hasMore = true
-        defer { isLoading = false }
+    func loadTimeline(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        guard state == .initialLoading else { return }
         do {
             guard !Task.isCancelled else { return }
             let response = try await fetchFeed(account: account, appPassword: appPassword, cursor: nil, using: client)
             entries = response.feed
+            knownURIs = Set(entries.map(\.post.uri))
             cursor = response.cursor
-            hasMore = cursor != nil
+            state = entries.isEmpty ? .empty : (cursor == nil ? .exhausted : .loaded)
+        } catch {
+            guard !AppError.isCancellation(error) else { return }
+            state = .failed(AppError.userMessage(from: error))
+            AppLogger.moderation.error("Failed to load timeline: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    func refresh(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        guard state != .refreshing, state != .loadingMore else { return }
+        let previousState = state
+        state = .refreshing
+        let oldKnown = knownURIs
+        let oldCursor = cursor
+        cursor = nil
+        do {
+            guard !Task.isCancelled else { return }
+            let response = try await fetchFeed(account: account, appPassword: appPassword, cursor: nil, using: client)
+            entries = response.feed
+            knownURIs = Set(entries.map(\.post.uri))
+            cursor = response.cursor
             recordAnalytics()
             if lastRefreshHadPosts {
-                newPostCount = max(0, entries.count - oldCount)
+                newPostCount = knownURIs.subtracting(oldKnown).count
             }
             lastRefreshHadPosts = true
+            state = entries.isEmpty ? .empty : (cursor == nil ? .exhausted : .loaded)
         } catch {
             guard !AppError.isCancellation(error) else { return }
             cursor = oldCursor
-            hasMore = oldHasMore
-            errorMessage = AppError.userMessage(from: error)
+            state = (previousState == .initialLoading) ? .failed(AppError.userMessage(from: error)) : previousState
             AppLogger.moderation.error("Failed to refresh timeline: \(error.localizedDescription, privacy: .public)")
         }
     }
 
-    func loadTimeline(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
-        guard !isLoading else { return }
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
+    func removeEntry(uri: String) {
+        entries.removeAll { $0.post.uri == uri }
+    }
+
+    func insertEntry(_ entry: RichFeedEntry, at index: Int) {
+        entries.insert(entry, at: min(index, entries.count))
+    }
+
+    func prepareForAccountChange() {
+        entries = []
+        cursor = nil
+        knownURIs = []
+        lastRefreshHadPosts = false
+        newPostCount = 0
+        state = .initialLoading
+    }
+
+    func prepareForFeedChange() {
+        entries = []
+        cursor = nil
+        knownURIs = []
+        lastRefreshHadPosts = false
+        newPostCount = 0
+        state = .initialLoading
+    }
+
+    func loadMore(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        guard let cursor, state.hasMore else { return }
+        state = .loadingMore
         do {
             guard !Task.isCancelled else { return }
-            let response = try await fetchFeed(account: account, appPassword: appPassword, cursor: nil, using: client)
-            entries = response.feed
-            cursor = response.cursor
-            hasMore = cursor != nil
+            let response = try await fetchFeed(account: account, appPassword: appPassword, cursor: cursor, using: client)
+            entries += response.feed
+            knownURIs.formUnion(response.feed.map(\.post.uri))
+            self.cursor = response.cursor
+            state = response.cursor == nil ? .exhausted : .loaded
         } catch {
             guard !AppError.isCancellation(error) else { return }
-            errorMessage = AppError.userMessage(from: error)
-            AppLogger.moderation.error("Failed to load timeline: \(error.localizedDescription, privacy: .public)")
+            state = .loadMoreFailed(AppError.userMessage(from: error))
+            AppLogger.moderation.error("Failed to load more timeline: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -79,23 +129,6 @@ final class FeedTimelineViewModel: ObservableObject {
                 repostCount: post.repostCount ?? 0,
                 replyCount: post.replyCount ?? 0
             )
-        }
-    }
-
-    func loadMore(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
-        guard !isLoadingMore, let cursor else { return }
-        isLoadingMore = true
-        defer { isLoadingMore = false }
-        do {
-            guard !Task.isCancelled else { return }
-            let response = try await fetchFeed(account: account, appPassword: appPassword, cursor: cursor, using: client)
-            entries += response.feed
-            self.cursor = response.cursor
-            hasMore = response.cursor != nil
-        } catch {
-            guard !AppError.isCancellation(error) else { return }
-            errorMessage = AppError.userMessage(from: error)
-            AppLogger.moderation.error("Failed to load more timeline: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

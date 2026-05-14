@@ -176,7 +176,7 @@ struct ModerationSplitView: View {
             } description: {
                 Text(verbatim: localizationManager.localized("lists.no_account.desc"))
             }
-        } else if viewModel.isLoading {
+        } else if viewModel.isLoading && !viewModel.isRefreshing {
             loadingSkeleton
         } else {
             sidebarList

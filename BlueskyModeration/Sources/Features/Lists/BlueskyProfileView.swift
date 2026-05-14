@@ -15,9 +15,6 @@ struct BlueskyProfileView: View {
     @State private var loadTask: Task<Void, Never>?
     @State private var moderationTask: Task<Void, Never>?
     @State private var exportTask: Task<Void, Never>?
-    @State private var showPostComposer = false
-    @State private var showTimeline = false
-    @AppStorage("showBetaFeatures") private var showBetaFeatures = false
     @State private var blockedAccessType: BlockedAccessType?
 
     enum BlockedAccessType: String, Identifiable {
@@ -75,7 +72,7 @@ struct BlueskyProfileView: View {
         }
         .sheet(isPresented: $showPostBrowser) {
             if let profile = viewModel.profile {
-                UserPostsView(did: profile.did)
+                UserPostsView(did: profile.did, displayName: profile.displayName ?? profile.handle)
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
             }
@@ -89,25 +86,6 @@ struct BlueskyProfileView: View {
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
             }
-        }
-        .sheet(isPresented: $showPostComposer) {
-            if let account = accountStore.activeAccount,
-               let appPassword = accountStore.appPassword(for: account)
-            {
-                ComposePostView(
-                    account: account,
-                    appPassword: appPassword,
-                    blueskyClient: blueskyClient,
-                    onComplete: {
-                        showBetaFeatures = false
-                    }
-                )
-            }
-        }
-        .sheet(isPresented: $showTimeline) {
-            FeedTimelineView()
-                .environmentObject(accountStore)
-                .environmentObject(blueskyClient)
         }
         .sheet(item: $blockedAccessType) { type in
             NavigationStack {
@@ -220,20 +198,15 @@ struct BlueskyProfileView: View {
                         HStack {
                             Text(loc("profile.stats.media"))
                             Spacer()
-                            HStack(spacing: 4) {
-                                if viewModel.isScanningMedia {
-                                    ProgressView()
-                                        .scaleEffect(0.6)
-                                } else if viewModel.mediaImageCount > 0 || viewModel.mediaVideoCount > 0 {
-                                    Text([
-                                        viewModel.mediaImageCount > 0 ? "\(viewModel.mediaImageCount) image\(viewModel.mediaImageCount != 1 ? "s" : "")" : nil,
-                                        viewModel.mediaVideoCount > 0 ? "\(viewModel.mediaVideoCount) video\(viewModel.mediaVideoCount != 1 ? "s" : "")" : nil,
-                                    ].compactMap(\.self).joined(separator: " · "))
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    Text("-")
-                                        .foregroundStyle(.secondary)
-                                }
+                            if viewModel.isScanningMedia {
+                                ProgressView()
+                                    .scaleEffect(0.6)
+                            } else if viewModel.mediaImageCount > 0 || viewModel.mediaVideoCount > 0 {
+                                Text([
+                                    viewModel.mediaImageCount > 0 ? "\(viewModel.mediaImageCount) image\(viewModel.mediaImageCount != 1 ? "s" : "")" : nil,
+                                    viewModel.mediaVideoCount > 0 ? "\(viewModel.mediaVideoCount) video\(viewModel.mediaVideoCount != 1 ? "s" : "")" : nil,
+                                ].compactMap(\.self).joined(separator: " · "))
+                                    .foregroundStyle(.secondary)
                                 Image(systemName: "chevron.right")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
@@ -244,28 +217,6 @@ struct BlueskyProfileView: View {
                 } header: {
                     Text(verbatim: loc("profile.stats"))
                         .onTapGesture(count: 2) { showPostBrowser = true }
-                }
-
-                if isOwnProfile, showBetaFeatures {
-                    Section {
-                        Button {
-                            showPostComposer = true
-                        } label: {
-                            Label { Text(verbatim: loc("compose.title")) } icon: { Image(systemName: "square.and.pencil") }
-                        }
-                        Button {
-                            showTimeline = true
-                        } label: {
-                            Label { Text(verbatim: loc("timeline.title")) } icon: { Image(systemName: "clock.arrow.circlepath") }
-                        }
-                    } header: {
-                        HStack(spacing: 4) {
-                            Text(verbatim: loc("profile.beta"))
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(.orange)
-                            Text(verbatim: loc("profile.actions_section"))
-                        }
-                    }
                 }
 
                 if !isOwnProfile {

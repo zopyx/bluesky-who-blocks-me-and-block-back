@@ -9,11 +9,12 @@ struct SplashScreenView: View {
 
     @State private var phase = 0
     @State private var logoScale: CGFloat = 0.2
-    @State private var logoRotation: Double = -12
     @State private var logoGlow: CGFloat = 0
     @State private var logoBreathing: CGFloat = 1
     @State private var taglineOpacity: CGFloat = 0
     @State private var taglineOffset: CGFloat = 24
+    @State private var subtaglineOpacity: CGFloat = 0
+    @State private var subtaglineOffset: CGFloat = 16
     @State private var footerOpacity: CGFloat = 0
     @State private var showParticles = false
 
@@ -49,7 +50,6 @@ struct SplashScreenView: View {
                     .scaledToFit()
                     .frame(height: 240)
                     .scaleEffect(logoScale * logoBreathing)
-                    .rotationEffect(.degrees(logoRotation))
                     .shadow(color: .blue.opacity(logoGlow * 0.5), radius: logoGlow * 50)
                     .shadow(color: .purple.opacity(logoGlow * 0.25), radius: logoGlow * 70)
                     .shadow(color: .cyan.opacity(logoGlow * 0.15), radius: logoGlow * 90)
@@ -61,6 +61,14 @@ struct SplashScreenView: View {
                     .foregroundStyle(.white.opacity(0.7))
                     .offset(y: taglineOffset)
                     .opacity(taglineOpacity)
+
+                Spacer().frame(height: 8)
+
+                Text(verbatim: loc("splash.subtagline"))
+                    .font(.caption.weight(.regular))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .offset(y: subtaglineOffset)
+                    .opacity(subtaglineOpacity)
 
                 Spacer()
 
@@ -90,7 +98,6 @@ struct SplashScreenView: View {
 
         withAnimation(.interpolatingSpring(mass: 1.0, stiffness: 160, damping: 12, initialVelocity: 5)) {
             logoScale = 1
-            logoRotation = 0
         }
         withAnimation(.easeOut(duration: 1.2).delay(0.2)) {
             logoGlow = 1
@@ -103,14 +110,14 @@ struct SplashScreenView: View {
             taglineOpacity = 1
         }
 
-        phase = 2
+        try? await Task.sleep(for: .seconds(0.2))
 
-        try? await Task.sleep(for: .seconds(0.3))
-
-        withAnimation(.easeOut(duration: 0.6)) {
-            taglineOffset = 0
-            taglineOpacity = 1
+        withAnimation(.easeOut(duration: 0.5)) {
+            subtaglineOffset = 0
+            subtaglineOpacity = 1
         }
+
+        phase = 2
 
         withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(1.0)) {
             logoBreathing = 1.03

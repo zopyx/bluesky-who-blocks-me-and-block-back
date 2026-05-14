@@ -1,7 +1,6 @@
 import Foundation
 
 enum SpreadsheetExport {
-
     static func generateXLSX(headers: [String], rows: [[String]]) -> Data? {
         let contentTypes = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -136,15 +135,15 @@ enum SpreadsheetExport {
 
             var localHeader = Data()
             localHeader.append(contentsOf: [0x50, 0x4B, 0x03, 0x04]) // local file header signature
-            localHeader.append(contentsOf: [0x14, 0x00])              // version needed
-            localHeader.append(contentsOf: [0x00, 0x00])              // flags
-            localHeader.append(contentsOf: [0x00, 0x00])              // compression (stored)
-            localHeader.append(contentsOf: [0x00, 0x00, 0x00, 0x00])  // mod time/date
-            localHeader.append(crc.littleEndianData)                   // crc-32
-            localHeader.append(size.littleEndianData)                  // compressed size
-            localHeader.append(size.littleEndianData)                  // uncompressed size
+            localHeader.append(contentsOf: [0x14, 0x00]) // version needed
+            localHeader.append(contentsOf: [0x00, 0x00]) // flags
+            localHeader.append(contentsOf: [0x00, 0x00]) // compression (stored)
+            localHeader.append(contentsOf: [0x00, 0x00, 0x00, 0x00]) // mod time/date
+            localHeader.append(crc.littleEndianData) // crc-32
+            localHeader.append(size.littleEndianData) // compressed size
+            localHeader.append(size.littleEndianData) // uncompressed size
             localHeader.append(UInt16(nameData.count).littleEndianData) // filename length
-            localHeader.append(contentsOf: [0x00, 0x00])              // extra field length
+            localHeader.append(contentsOf: [0x00, 0x00]) // extra field length
             localHeader.append(nameData)
 
             zipData.append(localHeader)
@@ -152,21 +151,21 @@ enum SpreadsheetExport {
 
             var centralEntry = Data()
             centralEntry.append(contentsOf: [0x50, 0x4B, 0x01, 0x02]) // central directory signature
-            centralEntry.append(contentsOf: [0x14, 0x00])              // version made by
-            centralEntry.append(contentsOf: [0x14, 0x00])              // version needed
-            centralEntry.append(contentsOf: [0x00, 0x00])              // flags
-            centralEntry.append(contentsOf: [0x00, 0x00])              // compression
-            centralEntry.append(contentsOf: [0x00, 0x00, 0x00, 0x00])  // mod time/date
-            centralEntry.append(crc.littleEndianData)                   // crc-32
-            centralEntry.append(size.littleEndianData)                  // compressed size
-            centralEntry.append(size.littleEndianData)                  // uncompressed size
+            centralEntry.append(contentsOf: [0x14, 0x00]) // version made by
+            centralEntry.append(contentsOf: [0x14, 0x00]) // version needed
+            centralEntry.append(contentsOf: [0x00, 0x00]) // flags
+            centralEntry.append(contentsOf: [0x00, 0x00]) // compression
+            centralEntry.append(contentsOf: [0x00, 0x00, 0x00, 0x00]) // mod time/date
+            centralEntry.append(crc.littleEndianData) // crc-32
+            centralEntry.append(size.littleEndianData) // compressed size
+            centralEntry.append(size.littleEndianData) // uncompressed size
             centralEntry.append(UInt16(nameData.count).littleEndianData) // filename length
-            centralEntry.append(contentsOf: [0x00, 0x00])              // extra field length
-            centralEntry.append(contentsOf: [0x00, 0x00])              // file comment length
-            centralEntry.append(contentsOf: [0x00, 0x00])              // disk number start
-            centralEntry.append(contentsOf: [0x00, 0x00])              // internal attributes
-            centralEntry.append(contentsOf: [0x00, 0x00, 0x00, 0x00])  // external attributes
-            centralEntry.append(localHeaderOffset.littleEndianData)     // relative offset
+            centralEntry.append(contentsOf: [0x00, 0x00]) // extra field length
+            centralEntry.append(contentsOf: [0x00, 0x00]) // file comment length
+            centralEntry.append(contentsOf: [0x00, 0x00]) // disk number start
+            centralEntry.append(contentsOf: [0x00, 0x00]) // internal attributes
+            centralEntry.append(contentsOf: [0x00, 0x00, 0x00, 0x00]) // external attributes
+            centralEntry.append(localHeaderOffset.littleEndianData) // relative offset
             centralEntry.append(nameData)
 
             centralDirectory.append(centralEntry)
@@ -178,14 +177,14 @@ enum SpreadsheetExport {
         let centralSize = UInt32(centralDirectory.count)
 
         var eocd = Data()
-        eocd.append(contentsOf: [0x50, 0x4B, 0x05, 0x06])           // end of central directory signature
-        eocd.append(contentsOf: [0x00, 0x00])                        // disk number
-        eocd.append(contentsOf: [0x00, 0x00])                        // disk number of central dir
-        eocd.append(UInt16(entries.count).littleEndianData)          // entries on this disk
-        eocd.append(UInt16(entries.count).littleEndianData)          // total entries
-        eocd.append(centralSize.littleEndianData)                    // size of central directory
-        eocd.append(centralOffset.littleEndianData)                  // offset of central directory
-        eocd.append(contentsOf: [0x00, 0x00])                        // comment length
+        eocd.append(contentsOf: [0x50, 0x4B, 0x05, 0x06]) // end of central directory signature
+        eocd.append(contentsOf: [0x00, 0x00]) // disk number
+        eocd.append(contentsOf: [0x00, 0x00]) // disk number of central dir
+        eocd.append(UInt16(entries.count).littleEndianData) // entries on this disk
+        eocd.append(UInt16(entries.count).littleEndianData) // total entries
+        eocd.append(centralSize.littleEndianData) // size of central directory
+        eocd.append(centralOffset.littleEndianData) // offset of central directory
+        eocd.append(contentsOf: [0x00, 0x00]) // comment length
 
         zipData.append(eocd)
 
@@ -211,7 +210,7 @@ enum SpreadsheetExport {
             var c = UInt32(n)
             for _ in 0 ..< 8 {
                 if c & 1 != 0 {
-                    c = 0xEDB88320 ^ (c >> 1)
+                    c = 0xEDB8_8320 ^ (c >> 1)
                 } else {
                     c >>= 1
                 }

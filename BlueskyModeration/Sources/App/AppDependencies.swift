@@ -9,6 +9,8 @@ final class AppDependencies: ObservableObject {
     let actionPresetStore: ActionPresetStore
     let blueskyClient: LiveBlueskyClient
     let localizationManager: LocalizationManager
+    let mutedWordsStore: MutedWordsStore
+    let analyticsStore: AnalyticsStore
 
     init() {
         if CommandLine.arguments.contains("--uitesting") {
@@ -21,6 +23,8 @@ final class AppDependencies: ObservableObject {
             actionPresetStore = ActionPresetStore()
             blueskyClient = PreviewBlueskyClient()
             localizationManager = LocalizationManager.shared
+            mutedWordsStore = MutedWordsStore()
+            analyticsStore = AnalyticsStore()
         } else {
             let requestExecutor = BlueskyRequestExecutor()
             let keychain = KeychainService()
@@ -36,6 +40,8 @@ final class AppDependencies: ObservableObject {
                 sessionService: sessionService
             )
             localizationManager = LocalizationManager.shared
+            mutedWordsStore = MutedWordsStore()
+            analyticsStore = AnalyticsStore()
         }
     }
 }

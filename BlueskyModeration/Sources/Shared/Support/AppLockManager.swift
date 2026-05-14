@@ -44,9 +44,9 @@ final class AppLockManager: ObservableObject {
 
     var biometricLabel: String {
         switch biometricType {
-        case .touchID: return "Touch ID"
-        case .faceID: return "Face ID"
-        default: return "Biometrics"
+        case .touchID: "Touch ID"
+        case .faceID: "Face ID"
+        default: "Biometrics"
         }
     }
 

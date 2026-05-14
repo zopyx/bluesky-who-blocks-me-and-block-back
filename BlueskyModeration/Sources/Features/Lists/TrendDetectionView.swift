@@ -16,7 +16,7 @@ struct TrendDetectionView: View {
                 }
             }
 
-            if flaggedAccounts.isEmpty && !isLoading {
+            if flaggedAccounts.isEmpty, !isLoading {
                 ContentUnavailableView(loc("trend.no_trends"), systemImage: "chart.line.flatten.circle", description: Text(loc("trend.no_trends_desc")))
             }
 

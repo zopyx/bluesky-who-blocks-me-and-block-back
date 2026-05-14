@@ -14,6 +14,7 @@ extension URL: @retroactive Identifiable {
 
 struct UserPostsView: View {
     let did: String
+    let displayName: String
 
     @StateObject private var viewModel: UserPostsViewModel
     @EnvironmentObject var accountStore: AccountStore
@@ -27,8 +28,9 @@ struct UserPostsView: View {
     @State private var initialLoadTask: Task<Void, Never>?
     @State private var loadMoreTask: Task<Void, Never>?
 
-    init(did: String) {
+    init(did: String, displayName: String) {
         self.did = did
+        self.displayName = displayName
         _viewModel = StateObject(wrappedValue: UserPostsViewModel(did: did))
     }
 
@@ -61,7 +63,7 @@ struct UserPostsView: View {
                     listContent
                 }
             }
-            .navigationTitle(loc("profile.posts.title"))
+            .navigationTitle(loc("profile.posts.title_by").replacingOccurrences(of: "{name}", with: displayName))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -183,10 +185,7 @@ struct UserPostsView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                HStack(spacing: 16) {
-                    sortButton
-                    dateFilterButton
-                }
+                dateFilterButton
             }
             .padding(.vertical, 4)
 
@@ -250,21 +249,6 @@ struct UserPostsView: View {
             }
         }
         .padding(.bottom, 6)
-    }
-
-    private var sortButton: some View {
-        Button {
-            withAnimation(.none) {
-                viewModel.sortAscending.toggle()
-            }
-        } label: {
-            Image(systemName: viewModel.sortAscending ? "arrow.up" : "arrow.down")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .frame(width: 36, height: 36)
-        }
-        .help(viewModel.sortAscending ? loc("profile.posts.sort_asc") : loc("profile.posts.sort_desc"))
-        .accessibilityLabel(viewModel.sortAscending ? loc("profile.posts.sort_asc") : loc("profile.posts.sort_desc"))
     }
 
     private var exportMenu: some View {

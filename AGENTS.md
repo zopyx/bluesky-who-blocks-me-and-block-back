@@ -1,24 +1,30 @@
 # Rulyx — Project Guide for AI Agents
 
 ## Project Overview
-iOS SwiftUI app for Bluesky moderation (lists, bulk operations, profile inspection, followers/following management). Targets iOS 17+, uses xcodegen for project generation.
+iOS-only SwiftUI app for Bluesky moderation (lists, bulk operations, profile inspection, followers/following management, timeline). Targets iOS 17+, runs on iPhone only (no iPad, no macOS). Uses xcodegen for project generation.
 
 ## Build & Test
 ```bash
 xcodegen generate
 xcodebuild -project BlueskyModeration.xcodeproj -scheme BlueskyModeration -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO
 xcodebuild -project BlueskyModeration.xcodeproj -scheme BlueskyModeration -destination 'generic/platform=iOS Simulator' build-for-testing CODE_SIGNING_ALLOWED=NO
-swiftformat --lint .          # check formatting
-swiftlint                     # check lint rules
-swiftformat Sources Tests     # auto-format
+swiftformat --lint .
+swiftlint
+swiftformat Sources Tests
 ```
 
+## Platform Constraints
+- **iPhone only** — TARGETED_DEVICE_FAMILY = "1"
+- **No iPad support** — no iPad-specific code, no iPad orientations
+- **No macOS** — no Mac target, no Mac Catalyst
+- Do not add `#if os(macOS)` or iPad-only code paths
+
 ## Key Architecture
-- **Services**: `BlueskyRequestExecutor`, `BlueskySessionService`, `BlueskyListService`, `BlueskyProfileService`
-- **Stores**: `ModerationWorkspaceStore`, `WorkspacePreferencesStore`, `ModerationAuditStore`, `ActionQueueStore`
-- **Controllers**: `ListMembersController`, `ListImportController`, `ListDiffController`, `ListBatchController`
+- **Services**: `BlueskyRequestExecutor`, `BlueskySessionService`, `BlueskyListService`, `BlueskyProfileService`, `LiveBlueskyClient`
+- **Stores**: `ModerationWorkspaceStore`, `WorkspacePreferencesStore`, `ModerationAuditStore`, `ActionQueueStore`, `AccountStore`, `FeedStore`, `MutedWordsStore`, `AnalyticsStore`
+- **Timeline**: `FeedTimelineViewModel`, `FeedTimelineView`, `FeedPickerView`, `TimelineTab`, `TimelineState`
 - **Views**: SwiftUI with `@EnvironmentObject` injection via `AppDependencies`
-- **Navigation**: `NavigationStack` with `NavigationLink` and `.navigationDestination`
+- **Navigation**: `TabView` (5 tabs: Moderation, Info, Timeline, Settings, Accounts) with `NavigationStack` and `.navigationDestination`
 - **DI**: All dependencies created in `AppDependencies` and injected as environment objects
 
 ## Task Documentation Requirement
@@ -34,9 +40,10 @@ Every completed task MUST include an accurate description rendered as a table:
 - AppError for normalized error handling
 - Logger via `AppLogger` (search, persistence, moderation, performance categories)
 - Project generated with `xcodegen` from `project.yml` — never edit `.pbxproj` directly
-- Views in `Sources/Features/Lists/`, `Sources/Features/Profile/`, `Sources/Features/Accounts/`
+- Views in `Sources/Features/Lists/`, `Sources/Features/Profile/`, `Sources/Features/Accounts/`, `Sources/Features/Timeline/`
 - Services in `Sources/Domain/Services/`
 - Models in `Sources/Domain/Models/`
+- Timeline state managed via `TimelineState` enum (not boolean flags)
 
 ## Internationalization (i18n)
 - All user-facing strings MUST use `loc("key")` — never hardcode English text

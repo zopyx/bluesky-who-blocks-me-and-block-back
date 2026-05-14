@@ -38,4 +38,8 @@ enum DashboardCache {
         let url = fileURL(forKey: key)
         try? FileManager.default.removeItem(at: url)
     }
+
+    static func clearAll() {
+        try? FileManager.default.removeItem(at: cachesDirectory)
+    }
 }

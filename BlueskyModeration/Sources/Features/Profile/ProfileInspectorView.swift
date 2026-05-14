@@ -338,6 +338,7 @@ struct ProfileInspectorView: View {
                     onManageAccounts: openAccountManagement
                 )
                 .environmentObject(accountStore)
+                .environmentObject(blueskyClient)
             }
             .sheet(isPresented: $isShowingAccountManagement) {
                 AccountSwitcherSheet(isPresented: $isShowingAccountManagement)

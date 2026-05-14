@@ -7,8 +7,19 @@ final class ListsViewModel: ObservableObject {
     @Published private(set) var blockingCount = 0
     @Published private(set) var blockedByCount = 0
     @Published private(set) var isLoading = false
+    @Published private(set) var isRefreshing = false
     @Published private(set) var isFromCache = false
     @Published var errorMessage: String?
+
+    func reset() {
+        listsByKind = [:]
+        activeProfile = nil
+        blockingCount = 0
+        blockedByCount = 0
+        isLoading = false
+        isRefreshing = false
+        errorMessage = nil
+    }
 
     func load(
         for account: AppAccount?,
@@ -35,7 +46,8 @@ final class ListsViewModel: ObservableObject {
             hasCache = false
         }
 
-        if isExplicitRefresh || !hasCache { isLoading = true }
+        if !hasCache { isLoading = true }
+        if isExplicitRefresh { isRefreshing = true }
         errorMessage = nil
 
         do {
@@ -73,6 +85,7 @@ final class ListsViewModel: ObservableObject {
         persistCache(forKey: cacheKey)
         isFromCache = false
         isLoading = false
+        isRefreshing = false
     }
 
     private func applyCached(_ cached: DashboardCacheData) {

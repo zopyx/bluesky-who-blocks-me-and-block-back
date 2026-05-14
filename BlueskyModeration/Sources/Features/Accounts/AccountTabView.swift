@@ -8,6 +8,7 @@ struct AccountTabView: View {
     @State private var editingLabelAccount: AppAccount?
     @State private var editLabelText = ""
     @State private var editMode: EditMode = .inactive
+    @State private var switchingAccountID: AppAccount.ID?
 
     var body: some View {
         NavigationStack {
@@ -22,18 +23,22 @@ struct AccountTabView: View {
                     Section(loc("account.manage.saved")) {
                         ForEach(accountStore.accounts) { account in
                             Button {
-                                let generator = UISelectionFeedbackGenerator()
-                                generator.prepare()
-                                accountStore.setActiveAccount(account)
-                                workspaceStore.selectedTab = .moderation
-                                generator.selectionChanged()
+                                switchToAccount(account)
                             } label: {
-                                AccountRowView(
-                                    account: account,
-                                    isActive: account.id == accountStore.activeAccountID
-                                )
+                                HStack {
+                                    AccountRowView(
+                                        account: account,
+                                        isActive: account.id == accountStore.activeAccountID
+                                    )
+                                    if switchingAccountID == account.id {
+                                        Spacer()
+                                        ProgressView()
+                                            .scaleEffect(0.7)
+                                    }
+                                }
                             }
                             .buttonStyle(.plain)
+                            .disabled(switchingAccountID != nil)
                             .accessibilityHint(loc("account.switch_tab.hint"))
                         }
                         .onMove(perform: accountStore.moveAccount)
@@ -123,6 +128,18 @@ struct AccountTabView: View {
                 }
                 .presentationDetents([.medium])
             }
+        }
+    }
+
+    private func switchToAccount(_ account: AppAccount) {
+        switchingAccountID = account.id
+        let generator = UISelectionFeedbackGenerator()
+        generator.prepare()
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            accountStore.switchAccount(to: account, using: blueskyClient)
+            workspaceStore.selectedTab = .moderation
+            generator.selectionChanged()
         }
     }
 }

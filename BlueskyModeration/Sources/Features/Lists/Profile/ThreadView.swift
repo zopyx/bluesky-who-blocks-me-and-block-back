@@ -603,20 +603,34 @@ struct ThreadView: View {
 
     @ViewBuilder
     private func postEmbed(_ embed: RichEmbed, onPlayVideo: @escaping () -> Void, onTapImage: @escaping (Int) -> Void) -> some View {
-        if let video = embed.video, let thumb = video.thumbnail, let url = URL(string: thumb) {
+        if let video = embed.video {
             Button(action: onPlayVideo) {
                 ZStack {
-                    ThumbnailImageView(url: url, maxPixelSize: 720) {
-                        Rectangle().fill(Color.skyPrimary.opacity(0.08))
+                    if let thumb = video.thumbnail, let url = URL(string: thumb) {
+                        ThumbnailImageView(url: url, maxPixelSize: 720) {
+                            Rectangle().fill(Color.skyPrimary.opacity(0.08))
+                        }
+                        .scaledToFill()
+                    } else {
+                        LinearGradient(
+                            colors: [Color.skyPrimary.opacity(0.22), Color.skyPrimary.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .overlay {
+                            Image(systemName: "film.stack")
+                                .font(.system(size: 34, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.92))
+                        }
                     }
-                    .scaledToFill()
-                    .frame(height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
                     Image(systemName: "play.circle.fill")
                         .font(.system(size: 44))
                         .foregroundStyle(.white)
                         .shadow(radius: 4)
                 }
+                .frame(height: 200)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
         }
@@ -640,6 +654,52 @@ struct ThreadView: View {
                     }
                 }
             }
+        }
+
+        if let external = embed.external, let uri = external.uri, let url = URL(string: uri) {
+            Button {
+                UIApplication.shared.open(url)
+            } label: {
+                HStack(spacing: 12) {
+                    if let thumb = external.thumb, let thumbURL = URL(string: thumb) {
+                        ThumbnailImageView(url: thumbURL, maxPixelSize: 512) {
+                            RoundedRectangle(cornerRadius: 10).fill(Color.skyPrimary.opacity(0.08))
+                        }
+                        .scaledToFill()
+                        .frame(width: 96, height: 96)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let title = external.title, !title.isEmpty {
+                            Text(title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.primary)
+                                .lineLimit(2)
+                        }
+                        if let description = external.description, !description.isEmpty {
+                            Text(description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(3)
+                        }
+                        if let host = URL(string: uri)?.host, !host.isEmpty {
+                            Label(host, systemImage: "link")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .padding(10)
+                .background(Color.skyPrimary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
+                }
+            }
+            .buttonStyle(.plain)
         }
     }
 }

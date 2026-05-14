@@ -48,7 +48,7 @@ struct FollowerDiffView: View {
                 }
             }
 
-            if !isLoading && newFollowers.isEmpty && unfollowed.isEmpty && !followers.isEmpty {
+            if !isLoading, newFollowers.isEmpty, unfollowed.isEmpty, !followers.isEmpty {
                 ContentUnavailableView(loc("follower_diff.no_changes"), systemImage: "person.3", description: Text(loc("follower_diff.no_changes_desc")))
             }
 

@@ -86,6 +86,20 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    ForEach(GIFProvider.allCases) { provider in
+                        let key = Binding(
+                            get: { UserDefaults.standard.string(forKey: provider.apiKeyUserDefaultsKey) ?? "" },
+                            set: { UserDefaults.standard.set($0.isEmpty ? nil : $0, forKey: provider.apiKeyUserDefaultsKey) }
+                        )
+                        SecureField(loc("settings.gif_api_key").replacingOccurrences(of: "{provider}", with: provider.rawValue), text: key)
+                    }
+                } header: {
+                    Text(verbatim: loc("settings.gif_services"))
+                } footer: {
+                    Text(verbatim: loc("settings.gif_services_desc"))
+                }
+
+                Section {
                     Toggle(isOn: $showBetaFeatures) {
                         Label {
                             Text(localizationManager.localized("settings.beta_features"))

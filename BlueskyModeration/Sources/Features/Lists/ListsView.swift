@@ -23,7 +23,7 @@ struct ListsView: View {
                         title: localizationManager.localized("lists.no_account.title"),
                         message: localizationManager.localized("lists.no_account.desc")
                     )
-                } else if viewModel.isLoading {
+                } else if viewModel.isLoading, !viewModel.isRefreshing, viewModel.listsByKind.isEmpty {
                     LoadingPanel(message: localizationManager.localized("lists.loading"))
                 } else {
                     List {
@@ -277,6 +277,9 @@ struct ListsView: View {
             }
             .task(id: accountStore.activeAccountID) {
                 await loadInitial()
+            }
+            .onChange(of: accountStore.activeAccountID) { _, _ in
+                viewModel.reset()
             }
         }
     }

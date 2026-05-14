@@ -830,6 +830,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     func createPost(
         text: String,
         images: [PostImageAttachment]? = nil,
+        video: PostVideoAttachment? = nil,
         replyTo: (parentURI: String, parentCID: String, rootURI: String, rootCID: String)? = nil,
         quote: (uri: String, cid: String)? = nil,
         account: AppAccount,
@@ -839,6 +840,9 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             let embed: FeedPostRecordEmbed? = {
                 if let quote {
                     return .record(uri: quote.uri, cid: quote.cid)
+                }
+                if let video {
+                    return .video(FeedPostVideoAttachment(blob: video.blob, alt: video.alt, aspectRatio: video.aspectRatio))
                 }
                 if let images {
                     guard !images.isEmpty else { return nil }
@@ -955,4 +959,10 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
 struct PostImageAttachment {
     let blob: UploadedBlob
     let alt: String
+}
+
+struct PostVideoAttachment {
+    let blob: UploadedBlob
+    let alt: String
+    let aspectRatio: (width: Int, height: Int)?
 }

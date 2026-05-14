@@ -10,6 +10,7 @@ struct AccountSwitcherSheet: View {
     @State private var isPresentingAddAccount = false
     @State private var editingLabelAccount: AppAccount?
     @State private var editLabelText = ""
+    @State private var switchingAccountID: AppAccount.ID?
 
     var body: some View {
         NavigationStack {
@@ -24,19 +25,22 @@ struct AccountSwitcherSheet: View {
                     Section(loc("account.manage.saved")) {
                         ForEach(accountStore.accounts) { account in
                             Button {
-                                let generator = UISelectionFeedbackGenerator()
-                                generator.prepare()
-                                accountStore.setActiveAccount(account)
-                                workspaceStore.selectedTab = .moderation
-                                generator.selectionChanged()
-                                dismiss()
+                                switchAccount(to: account)
                             } label: {
-                                AccountRowView(
-                                    account: account,
-                                    isActive: account.id == accountStore.activeAccountID
-                                )
+                                HStack {
+                                    AccountRowView(
+                                        account: account,
+                                        isActive: account.id == accountStore.activeAccountID
+                                    )
+                                    if switchingAccountID == account.id {
+                                        Spacer()
+                                        ProgressView()
+                                            .scaleEffect(0.7)
+                                    }
+                                }
                             }
                             .buttonStyle(.plain)
+                            .disabled(switchingAccountID != nil)
                             .accessibilityHint("Switches the active account to \(account.label ?? account.handle)")
                             .contextMenu {
                                 Button(role: .destructive) {
@@ -152,6 +156,19 @@ struct AccountSwitcherSheet: View {
             }
         }
         .presentationDetents([.large])
+    }
+
+    private func switchAccount(to account: AppAccount) {
+        switchingAccountID = account.id
+        let generator = UISelectionFeedbackGenerator()
+        generator.prepare()
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            accountStore.switchAccount(to: account, using: blueskyClient)
+            workspaceStore.selectedTab = .moderation
+            generator.selectionChanged()
+            dismiss()
+        }
     }
 }
 

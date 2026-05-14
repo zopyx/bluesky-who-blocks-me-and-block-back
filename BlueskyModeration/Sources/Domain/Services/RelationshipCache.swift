@@ -26,4 +26,13 @@ enum RelationshipCache {
         guard let data = try? JSONEncoder().encode(actors) else { return }
         try? data.write(to: url)
     }
+
+    static func clear(forKey key: String) {
+        let url = fileURL(forKey: key)
+        try? FileManager.default.removeItem(at: url)
+    }
+
+    static func clearAll() {
+        try? FileManager.default.removeItem(at: cachesDirectory)
+    }
 }

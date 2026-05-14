@@ -488,6 +488,7 @@ struct RichRecord: Decodable {
 struct RichEmbed: Decodable {
     let images: [RichEmbedImage]?
     let video: RichEmbedVideo?
+    let external: RichEmbedExternal?
 
     enum CodingKeys: String, CodingKey {
         case type = "$type"
@@ -495,6 +496,8 @@ struct RichEmbed: Decodable {
         case thumbnail
         case playlist
         case aspectRatio
+        case external
+        case media
     }
 
     init(from decoder: Decoder) throws {
@@ -503,6 +506,7 @@ struct RichEmbed: Decodable {
         if type == "app.bsky.embed.images#view" {
             images = try container.decodeIfPresent([RichEmbedImage].self, forKey: .images)
             video = nil
+            external = nil
         } else if type == "app.bsky.embed.video#view" {
             images = nil
             video = try RichEmbedVideo(
@@ -510,9 +514,20 @@ struct RichEmbed: Decodable {
                 playlist: container.decodeIfPresent(String.self, forKey: .playlist),
                 aspectRatio: container.decodeIfPresent(RichAspectRatio.self, forKey: .aspectRatio)
             )
+            external = nil
+        } else if type == "app.bsky.embed.external#view" {
+            images = nil
+            video = nil
+            external = try container.decodeIfPresent(RichEmbedExternal.self, forKey: .external)
+        } else if type == "app.bsky.embed.recordWithMedia#view" {
+            let media = try container.decodeIfPresent(RichEmbed.self, forKey: .media)
+            images = media?.images
+            video = media?.video
+            external = media?.external
         } else {
             images = nil
             video = nil
+            external = nil
         }
     }
 }
@@ -527,6 +542,45 @@ struct RichEmbedVideo {
     let thumbnail: String?
     let playlist: String?
     let aspectRatio: RichAspectRatio?
+}
+
+struct RichEmbedExternal: Decodable {
+    let uri: String?
+    let title: String?
+    let description: String?
+    let thumb: String?
+
+    enum CodingKeys: String, CodingKey {
+        case uri
+        case title
+        case description
+        case thumb
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uri = try container.decodeIfPresent(String.self, forKey: .uri)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+
+        if let thumbURL = try container.decodeIfPresent(String.self, forKey: .thumb) {
+            thumb = thumbURL
+        } else if let blob = try container.decodeIfPresent(RichEmbedExternalThumbBlob.self, forKey: .thumb) {
+            thumb = blob.urlString
+        } else {
+            thumb = nil
+        }
+    }
+}
+
+private struct RichEmbedExternalThumbBlob: Decodable {
+    let ref: BlobRef?
+    let mimeType: String?
+    let size: Int?
+
+    var urlString: String? {
+        nil
+    }
 }
 
 struct RichAspectRatio: Decodable {
@@ -603,6 +657,14 @@ struct UploadedBlob: Decodable {
     let ref: BlobRef
     let mimeType: String
     let size: Int
+    let blobType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ref
+        case mimeType
+        case size
+        case blobType = "$type"
+    }
 }
 
 struct BlobRef: Decodable, Encodable {
@@ -667,9 +729,16 @@ struct FeedPostTarget: Encodable {
     let cid: String
 }
 
+struct FeedPostVideoAttachment {
+    let blob: UploadedBlob
+    let alt: String
+    let aspectRatio: (width: Int, height: Int)?
+}
+
 enum FeedPostRecordEmbed: Encodable {
     case images([FeedPostImage])
     case record(uri: String, cid: String)
+    case video(FeedPostVideoAttachment)
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -682,6 +751,20 @@ enum FeedPostRecordEmbed: Encodable {
             var record = container.nestedContainer(keyedBy: RecordCodingKeys.self, forKey: .record)
             try record.encode(uri, forKey: .uri)
             try record.encode(cid, forKey: .cid)
+        case let .video(attachment):
+            try container.encode("app.bsky.embed.video", forKey: .type)
+            var video = container.nestedContainer(keyedBy: VideoBlobCodingKeys.self, forKey: .video)
+            try video.encode("blob", forKey: .blobType)
+            try video.encode(attachment.blob.ref, forKey: .ref)
+            try video.encode(attachment.blob.mimeType, forKey: .mimeType)
+            try video.encode(attachment.blob.size, forKey: .size)
+            try container.encode([String](), forKey: .captions)
+            try container.encode(attachment.alt, forKey: .alt)
+            if let ratio = attachment.aspectRatio {
+                var ar = container.nestedContainer(keyedBy: AspectRatioCodingKeys.self, forKey: .aspectRatio)
+                try ar.encode(ratio.width, forKey: .width)
+                try ar.encode(ratio.height, forKey: .height)
+            }
         }
     }
 
@@ -689,11 +772,27 @@ enum FeedPostRecordEmbed: Encodable {
         case type = "$type"
         case images
         case record
+        case video
+        case captions
+        case alt
+        case aspectRatio
     }
 
     private enum RecordCodingKeys: String, CodingKey {
         case uri
         case cid
+    }
+
+    private enum VideoBlobCodingKeys: String, CodingKey {
+        case blobType = "$type"
+        case ref
+        case mimeType
+        case size
+    }
+
+    private enum AspectRatioCodingKeys: String, CodingKey {
+        case width
+        case height
     }
 }
 

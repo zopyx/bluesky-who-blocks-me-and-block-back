@@ -46,6 +46,34 @@ struct FeedPickerView: View {
                     Text(verbatim: loc("timeline.picker_custom"))
                 }
 
+                if !feedStore.recentFeeds.isEmpty {
+                    Section {
+                        ForEach(feedStore.recentFeeds, id: \.uri) { recent in
+                            Button {
+                                feedStore.setFeed(uri: recent.uri, name: recent.name)
+                                dismiss()
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(recent.name)
+                                            .foregroundStyle(.primary)
+                                        Text(recent.uri)
+                                            .font(.caption.monospaced())
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                    Spacer()
+                                    if feedStore.customFeedURI == recent.uri {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(Color.skyPrimary)
+                                    }
+                                }
+                            }
+                        }
+                    } header: {
+                        Text(verbatim: loc("timeline.picker_recent"))
+                    }
+                }
+
                 if feedStore.isUsingCustomFeed {
                     Section {
                         HStack {

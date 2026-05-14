@@ -40,25 +40,25 @@ struct LockScreenView: View {
 
     private var icon: String {
         switch appLockManager.biometricType {
-        case .faceID: return "faceid"
-        case .touchID: return "touchid"
-        default: return "lock.shield"
+        case .faceID: "faceid"
+        case .touchID: "touchid"
+        default: "lock.shield"
         }
     }
 
     private var title: String {
         switch appLockManager.biometricType {
-        case .faceID: return loc("lock_screen.face_id_title")
-        case .touchID: return loc("lock_screen.touch_id_title")
-        default: return loc("lock_screen.app_locked")
+        case .faceID: loc("lock_screen.face_id_title")
+        case .touchID: loc("lock_screen.touch_id_title")
+        default: loc("lock_screen.app_locked")
         }
     }
 
     private var subtitle: String {
         if appLockManager.isBiometricsAvailable {
-            return loc("lock_screen.biometric_subtitle").replacingOccurrences(of: "{biometric}", with: appLockManager.biometricLabel)
+            loc("lock_screen.biometric_subtitle").replacingOccurrences(of: "{biometric}", with: appLockManager.biometricLabel)
         } else {
-            return loc("lock_screen.biometric_unavailable")
+            loc("lock_screen.biometric_unavailable")
         }
     }
 }

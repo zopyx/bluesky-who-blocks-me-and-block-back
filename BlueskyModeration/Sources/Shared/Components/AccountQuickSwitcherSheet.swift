@@ -8,6 +8,8 @@ struct AccountQuickSwitcherSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
+    @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @State private var switchingAccountID: AppAccount.ID?
 
     var body: some View {
         NavigationStack {
@@ -17,13 +19,20 @@ struct AccountQuickSwitcherSheet: View {
                         Button {
                             switchAccount(to: account)
                         } label: {
-                            AccountRowView(
-                                account: account,
-                                isActive: account.id == accountStore.activeAccountID
-                            )
+                            HStack {
+                                AccountRowView(
+                                    account: account,
+                                    isActive: account.id == accountStore.activeAccountID
+                                )
+                                if switchingAccountID == account.id {
+                                    Spacer()
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                }
+                            }
                         }
                         .buttonStyle(.plain)
-                        .disabled(account.id == accountStore.activeAccountID)
+                        .disabled(switchingAccountID != nil || account.id == accountStore.activeAccountID)
                         .accessibilityHint("Switches to \(account.label ?? account.handle)")
                     }
                 } header: {
@@ -51,12 +60,16 @@ struct AccountQuickSwitcherSheet: View {
     }
 
     private func switchAccount(to account: AppAccount) {
+        switchingAccountID = account.id
         let generator = UISelectionFeedbackGenerator()
         generator.prepare()
-        accountStore.setActiveAccount(account)
-        workspaceStore.selectedTab = .moderation
-        generator.selectionChanged()
-        dismiss()
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            accountStore.switchAccount(to: account, using: blueskyClient)
+            workspaceStore.selectedTab = .moderation
+            generator.selectionChanged()
+            dismiss()
+        }
     }
 }
 
@@ -66,4 +79,5 @@ struct AccountQuickSwitcherSheet: View {
         onManageAccounts: {}
     )
     .environmentObject(AccountStore(preview: true))
+    .environmentObject(PreviewBlueskyClient())
 }

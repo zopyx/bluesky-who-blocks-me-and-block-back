@@ -7,7 +7,6 @@ final class UserPostsViewModel: ObservableObject {
     @Published private(set) var isLoadingMore = false
     @Published private(set) var hasMore = true
     @Published var errorMessage: String?
-    @Published var sortAscending = false
     @Published var searchText = ""
     @Published var fromDate: Date?
     @Published var toDate: Date?
@@ -39,7 +38,7 @@ final class UserPostsViewModel: ObservableObject {
         result.sort { a, b in
             let dateA = parseDate(a.post.safeRecord.createdAt) ?? .distantPast
             let dateB = parseDate(b.post.safeRecord.createdAt) ?? .distantPast
-            return sortAscending ? dateA < dateB : dateA > dateB
+            return dateA > dateB
         }
 
         return result

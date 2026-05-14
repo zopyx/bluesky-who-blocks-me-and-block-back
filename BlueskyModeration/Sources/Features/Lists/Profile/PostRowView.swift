@@ -14,7 +14,9 @@ struct PostRowView: View {
     var onQuote: (() -> Void)?
     var onCopy: (() -> Void)?
     var onTranslate: (() -> Void)?
+    var onDeletePost: (() -> Void)?
     var onOpenProfile: ((String) -> Void)?
+    @Environment(\.openURL) private var openURL
 
     private var post: RichPost {
         entry.post
@@ -59,23 +61,6 @@ struct PostRowView: View {
                     Text(relativeTimeString(from: date))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
-                }
-                Menu {
-                    if let onCopy {
-                        Button(action: onCopy) {
-                            Label(loc("post.copy"), systemImage: "doc.on.doc")
-                        }
-                    }
-                    if let onTranslate {
-                        Button(action: onTranslate) {
-                            Label(loc("post.translate"), systemImage: "globe")
-                        }
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(.tertiary)
-                        .padding(.leading, 4)
                 }
             }
 
@@ -130,30 +115,20 @@ struct PostRowView: View {
                 }
             }
 
-            if let video = post.embed?.video, let thumb = video.thumbnail, let url = URL(string: thumb) {
+            if let video = post.embed?.video {
                 Button {
                     if let onPlayVideo {
                         onPlayVideo()
                     }
                 } label: {
-                    ZStack {
-                        ThumbnailImageView(url: url, maxPixelSize: 720) {
-                            Rectangle().fill(Color.skyPrimary.opacity(0.08))
-                        }
-                        .scaledToFill()
-                        .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        Image(systemName: "play.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(.white)
-                            .shadow(radius: 4)
-                    }
+                    videoEmbedCard(video)
                 }
                 .buttonStyle(.plain)
             }
 
             if let images = post.embed?.images, !images.isEmpty {
                 let cols = images.count == 1 ? 1 : 2
+                let cellHeight: CGFloat = images.count == 1 ? 220 : 130
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: cols), spacing: 4) {
                     ForEach(Array(images.prefix(4).enumerated()), id: \.offset) { index, item in
                         if let previewURL = item.fullsize.flatMap(URL.init) {
@@ -164,7 +139,7 @@ struct PostRowView: View {
                                     Rectangle().fill(Color.skyPrimary.opacity(0.08))
                                 }
                                 .scaledToFill()
-                                .frame(height: 120)
+                                .frame(height: cellHeight)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                             }
                             .buttonStyle(.plain)
@@ -173,29 +148,42 @@ struct PostRowView: View {
                 }
             }
 
+            if let external = post.embed?.external, let uri = external.uri, let url = URL(string: uri) {
+                Button {
+                    openURL(url)
+                } label: {
+                    externalEmbedCard(external)
+                }
+                .buttonStyle(.plain)
+            }
+
             actionBar
         }
     }
 
     private var actionBar: some View {
         HStack(spacing: 24) {
-            actionButton(
-                icon: "bubble.left",
-                count: post.replyCount,
-                action: onReply
-            )
-            Button(action: { onRepost?() }) {
-                HStack(spacing: 4) {
-                    Image(systemName: isReposted ? "repeat.circle.fill" : "repeat")
-                        .font(.body.weight(.medium))
-                    if let count = post.repostCount {
-                        Text("\(count)")
-                            .font(.callout)
-                    }
-                }
-                .foregroundStyle(isReposted ? Color.green : Color.gray.opacity(0.6))
+            if let onReply {
+                actionButton(
+                    icon: "bubble.left",
+                    count: post.replyCount,
+                    action: onReply
+                )
             }
-            .buttonStyle(.plain)
+            if let onRepost {
+                Button(action: { onRepost() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: isReposted ? "repeat.circle.fill" : "repeat")
+                            .font(.body.weight(.medium))
+                        if let count = post.repostCount {
+                            Text("\(count)")
+                                .font(.callout)
+                        }
+                    }
+                    .foregroundStyle(isReposted ? Color.green : Color.gray.opacity(0.6))
+                }
+                .buttonStyle(.plain)
+            }
             HStack(spacing: 4) {
                 Button(action: { onLike?() }) {
                     Image(systemName: isLiked ? "heart.fill" : "heart")
@@ -211,13 +199,112 @@ struct PostRowView: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(.tertiary)
-            actionButton(
-                icon: "quote.bubble",
-                count: nil,
-                action: onQuote
-            )
+            if let onQuote {
+                actionButton(
+                    icon: "quote.bubble",
+                    count: nil,
+                    action: onQuote
+                )
+            }
+            Spacer()
+            if onCopy != nil || onTranslate != nil || onDeletePost != nil {
+                Menu {
+                    if let onCopy {
+                        Button(action: onCopy) {
+                            Label(loc("post.copy"), systemImage: "doc.on.doc")
+                        }
+                    }
+                    if let onTranslate {
+                        Button(action: onTranslate) {
+                            Label(loc("post.translate"), systemImage: "globe")
+                        }
+                    }
+                    if let onDeletePost {
+                        Divider()
+                        Button(role: .destructive, action: onDeletePost) {
+                            Label(loc("post.delete"), systemImage: "trash")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.tertiary)
+                }
+            }
         }
         .foregroundStyle(.tertiary)
+    }
+
+    @ViewBuilder
+    private func externalEmbedCard(_ external: RichEmbedExternal) -> some View {
+        HStack(spacing: 12) {
+            if let thumb = external.thumb, let url = URL(string: thumb) {
+                ThumbnailImageView(url: url, maxPixelSize: 512) {
+                    RoundedRectangle(cornerRadius: 10).fill(Color.skyPrimary.opacity(0.08))
+                }
+                .scaledToFill()
+                .frame(width: 96, height: 96)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                if let title = external.title, !title.isEmpty {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                }
+                if let description = external.description, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                }
+                if let host = external.uri.flatMap(URL.init)?.host, !host.isEmpty {
+                    Label(host, systemImage: "link")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .background(Color.skyPrimary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
+        }
+    }
+
+    @ViewBuilder
+    private func videoEmbedCard(_ video: RichEmbedVideo) -> some View {
+        ZStack {
+            if let thumb = video.thumbnail, let url = URL(string: thumb) {
+                ThumbnailImageView(url: url, maxPixelSize: 720) {
+                    Rectangle().fill(Color.skyPrimary.opacity(0.08))
+                }
+                .scaledToFill()
+            } else {
+                LinearGradient(
+                    colors: [Color.skyPrimary.opacity(0.22), Color.skyPrimary.opacity(0.08)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .overlay {
+                    Image(systemName: "film.stack")
+                        .font(.system(size: 34, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.92))
+                }
+            }
+
+            Image(systemName: "play.circle.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(.white)
+                .shadow(radius: 4)
+        }
+        .frame(height: 200)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     @ViewBuilder

@@ -48,12 +48,11 @@ final class LocalizationManager: ObservableObject {
 
     func localizedPlural(_ key: String, count: Int) -> String {
         let language = currentLanguage
-        let pluralKey: String
-        if language == "en" || language == "de" || language == "fr" || language == "it" {
-            pluralKey = count == 1 ? "\(key)_one" : "\(key)_other"
+        let pluralKey: String = if language == "en" || language == "de" || language == "fr" || language == "it" {
+            count == 1 ? "\(key)_one" : "\(key)_other"
         } else {
             // Default to English-style plural rules
-            pluralKey = count == 1 ? "\(key)_one" : "\(key)_other"
+            count == 1 ? "\(key)_one" : "\(key)_other"
         }
         let format = bundle[pluralKey] ?? allBundles["en"]?[pluralKey] ?? bundle[key] ?? allBundles["en"]?[key] ?? key
         return format.replacingOccurrences(of: "{count}", with: "\(count)")

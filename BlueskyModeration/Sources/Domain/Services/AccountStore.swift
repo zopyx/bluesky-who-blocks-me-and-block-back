@@ -125,6 +125,18 @@ final class AccountStore: ObservableObject {
         persist()
     }
 
+    func switchAccount(to account: AppAccount, using client: LiveBlueskyClient) {
+        guard accounts.contains(account) else { return }
+        client.clearCache()
+        DashboardCache.clearAll()
+        RelationshipCache.clearAll()
+        activeAccountID = account.id
+        if let index = accounts.firstIndex(of: account) {
+            accounts[index].lastUsedAt = .now
+        }
+        persist()
+    }
+
     func setLabel(for account: AppAccount, label: String?) {
         guard let index = accounts.firstIndex(of: account) else { return }
         accounts[index].label = label?.isEmpty == true ? nil : label

@@ -5,8 +5,11 @@ struct RootView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var mutedWordsStore: MutedWordsStore
+    @EnvironmentObject private var analyticsStore: AnalyticsStore
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+    @AppStorage("showBetaFeatures") private var showBetaFeatures = false
 
     private var preferredScheme: ColorScheme? {
         switch appearanceMode {
@@ -27,6 +30,18 @@ struct RootView: View {
                         Image(systemName: "checklist.checked")
                     }
                 }
+
+            if showBetaFeatures {
+                TimelineTab()
+                    .tag(WorkspaceTab.timeline)
+                    .tabItem {
+                        Label {
+                            Text(localizationManager.localized("tab.timeline"))
+                        } icon: {
+                            Image(systemName: "clock.arrow.circlepath")
+                        }
+                    }
+            }
 
             InfoView()
                 .tag(WorkspaceTab.info)
@@ -60,6 +75,11 @@ struct RootView: View {
         }
         .tint(.skyPrimary)
         .preferredColorScheme(preferredScheme)
+        .onChange(of: showBetaFeatures) { _, newValue in
+            if !newValue, workspaceStore.selectedTab == .timeline {
+                workspaceStore.selectedTab = .moderation
+            }
+        }
         .sheet(isPresented: .init(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = !$0 })) {
             NavigationStack {
                 ScrollView {

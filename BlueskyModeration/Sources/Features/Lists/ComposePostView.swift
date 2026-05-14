@@ -16,9 +16,15 @@ struct ComposePostView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var selectedImages: [(data: Data, mimeType: String)] = []
     @State private var imageAlts: [String] = []
+    @State private var videoAttachment: PostVideoAttachment?
+    @State private var selectedGIFPreviewURL: String?
+    @State private var selectedGIFTitle: String = ""
     @State private var isPosting = false
     @State private var errorMessage: String?
     @State private var textViewRef: UITextView?
+    @State private var referencedPost: ThreadPostNode?
+    @State private var showGIFPicker = false
+    @State private var isDownloadingGIF = false
 
     private let maxImages = 4
     @MainActor private static var addImagesLabel: String {
@@ -28,23 +34,21 @@ struct ComposePostView: View {
     var body: some View {
         NavigationStack {
             List {
-                if let replyTo {
+                if replyTo != nil || quote != nil {
                     Section {
-                        Text(verbatim: "\(loc("profile.posts.replying_to")) @\(extractHandle(from: replyTo.parentURI))")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-
-                if let quote {
-                    Section {
-                        HStack {
-                            Image(systemName: "quote.bubble.fill")
-                                .foregroundStyle(.tertiary)
-                            Text(verbatim: loc("compose.quoting"))
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
+                        if let referencedPost {
+                            postPreviewRow(referencedPost)
+                        } else {
+                            HStack {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                Text(verbatim: loc("timeline.loading"))
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
+                    } header: {
+                        Text(verbatim: replyTo != nil ? loc("profile.posts.replying_to") : loc("compose.quoting"))
                     }
                 }
 
@@ -53,6 +57,39 @@ struct ComposePostView: View {
                         .frame(minHeight: 120)
                 } header: {
                     Text(verbatim: loc("compose.text_section"))
+                }
+
+                if let previewURL = selectedGIFPreviewURL, !previewURL.isEmpty {
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            AsyncImage(url: URL(string: previewURL)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxHeight: 160)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } placeholder: {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.quaternary)
+                                    .frame(height: 120)
+                            }
+                            if !selectedGIFTitle.isEmpty {
+                                Text(selectedGIFTitle)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Button(role: .destructive) {
+                                videoAttachment = nil
+                                selectedGIFPreviewURL = nil
+                                selectedGIFTitle = ""
+                            } label: {
+                                Label(loc("actions.remove"), systemImage: "xmark.circle.fill")
+                                    .font(.caption)
+                            }
+                        }
+                    } header: {
+                        Text(verbatim: loc("compose.gif_selected"))
+                    }
                 }
 
                 if !selectedImages.isEmpty {
@@ -99,40 +136,25 @@ struct ComposePostView: View {
                     PhotosPicker(selection: $selectedItems, maxSelectionCount: maxImages, matching: .images) {
                         Label { Text(verbatim: Self.addImagesLabel) } icon: { Image(systemName: "photo.on.rectangle.angled") }
                     }
-                    .disabled(selectedImages.count >= maxImages)
+                    .disabled(selectedImages.count >= maxImages || videoAttachment != nil)
                     .onChange(of: selectedItems) { _, items in
                         Task { await loadImages(from: items) }
                     }
 
                     Button {
-                        triggerWritingTools()
+                        showGIFPicker = true
                     } label: {
-                        Label { Text(verbatim: loc("compose.improve")) } icon: { Image(systemName: "wand.and.stars") }
+                        HStack {
+                            Label { Text(verbatim: loc("compose.add_gif")) } icon: { Image(systemName: "play.rectangle") }
+                            Spacer()
+                            if isDownloadingGIF {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                            }
+                        }
                     }
-                    .disabled(postText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-
-                Section {
-                    HStack(spacing: 16) {
-                        Button { formatText(wrap: "**") } label: {
-                            Label { Text(verbatim: loc("compose.bold")) } icon: { Image(systemName: "bold") }
-                        }
-                        .buttonStyle(.plain)
-
-                        Button { formatText(wrap: "*") } label: {
-                            Label { Text(verbatim: loc("compose.italic")) } icon: { Image(systemName: "italic") }
-                        }
-                        .buttonStyle(.plain)
-
-                        Button { formatText(wrap: "~~") } label: {
-                            Label { Text(verbatim: loc("compose.strikethrough")) } icon: { Image(systemName: "strikethrough") }
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .font(.body)
-                    .foregroundStyle(.tertiary)
-                } header: {
-                    Text(verbatim: loc("compose.format"))
+                    .disabled(videoAttachment != nil || !selectedImages.isEmpty)
+                    .foregroundStyle(videoAttachment != nil ? Color.skyPrimary : .primary)
                 }
             }
             .navigationTitle(replyTo != nil ? loc("compose.reply_title") : (quote != nil ? loc("compose.quote_title") : loc("compose.title")))
@@ -153,44 +175,66 @@ struct ComposePostView: View {
             } message: {
                 Text(errorMessage ?? "")
             }
+            .sheet(isPresented: $showGIFPicker) {
+                GIFPickerView { gif in
+                    Task { await handleGIFSelection(gif) }
+                }
+            }
+            .task {
+                await loadReferencedPost()
+            }
         }
     }
 
-    private func extractHandle(from uri: String) -> String {
-        let parts = uri.dropFirst("at://".count).split(separator: "/")
-        return parts.first.map(String.init) ?? uri
+    private func postPreviewRow(_ post: ThreadPostNode) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                if let avatarURL = post.author?.avatar, let url = URL(string: avatarURL) {
+                    AsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Circle().fill(.quaternary)
+                    }
+                    .frame(width: 24, height: 24)
+                    .clipShape(Circle())
+                } else {
+                    Circle()
+                        .fill(.quaternary)
+                        .frame(width: 24, height: 24)
+                }
+                Text(post.author?.displayName ?? post.author?.handle ?? "")
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                if let handle = post.author?.handle {
+                    Text("@\(handle)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            if let text = post.record?.text, !text.isEmpty {
+                Text(text)
+                    .font(.body)
+                    .lineLimit(6)
+                    .foregroundStyle(.primary)
+            }
+        }
     }
 
-    private func formatText(wrap delimiter: String) {
-        guard let textView = textViewRef else {
-            postText = "\(delimiter)\(postText)\(delimiter)"
+    private func loadReferencedPost() async {
+        let uri: String
+        if let replyTo {
+            uri = replyTo.parentURI
+        } else if let quote {
+            uri = quote.uri
+        } else {
             return
         }
-        let selectedRange = textView.selectedRange
-        let fullText = textView.text ?? ""
-        if selectedRange.length > 0,
-           let range = Range(selectedRange, in: fullText)
-        {
-            let selected = fullText[range]
-            let replacement = "\(delimiter)\(selected)\(delimiter)"
-            textView.text = fullText.replacingCharacters(in: range, with: replacement)
-            postText = textView.text
-            textView.selectedRange = NSRange(location: selectedRange.location + delimiter.count, length: selectedRange.length)
-        } else {
-            let insertion = "\(delimiter)\(delimiter)"
-            let location = selectedRange.location
-            textView.text.insert(contentsOf: insertion, at: fullText.index(fullText.startIndex, offsetBy: location))
-            postText = textView.text
-            textView.selectedRange = NSRange(location: location + delimiter.count, length: 0)
-        }
-    }
-
-    private func triggerWritingTools() {
-        guard let textView = textViewRef, !postText.isEmpty else { return }
-        textView.becomeFirstResponder()
-        textView.selectedRange = NSRange(location: 0, length: textView.text.utf16.count)
-        if #available(iOS 18.2, *) {
-            textView.showWritingTools(NSNull())
+        do {
+            let response = try await blueskyClient.fetchPostThread(uri: uri, account: account, appPassword: appPassword)
+            referencedPost = response.thread.post
+        } catch {
+            AppLogger.moderation.error("Failed to load referenced post: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -206,6 +250,30 @@ struct ComposePostView: View {
         }
         selectedImages = Array(newImages.prefix(maxImages))
         imageAlts = Array(newAlts.prefix(maxImages))
+    }
+
+    private func handleGIFSelection(_ gif: GIFResult) async {
+        guard !gif.mp4URL.isEmpty else { return }
+        isDownloadingGIF = true
+        selectedGIFPreviewURL = gif.previewURL
+        selectedGIFTitle = gif.title
+        defer { isDownloadingGIF = false }
+        do {
+            let data = try await GIFService.shared.downloadGIF(url: gif.mp4URL)
+            let response = try await blueskyClient.uploadBlob(
+                data: data,
+                mimeType: "video/mp4",
+                account: account,
+                appPassword: appPassword
+            )
+            let ratio: (width: Int, height: Int)? = gif.width > 0 && gif.height > 0 ? (gif.width, gif.height) : nil
+            videoAttachment = PostVideoAttachment(blob: response.blob, alt: gif.title, aspectRatio: ratio)
+        } catch {
+            videoAttachment = nil
+            selectedGIFPreviewURL = nil
+            selectedGIFTitle = ""
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func post() async {
@@ -232,6 +300,7 @@ struct ComposePostView: View {
             _ = try await blueskyClient.createPost(
                 text: postText,
                 images: images,
+                video: videoAttachment,
                 replyTo: replyTo,
                 quote: quote,
                 account: account,
@@ -258,10 +327,6 @@ private struct WritingToolsTextView: UIViewRepresentable {
         tv.delegate = context.coordinator
         tv.isScrollEnabled = false
         tv.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
-
-        if #available(iOS 18.0, *) {
-            tv.writingToolsBehavior = .complete
-        }
         return tv
     }
 
