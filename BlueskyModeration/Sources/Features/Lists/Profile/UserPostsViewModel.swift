@@ -56,7 +56,8 @@ final class UserPostsViewModel: ObservableObject {
         guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
-        posts = []
+        let oldCursor = cursor
+        let oldHasMore = hasMore
         cursor = nil
         hasMore = true
         defer { isLoading = false }
@@ -68,6 +69,8 @@ final class UserPostsViewModel: ObservableObject {
             hasMore = cursor != nil
         } catch {
             guard !AppError.isCancellation(error) else { return }
+            cursor = oldCursor
+            hasMore = oldHasMore
             errorMessage = AppError.userMessage(from: error)
             AppLogger.moderation.error("Failed to refresh posts: \(error.localizedDescription, privacy: .public)")
         }
