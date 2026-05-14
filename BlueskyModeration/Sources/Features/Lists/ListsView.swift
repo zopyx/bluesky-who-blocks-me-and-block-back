@@ -41,14 +41,6 @@ struct ListsView: View {
                                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                                 .listRowBackground(Color.clear)
                             }
-                            .navigationDestination(isPresented: $presentationState.showProfile) {
-                                BlueskyProfileView(
-                                    member: activeAccountMember(activeAccount),
-                                    list: nil
-                                )
-                                .environmentObject(accountStore)
-                                .environmentObject(blueskyClient)
-                            }
                         }
 
                         Section {
@@ -95,26 +87,6 @@ struct ListsView: View {
                             }
                         } header: {
                             Text(loc("lists.relationships"))
-                        }
-                        .navigationDestination(isPresented: $presentationState.showFollowers) {
-                            RelationshipsView(mode: .followers, initialCount: viewModel.activeProfile?.followersCount)
-                                .environmentObject(accountStore)
-                                .environmentObject(blueskyClient)
-                        }
-                        .navigationDestination(isPresented: $presentationState.showFollowing) {
-                            RelationshipsView(mode: .following, initialCount: viewModel.activeProfile?.followsCount)
-                                .environmentObject(accountStore)
-                                .environmentObject(blueskyClient)
-                        }
-                        .navigationDestination(isPresented: $presentationState.showBlocking) {
-                            RelationshipsView(mode: .blocking, initialCount: viewModel.blockingCount)
-                                .environmentObject(accountStore)
-                                .environmentObject(blueskyClient)
-                        }
-                        .navigationDestination(isPresented: $presentationState.showBlockedBy) {
-                            RelationshipsView(mode: .blockedBy, initialCount: viewModel.blockedByCount)
-                                .environmentObject(accountStore)
-                                .environmentObject(blueskyClient)
                         }
 
                         Section {
@@ -280,6 +252,36 @@ struct ListsView: View {
             }
             .onChange(of: accountStore.activeAccountID) { _, _ in
                 viewModel.reset()
+            }
+            .navigationDestination(isPresented: $presentationState.showProfile) {
+                if let activeAccount = accountStore.activeAccount {
+                    BlueskyProfileView(
+                        member: activeAccountMember(activeAccount),
+                        list: nil
+                    )
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+                }
+            }
+            .navigationDestination(isPresented: $presentationState.showFollowers) {
+                RelationshipsView(mode: .followers, initialCount: viewModel.activeProfile?.followersCount)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
+            .navigationDestination(isPresented: $presentationState.showFollowing) {
+                RelationshipsView(mode: .following, initialCount: viewModel.activeProfile?.followsCount)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
+            .navigationDestination(isPresented: $presentationState.showBlocking) {
+                RelationshipsView(mode: .blocking, initialCount: viewModel.blockingCount)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+            }
+            .navigationDestination(isPresented: $presentationState.showBlockedBy) {
+                RelationshipsView(mode: .blockedBy, initialCount: viewModel.blockedByCount)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
             }
         }
     }

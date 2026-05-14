@@ -294,4 +294,80 @@ final class BlueskyAPIDTOsTests: XCTestCase {
         XCTAssertEqual(result.alsoKnownAs?.count, 1)
         XCTAssertEqual(result.services?.count, 1)
     }
+
+    func testRichEmbedDecodesExternalView() throws {
+        let json = """
+        {
+          "$type": "app.bsky.embed.external#view",
+          "external": {
+            "uri": "https://giphy.com/gifs/example",
+            "title": "GIPHY Clip",
+            "description": "Animated preview",
+            "thumb": "https://cdn.example/thumb.jpg"
+          }
+        }
+        """.data(using: .utf8)!
+
+        let embed = try JSONDecoder().decode(RichEmbed.self, from: json)
+
+        XCTAssertNil(embed.images)
+        XCTAssertNil(embed.video)
+        XCTAssertEqual(embed.external?.uri, "https://giphy.com/gifs/example")
+        XCTAssertEqual(embed.external?.title, "GIPHY Clip")
+        XCTAssertEqual(embed.external?.thumb, "https://cdn.example/thumb.jpg")
+    }
+
+    func testRichEmbedDecodesRecordWithMediaExternalView() throws {
+        let json = """
+        {
+          "$type": "app.bsky.embed.recordWithMedia#view",
+          "record": {
+            "$type": "app.bsky.embed.record#view"
+          },
+          "media": {
+            "$type": "app.bsky.embed.external#view",
+            "external": {
+              "uri": "https://giphy.com/gifs/example",
+              "title": "Wrapped GIPHY Clip",
+              "description": "Wrapped external media",
+              "thumb": "https://cdn.example/wrapped-thumb.jpg"
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let embed = try JSONDecoder().decode(RichEmbed.self, from: json)
+
+        XCTAssertNil(embed.images)
+        XCTAssertNil(embed.video)
+        XCTAssertEqual(embed.external?.uri, "https://giphy.com/gifs/example")
+        XCTAssertEqual(embed.external?.title, "Wrapped GIPHY Clip")
+    }
+
+    func testRichEmbedDecodesExternalViewWhenThumbIsObject() throws {
+        let json = """
+        {
+          "$type": "app.bsky.embed.external#view",
+          "external": {
+            "uri": "https://giphy.com/gifs/example",
+            "title": "GIPHY Clip",
+            "description": "Animated preview",
+            "thumb": {
+              "$type": "blob",
+              "ref": {
+                "$link": "bafkreiabc123"
+              },
+              "mimeType": "image/jpeg",
+              "size": 1024
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let embed = try JSONDecoder().decode(RichEmbed.self, from: json)
+
+        XCTAssertEqual(embed.external?.uri, "https://giphy.com/gifs/example")
+        XCTAssertEqual(embed.external?.title, "GIPHY Clip")
+        XCTAssertNil(embed.external?.thumb)
+    }
 }

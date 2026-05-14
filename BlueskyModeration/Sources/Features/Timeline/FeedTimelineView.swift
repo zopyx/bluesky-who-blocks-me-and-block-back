@@ -4,6 +4,9 @@ struct FeedTimelineView: View {
     @ObservedObject var viewModel: FeedTimelineViewModel
     @EnvironmentObject var accountStore: AccountStore
     @EnvironmentObject var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject var workspaceStore: ModerationWorkspaceStore
+    @EnvironmentObject var mutedWordsStore: MutedWordsStore
+    @EnvironmentObject var analyticsStore: AnalyticsStore
     @State private var selectedPostURI: String?
     @State private var imagePreview: ImagePreviewCollection?
     @State private var videoPreviewURL: URL?
@@ -16,6 +19,8 @@ struct FeedTimelineView: View {
     @State private var muteWordEntry: RichFeedEntry?
     @State private var showMuteConfirmation = false
     @State private var postToDelete: RichFeedEntry?
+    @State private var profileToShow: BlueskyActor?
+    @State private var gifToPlay: URL?
 
     var body: some View {
         NavigationStack {
@@ -65,6 +70,11 @@ struct FeedTimelineView: View {
                     videoPreviewURL = nil
                 }
             }
+            .fullScreenCover(item: $gifToPlay) { url in
+                GIFInlinePlayerView(url: url) {
+                    gifToPlay = nil
+                }
+            }
             .sheet(item: $showLikesForURI) { uri in
                 LikesListView(uri: uri)
                     .environmentObject(accountStore)
@@ -108,6 +118,27 @@ struct FeedTimelineView: View {
                     )
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
+                }
+            }
+            .sheet(item: $profileToShow) { actor in
+                NavigationStack {
+                    BlueskyProfileView(
+                        member: BlueskyListMember(
+                            recordURI: "profile:\(actor.did)",
+                            actor: actor
+                        ),
+                        list: nil
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(loc("actions.close")) { profileToShow = nil }
+                        }
+                    }
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+                    .environmentObject(workspaceStore)
+                    .environmentObject(mutedWordsStore)
+                    .environmentObject(analyticsStore)
                 }
             }
             .confirmationDialog(
@@ -167,7 +198,8 @@ struct FeedTimelineView: View {
                         onCopy: { UIPasteboard.general.string = entry.post.safeRecord.text },
                         onTranslate: { translateText(entry.post.safeRecord.text ?? "") },
                         onDeletePost: isOwnPost(entry) ? { postToDelete = entry } : nil,
-                        onOpenProfile: { handle in openProfile(handle) }
+                        onOpenProfile: { handle in openProfile(handle) },
+                        onPlayGIF: { gifToPlay = $0 }
                     )
                     .contextMenu {
                         if let word = muteWord(from: entry) {
@@ -374,8 +406,9 @@ struct FeedTimelineView: View {
     }
 
     private func openProfile(_ handle: String) {
-        guard let url = URL(string: "https://bsky.app/profile/\(handle)") else { return }
-        UIApplication.shared.open(url)
+        guard let entry = viewModel.visibleEntries.first(where: { $0.post.author?.handle == handle || $0.post.author?.did == handle }),
+              let author = entry.post.author else { return }
+        profileToShow = BlueskyActor(did: author.did ?? handle, handle: author.handle ?? handle, displayName: author.displayName)
     }
 
     private var newPostsBanner: some View {
@@ -437,6 +470,62 @@ private struct ComposeContext: Identifiable {
     var rootCID: String = ""
     var uri: String = ""
     var cid: String = ""
+}
+
+import WebKit
+
+private struct GIFInlinePlayerView: View {
+    let url: URL
+    let onDismiss: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            GIFWebView(url: url)
+                .ignoresSafeArea()
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .padding()
+                    }
+                }
+                Spacer()
+            }
+        }
+    }
+}
+
+private struct GIFWebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        config.mediaTypesRequiringUserActionForPlayback = []
+        config.allowsInlineMediaPlayback = true
+        let web = WKWebView(frame: .zero, configuration: config)
+        web.backgroundColor = .black
+        web.isOpaque = true
+        web.scrollView.isScrollEnabled = true
+        let ext = url.pathExtension.lowercased()
+        if ["gif", "jpg", "jpeg", "png", "webp"].contains(ext) {
+            let html = """
+            <html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>body{margin:0;background:black;display:flex;align-items:center;justify-content:center;height:100vh}
+            img{max-width:100%;max-height:100vh;object-fit:contain}</style></head>
+            <body><img src="\(url.absoluteString)" /></body></html>
+            """
+            web.loadHTMLString(html, baseURL: nil)
+        } else {
+            web.load(URLRequest(url: url))
+        }
+        return web
+    }
+
+    func updateUIView(_ web: WKWebView, context: Context) {}
 }
 
 #Preview {

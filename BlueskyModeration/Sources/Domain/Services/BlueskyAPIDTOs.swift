@@ -498,6 +498,7 @@ struct RichEmbed: Decodable {
         case aspectRatio
         case external
         case media
+        case alt
     }
 
     init(from decoder: Decoder) throws {
@@ -512,7 +513,8 @@ struct RichEmbed: Decodable {
             video = try RichEmbedVideo(
                 thumbnail: container.decodeIfPresent(String.self, forKey: .thumbnail),
                 playlist: container.decodeIfPresent(String.self, forKey: .playlist),
-                aspectRatio: container.decodeIfPresent(RichAspectRatio.self, forKey: .aspectRatio)
+                aspectRatio: container.decodeIfPresent(RichAspectRatio.self, forKey: .aspectRatio),
+                alt: container.decodeIfPresent(String.self, forKey: .alt)
             )
             external = nil
         } else if type == "app.bsky.embed.external#view" {
@@ -542,6 +544,7 @@ struct RichEmbedVideo {
     let thumbnail: String?
     let playlist: String?
     let aspectRatio: RichAspectRatio?
+    let alt: String?
 }
 
 struct RichEmbedExternal: Decodable {

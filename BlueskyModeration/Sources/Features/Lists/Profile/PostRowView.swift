@@ -16,7 +16,9 @@ struct PostRowView: View {
     var onTranslate: (() -> Void)?
     var onDeletePost: (() -> Void)?
     var onOpenProfile: ((String) -> Void)?
+    var onPlayGIF: ((URL) -> Void)?
     @Environment(\.openURL) private var openURL
+    @State private var altTextToShow: String?
 
     private var post: RichPost {
         entry.post
@@ -29,33 +31,44 @@ struct PostRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                if let url = author.avatar.flatMap(URL.init) {
-                    ThumbnailImageView(url: url, maxPixelSize: 72) {
-                        Circle().fill(Color.skyPrimary.opacity(0.16))
-                    }
-                    .scaledToFill()
-                    .frame(width: 36, height: 36)
-                    .clipShape(Circle())
-                } else {
-                    Circle()
-                        .fill(Color.skyPrimary.opacity(0.16))
-                        .frame(width: 36, height: 36)
-                        .overlay {
-                            Text((author.displayName ?? author.handle ?? "?").prefix(1).uppercased())
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(Color.skyPrimary)
+                Button {
+                    onOpenProfile?(author.handle ?? author.did ?? "")
+                } label: {
+                    if let url = author.avatar.flatMap(URL.init) {
+                        ThumbnailImageView(url: url, maxPixelSize: 72) {
+                            Circle().fill(Color.skyPrimary.opacity(0.16))
                         }
-                }
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(author.displayName ?? author.handle ?? "")
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
-                    if let handle = author.handle {
-                        Text("@\(handle)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        .scaledToFill()
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
+                    } else {
+                        Circle()
+                            .fill(Color.skyPrimary.opacity(0.16))
+                            .frame(width: 36, height: 36)
+                            .overlay {
+                                Text((author.displayName ?? author.handle ?? "?").prefix(1).uppercased())
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(Color.skyPrimary)
+                            }
                     }
                 }
+                .buttonStyle(.plain)
+                Button {
+                    onOpenProfile?(author.handle ?? author.did ?? "")
+                } label: {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(author.displayName ?? author.handle ?? "")
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                            .foregroundStyle(.primary)
+                        if let handle = author.handle {
+                            Text("@\(handle)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
                 Spacer()
                 if let created = post.safeRecord.createdAt, let date = parseDate(created) {
                     Text(relativeTimeString(from: date))
@@ -90,7 +103,7 @@ struct PostRowView: View {
                 }
                 .padding(8)
                 .background(Color.skyPrimary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
-                Text(verbatim: "\(loc("profile.posts.replying_to")) @\(parentAuthor.handle ?? "")")
+                Text(verbatim: "\(loc("profile.posts.replying_to")) \(parentAuthor.displayName ?? parentAuthor.handle ?? "")")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
@@ -127,8 +140,8 @@ struct PostRowView: View {
             }
 
             if let images = post.embed?.images, !images.isEmpty {
-                let cols = images.count == 1 ? 1 : 2
-                let cellHeight: CGFloat = images.count == 1 ? 220 : 130
+                let isSingle = images.count == 1
+                let cols = isSingle ? 1 : 2
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: cols), spacing: 4) {
                     ForEach(Array(images.prefix(4).enumerated()), id: \.offset) { index, item in
                         if let previewURL = item.fullsize.flatMap(URL.init) {
@@ -138,9 +151,26 @@ struct PostRowView: View {
                                 ThumbnailImageView(url: item.thumb.flatMap(URL.init) ?? previewURL, maxPixelSize: 512) {
                                     Rectangle().fill(Color.skyPrimary.opacity(0.08))
                                 }
-                                .scaledToFill()
-                                .frame(height: cellHeight)
+                                .aspectRatio(contentMode: isSingle ? .fit : .fill)
+                                .frame(height: isSingle ? 300 : 130)
+                                .clipped()
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .overlay(alignment: .topLeading) {
+                                    if let alt = item.alt, !alt.isEmpty {
+                                        Button {
+                                            altTextToShow = alt
+                                        } label: {
+                                            Text("ALT")
+                                                .font(.caption2.weight(.bold))
+                                                .foregroundStyle(.white)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 3)
+                                                .background(.black.opacity(0.5), in: Capsule())
+                                        }
+                                        .buttonStyle(.plain)
+                                        .padding(6)
+                                    }
+                                }
                             }
                             .buttonStyle(.plain)
                         }
@@ -149,16 +179,48 @@ struct PostRowView: View {
             }
 
             if let external = post.embed?.external, let uri = external.uri, let url = URL(string: uri) {
-                Button {
-                    openURL(url)
-                } label: {
-                    externalEmbedCard(external)
+                if isTenorEmbed(external) {
+                    let gifURL = external.thumb.flatMap(URL.init) ?? url
+                    Button {
+                        onPlayGIF?(gifURL)
+                    } label: {
+                        Group {
+                            if let thumbURL = external.thumb.flatMap(URL.init) {
+                                ThumbnailImageView(url: thumbURL, maxPixelSize: 640) {
+                                    Rectangle().fill(Color.skyPrimary.opacity(0.08))
+                                }
+                            } else {
+                                Rectangle().fill(Color.skyPrimary.opacity(0.08))
+                            }
+                        }
+                        .scaledToFill()
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(alignment: .center) {
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 44))
+                                .foregroundStyle(.white)
+                                .shadow(radius: 4)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button {
+                        openURL(url)
+                    } label: {
+                        externalEmbedCard(external)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
 
             actionBar
         }
+    }
+
+    private func isTenorEmbed(_ external: RichEmbedExternal) -> Bool {
+        guard let host = external.uri.flatMap(URL.init)?.host else { return false }
+        return host.contains("tenor.com")
     }
 
     private var actionBar: some View {
