@@ -4,6 +4,8 @@ struct InfoView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab: InfoTab = .overview
+    @State private var showSplashReplay = false
+    @State private var showDebugInfo = false
 
     enum InfoTab: String, CaseIterable {
         case overview = "Overview"
@@ -48,6 +50,17 @@ struct InfoView: View {
                 .toolbarBackground(.hidden, for: .navigationBar)
             }
         }
+        .overlay {
+            if showSplashReplay {
+                SplashScreenView(isActive: $showSplashReplay)
+                    .transition(.opacity)
+                    .zIndex(100)
+            }
+        }
+        .sheet(isPresented: $showDebugInfo) {
+            DebugInfoView()
+                .environmentObject(localizationManager)
+        }
     }
 
     // MARK: - Overview Tab
@@ -67,6 +80,8 @@ struct InfoView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(height: 128)
+                .onTapGesture(count: 3) { showSplashReplay = true }
+                .highPriorityGesture(TapGesture(count: 4).onEnded { showDebugInfo = true })
 
             Text(verbatim: localizationManager.localized("onboarding.title"))
                 .font(.body)
@@ -426,6 +441,111 @@ struct InfoView: View {
             Color(red: 0.90, green: 0.95, blue: 0.99),
             Color(red: 0.93, green: 0.97, blue: 0.96),
         ]
+    }
+}
+
+// MARK: - Debug Info
+
+private struct DebugInfoView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+    @State private var diagnostics: [(String, String)] = []
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(diagnostics.indices, id: \.self) { i in
+                    let item = diagnostics[i]
+                    LabeledContent(item.0, value: item.1)
+                        .font(.caption.monospaced())
+                }
+            }
+            .navigationTitle("Diagnostics")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(localizationManager.localized("actions.done")) { dismiss() }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        let text = diagnostics.map { "\($0.0): \($0.1)" }.joined(separator: "\n")
+                        UIPasteboard.general.string = text
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                    }
+                }
+            }
+            .task { diagnostics = collectDiagnostics() }
+        }
+    }
+
+    private func collectDiagnostics() -> [(String, String)] {
+        let device = UIDevice.current
+        let screen = UIScreen.main
+        let app = Bundle.main
+        let process = ProcessInfo.processInfo
+
+        var result: [(String, String)] = []
+        let add = { (label: String, value: String) in result.append((label, value)) }
+
+        add("Device Model", deviceModelName)
+        add("Device Class", UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone")
+        add("iOS Version", "\(device.systemName) \(device.systemVersion)")
+        add("Screen Size", "\(Int(screen.bounds.width))×\(Int(screen.bounds.height)) pt")
+        add("Screen Scale", "\(Int(screen.scale))×")
+        add("Screen Native", "\(Int(screen.nativeBounds.width))×\(Int(screen.nativeBounds.height)) px")
+        add("Orientation", interfaceOrientation)
+        add("Low Power Mode", process.isLowPowerModeEnabled ? "Yes" : "No")
+        add("Thermal State", thermalState)
+        add("App Version", app.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-")
+        add("App Build", app.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-")
+        add("App Language", localizationManager.currentLanguage)
+        add("Device Language", Locale.current.language.languageCode?.identifier ?? "-")
+        add("Region", Locale.current.region?.identifier ?? "-")
+        add("Reduce Motion", UIAccessibility.isReduceMotionEnabled ? "Yes" : "No")
+        add("Reduce Transparency", UIAccessibility.isReduceTransparencyEnabled ? "Yes" : "No")
+        add("Bold Text", UIAccessibility.isBoldTextEnabled ? "Yes" : "No")
+        add("Larger Text", UIAccessibility.isDarkerSystemColorsEnabled ? "Yes" : "No")
+        add("Content Size", UIApplication.shared.preferredContentSizeCategory.rawValue)
+        add("Total Disk", byteCount(process.physicalMemory))
+        add("Thermal State", process.thermalState == .nominal ? "Nominal" : process.thermalState == .fair ? "Fair" : process.thermalState == .serious ? "Serious" : "Critical")
+
+        return result
+    }
+
+    private var deviceModelName: String {
+        var size = 0
+        sysctlbyname("hw.machine", nil, &size, nil, 0)
+        var machine = [CChar](repeating: 0, count: size)
+        sysctlbyname("hw.machine", &machine, &size, nil, 0)
+        return String(cString: machine)
+    }
+
+    private var interfaceOrientation: String {
+        let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        switch scene?.interfaceOrientation {
+        case .portrait: return "Portrait"
+        case .landscapeLeft: return "Landscape Left"
+        case .landscapeRight: return "Landscape Right"
+        case .portraitUpsideDown: return "Portrait Upside Down"
+        default: return "Unknown"
+        }
+    }
+
+    private var thermalState: String {
+        switch ProcessInfo.processInfo.thermalState {
+        case .nominal: return "Nominal"
+        case .fair: return "Fair"
+        case .serious: return "Serious"
+        case .critical: return "Critical"
+        @unknown default: return "Unknown"
+        }
+    }
+
+    private func byteCount(_ bytes: UInt64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .memory
+        return formatter.string(fromByteCount: Int64(bytes))
     }
 }
 

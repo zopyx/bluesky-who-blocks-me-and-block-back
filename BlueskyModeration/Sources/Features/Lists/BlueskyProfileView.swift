@@ -15,8 +15,8 @@ struct BlueskyProfileView: View {
     @State private var loadTask: Task<Void, Never>?
     @State private var moderationTask: Task<Void, Never>?
     @State private var exportTask: Task<Void, Never>?
-    @State private var betaFeatureEnabled = false
     @State private var showPostComposer = false
+    @AppStorage("showBetaFeatures") private var showBetaFeatures = false
     @State private var blockedAccessType: BlockedAccessType?
 
     enum BlockedAccessType: String, Identifiable {
@@ -96,7 +96,7 @@ struct BlueskyProfileView: View {
                     appPassword: appPassword,
                     blueskyClient: blueskyClient,
                     onComplete: {
-                        betaFeatureEnabled = false
+                        showBetaFeatures = false
                     }
                 )
             }
@@ -238,7 +238,7 @@ struct BlueskyProfileView: View {
                             .onTapGesture(count: 2) { showPostBrowser = true }
                     }
 
-                if isOwnProfile && betaFeatureEnabled {
+                if isOwnProfile && showBetaFeatures {
                     Section {
                         Button {
                             showPostComposer = true
@@ -391,12 +391,8 @@ struct BlueskyProfileView: View {
                         LabeledContent(loc("profile.stats.labels"), value: profile.labels.joined(separator: ", "))
                     }
                 } header: {
-                    Text(verbatim: loc("profile.account_info"))
-                        .onTapGesture(count: 2) {
-                            withAnimation { betaFeatureEnabled.toggle() }
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        }
-                }
+                        Text(verbatim: loc("profile.account_info"))
+                    }
 
                 if !viewModel.handleHistory.isEmpty {
                     Section {

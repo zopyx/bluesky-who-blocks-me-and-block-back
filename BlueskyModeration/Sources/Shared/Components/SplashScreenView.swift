@@ -24,6 +24,20 @@ struct SplashScreenView: View {
                 .opacity(showParticles ? 0.8 : 0)
 
             VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button {
+                        isActive = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+                    .padding(16)
+                    .opacity(phase >= 2 ? 1 : 0)
+                    .animation(.easeOut(duration: 0.4).delay(0.5), value: phase)
+                }
+
                 Spacer()
 
                 Image("RulyxLogo")
@@ -85,10 +99,13 @@ struct SplashScreenView: View {
             taglineOpacity = 1
         }
 
+        phase = 2
+
         try? await Task.sleep(for: .seconds(0.3))
 
-        withAnimation(.easeOut(duration: 0.5)) {
-            footerOpacity = 1
+        withAnimation(.easeOut(duration: 0.6)) {
+            taglineOffset = 0
+            taglineOpacity = 1
         }
 
         withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(1.0)) {

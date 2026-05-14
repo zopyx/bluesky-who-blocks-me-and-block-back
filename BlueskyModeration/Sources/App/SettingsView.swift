@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var appLockManager: AppLockManager
     @AppStorage("debugMode") private var debugMode = false
+    @AppStorage("showBetaFeatures") private var showBetaFeatures = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @State private var isShowingClearCacheConfirmation = false
     @State private var cacheStatusMessage: String?
@@ -53,8 +54,8 @@ struct SettingsView: View {
                     }
                     .accessibilityHint(loc("settings.language.hint"))
                 } header: {
-                    Text(localizationManager.localized("settings.preferences"))
-                }
+                        Text(localizationManager.localized("settings.preferences"))
+                    }
 
                 if appLockManager.isBiometricsAvailable {
                     Section {
@@ -85,6 +86,14 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(isOn: $showBetaFeatures) {
+                        Label {
+                            Text(localizationManager.localized("settings.beta_features"))
+                        } icon: {
+                            Image(systemName: "flask")
+                        }
+                    }
+
                     Toggle(isOn: $debugMode) {
                         Label {
                             Text(localizationManager.localized("settings.debug"))

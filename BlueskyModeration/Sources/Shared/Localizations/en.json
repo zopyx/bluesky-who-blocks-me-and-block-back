@@ -603,6 +603,7 @@
   "settings.appearance.light": "Light",
   "settings.appearance.system": "System",
   "settings.appearance.dark": "Dark",
+  "settings.beta_features": "Show Beta Features",
   "settings.cache_cleared": "Local cache cleared.",
   "lock_screen.unlock": "Unlock",
   "lock_screen.face_id_title": "Use Face ID to Unlock",
