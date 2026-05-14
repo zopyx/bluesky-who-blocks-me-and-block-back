@@ -65,9 +65,10 @@ struct AccountQuickSwitcherSheet: View {
         generator.prepare()
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(300))
-            accountStore.switchAccount(to: account, using: blueskyClient)
+            await accountStore.switchAccount(to: account, using: blueskyClient)
             workspaceStore.selectedTab = .moderation
             generator.selectionChanged()
+            switchingAccountID = nil
             dismiss()
         }
     }

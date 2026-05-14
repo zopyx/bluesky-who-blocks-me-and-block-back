@@ -125,11 +125,13 @@ final class AccountStore: ObservableObject {
         persist()
     }
 
-    func switchAccount(to account: AppAccount, using client: LiveBlueskyClient) {
+    func switchAccount(to account: AppAccount, using client: LiveBlueskyClient) async {
         guard accounts.contains(account) else { return }
         client.clearCache()
-        DashboardCache.clearAll()
-        RelationshipCache.clearAll()
+        await Task.detached(priority: .utility) {
+            DashboardCache.clearAll()
+            RelationshipCache.clearAll()
+        }.value
         activeAccountID = account.id
         if let index = accounts.firstIndex(of: account) {
             accounts[index].lastUsedAt = .now
