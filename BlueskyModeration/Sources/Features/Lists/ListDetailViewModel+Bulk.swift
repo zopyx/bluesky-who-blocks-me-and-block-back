@@ -462,7 +462,7 @@ extension ListDetailViewModel {
                 state.addingActorIDs.insert(actor.did)
             }
         }
-        for (did, memberID) in removingMemberIDsByActorDID {
+        for (_, memberID) in removingMemberIDsByActorDID {
             state.removingMemberIDs.insert(memberID)
         }
         defer {

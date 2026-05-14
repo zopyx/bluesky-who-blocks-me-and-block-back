@@ -18,6 +18,7 @@ struct ComposePostView: View {
     @State private var textViewRef: UITextView?
 
     private let maxImages = 4
+    @MainActor private static var addImagesLabel: String { loc("compose.add_images") }
 
     var body: some View {
         NavigationStack {
@@ -71,7 +72,7 @@ struct ComposePostView: View {
 
                 Section {
                     PhotosPicker(selection: $selectedItems, maxSelectionCount: maxImages, matching: .images) {
-                        Label { Text(verbatim: loc("compose.add_images")) } icon: { Image(systemName: "photo.on.rectangle.angled") }
+                        Label { Text(verbatim: Self.addImagesLabel) } icon: { Image(systemName: "photo.on.rectangle.angled") }
                     }
                     .disabled(selectedImages.count >= maxImages)
                     .onChange(of: selectedItems) { _, items in

@@ -63,14 +63,10 @@ struct InfoView: View {
 
     private var heroCard: some View {
         VStack(spacing: 10) {
-            Text("RULYX")
-                .font(.system(.largeTitle, design: .rounded, weight: .heavy))
-                .foregroundStyle(.primary)
-
             Image("RulyxLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 64)
+                .frame(height: 128)
 
             Text(verbatim: localizationManager.localized("onboarding.title"))
                 .font(.body)

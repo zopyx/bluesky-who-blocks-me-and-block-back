@@ -769,7 +769,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
 
     func uploadBlob(data: Data, mimeType: String, account: AppAccount, appPassword: String?) async throws -> UploadBlobResponse {
         try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
-            let url = (authSession.pdsURL ?? baseURL).appendingPathComponent("xrpc/com.atproto.repo.uploadBlob")
+            let url = authSession.pdsURL.appendingPathComponent("xrpc/com.atproto.repo.uploadBlob")
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.setValue("Bearer \(authSession.accessJWT)", forHTTPHeaderField: "Authorization")

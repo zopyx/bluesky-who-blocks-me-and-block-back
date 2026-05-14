@@ -17,6 +17,13 @@ struct BlueskyProfileView: View {
     @State private var exportTask: Task<Void, Never>?
     @State private var betaFeatureEnabled = false
     @State private var showPostComposer = false
+    @State private var blockedAccessType: BlockedAccessType?
+
+    enum BlockedAccessType: String, Identifiable {
+        case posts
+        case media
+        var id: String { rawValue }
+    }
 
     var body: some View {
         Group {
@@ -94,6 +101,36 @@ struct BlueskyProfileView: View {
                 )
             }
         }
+        .sheet(item: $blockedAccessType) { type in
+            NavigationStack {
+                VStack(spacing: 24) {
+                    Spacer()
+
+                    Image(systemName: "hand.raised.slash.fill")
+                        .font(.system(size: 64))
+                        .foregroundStyle(.red)
+                        .symbolRenderingMode(.hierarchical)
+
+                    VStack(spacing: 8) {
+                        Text(verbatim: loc("profile.blocked.title"))
+                            .font(.title2.weight(.bold))
+                        Text(verbatim: loc("profile.blocked.\(type.rawValue)_desc"))
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 32)
+
+                    Spacer()
+                }
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(loc("actions.got_it")) { blockedAccessType = nil }
+                    }
+                }
+            }
+            .presentationDetents([.height(320)])
+        }
     }
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
@@ -117,6 +154,10 @@ struct BlueskyProfileView: View {
                         if let description = profile.description, !description.isEmpty {
                             Text(description)
                                 .font(.body)
+                        }
+
+                        if !isOwnProfile, let state = profile.viewerState {
+                            relationshipBadges(state: state)
                         }
                     }
                     .padding(.vertical, 6)
@@ -144,7 +185,11 @@ struct BlueskyProfileView: View {
                         }
                     }
                     Button {
-                        showPostBrowser = true
+                        if profile.viewerState?.blockedBy == true {
+                            blockedAccessType = .posts
+                        } else {
+                            showPostBrowser = true
+                        }
                     } label: {
                         HStack {
                             Text(loc("profile.stats.posts"))
@@ -158,7 +203,11 @@ struct BlueskyProfileView: View {
                     }
                     .buttonStyle(.plain)
                     Button {
-                        showMediaBrowser = true
+                        if profile.viewerState?.blockedBy == true {
+                            blockedAccessType = .media
+                        } else {
+                            showMediaBrowser = true
+                        }
                     } label: {
                         HStack {
                             Text(loc("profile.stats.media"))
@@ -518,6 +567,35 @@ struct BlueskyProfileView: View {
               let activeAccount = accountStore.activeAccount else { return false }
         if let activeDID = activeAccount.did, activeDID == profile.did { return true }
         return activeAccount.handle.lowercased() == profile.handle.lowercased()
+    }
+
+    @ViewBuilder
+    private func relationshipBadges(state: BlueskyViewerState) -> some View {
+        let badges: [(label: String, icon: String, color: Color, active: Bool)] = [
+            (loc("profile.badge.follows_me"), "person.crop.circle.badge.checkmark", .green, state.followsYou),
+            (loc("profile.badge.blocks_me"), "hand.raised.slash.fill", .red, state.blockedBy),
+            (loc("profile.badge.following"), "heart.fill", .blue, state.isFollowing),
+            (loc("profile.badge.blocking"), "hand.raised.fill", .orange, state.isBlocking),
+        ]
+        let active = badges.filter(\.active)
+        if !active.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(active, id: \.label) { badge in
+                        HStack(spacing: 4) {
+                            Image(systemName: badge.icon)
+                                .font(.caption2)
+                            Text(badge.label)
+                                .font(.caption.weight(.semibold))
+                        }
+                        .foregroundStyle(badge.color)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(badge.color.opacity(0.12), in: Capsule())
+                    }
+                }
+            }
+        }
     }
 
     private func statusChip(title: String, tint: Color, emphasized: Bool) -> some View {

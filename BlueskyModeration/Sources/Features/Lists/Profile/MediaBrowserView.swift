@@ -105,11 +105,19 @@ struct MediaBrowserView: View {
                         LoadingPanel(message: loc("profile.posts.loading"))
                         Spacer()
                     } else if let error = viewModel.errorMessage, viewModel.items.isEmpty {
-                        ContentUnavailableView(
-                            loc("list.detail.alert_title"),
-                            systemImage: "exclamationmark.bubble",
-                            description: Text(error)
-                        )
+                        if error.localizedCaseInsensitiveContains("blocked") {
+                            ContentUnavailableView(
+                                loc("profile.blocked.title"),
+                                systemImage: "hand.raised.slash.fill",
+                                description: Text(verbatim: loc("profile.blocked.media_desc"))
+                            )
+                        } else {
+                            ContentUnavailableView(
+                                loc("list.detail.alert_title"),
+                                systemImage: "exclamationmark.bubble",
+                                description: Text(error)
+                            )
+                        }
                     } else if viewModel.items.isEmpty {
                         ContentUnavailableView(
                             loc("profile.media.empty"),

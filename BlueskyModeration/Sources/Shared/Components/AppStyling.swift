@@ -118,7 +118,6 @@ enum AppTextStyle {
         case .caption: .caption
         case .captionSmall: .caption2
         case .statistic: .title3
-        case .caption: .caption
         case .label: .subheadline
         case .buttonLabel: .headline
         }
@@ -134,6 +133,7 @@ extension View {
 // MARK: - Reduce Motion Animation Helper
 
 extension Animation {
+    @MainActor
     static func appSpring(_ response: Double = 0.35, _ dampingFraction: Double = 0.8) -> Animation {
         if UIAccessibility.isReduceMotionEnabled {
             return .default
@@ -141,6 +141,7 @@ extension Animation {
         return .interpolatingSpring(mass: 1, stiffness: 100 / response, damping: 20 * dampingFraction)
     }
 
+    @MainActor
     static func appEaseInOut(duration: Double = 0.25) -> Animation {
         if UIAccessibility.isReduceMotionEnabled {
             return .default

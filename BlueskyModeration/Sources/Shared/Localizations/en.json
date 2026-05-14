@@ -812,5 +812,13 @@
   "compose.placeholder": "What's on your mind?",
   "compose.post": "Post",
   "compose.text_section": "Text",
-  "compose.title": "Compose Post"
+  "compose.title": "Compose Post",
+  "profile.blocked.title": "Account Blocks You",
+  "profile.blocked.posts_desc": "This account has blocked you. Their posts are not available.",
+  "profile.blocked.media_desc": "This account has blocked you. Their media is not available.",
+  "actions.got_it": "Got It",
+  "profile.badge.follows_me": "Follows me",
+  "profile.badge.blocks_me": "Blocks me",
+  "profile.badge.following": "Following",
+  "profile.badge.blocking": "Blocking"
 }

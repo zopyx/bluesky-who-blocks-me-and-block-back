@@ -36,11 +36,19 @@ struct UserPostsView: View {
                 if viewModel.isLoading, viewModel.posts.isEmpty {
                     LoadingPanel(message: loc("profile.posts.loading"))
                 } else if let error = viewModel.errorMessage, viewModel.posts.isEmpty {
-                    ContentUnavailableView(
-                        loc("list.detail.alert_title"),
-                        systemImage: "exclamationmark.bubble",
-                        description: Text(error)
-                    )
+                    if error.localizedCaseInsensitiveContains("blocked") {
+                        ContentUnavailableView(
+                            loc("profile.blocked.title"),
+                            systemImage: "hand.raised.slash.fill",
+                            description: Text(verbatim: loc("profile.blocked.posts_desc"))
+                        )
+                    } else {
+                        ContentUnavailableView(
+                            loc("list.detail.alert_title"),
+                            systemImage: "exclamationmark.bubble",
+                            description: Text(error)
+                        )
+                    }
                 } else if viewModel.posts.isEmpty {
                     ContentUnavailableView(
                         loc("profile.posts.empty"),
