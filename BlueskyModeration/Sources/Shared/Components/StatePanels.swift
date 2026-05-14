@@ -8,7 +8,7 @@ struct LoadingPanel: View {
             ProgressView()
                 .scaleEffect(1.2)
             Text(message)
-                .font(.subheadline)
+                .appFont(.label)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 120)
@@ -32,10 +32,10 @@ struct EmptyStatePanel: View {
                 .font(.largeTitle)
                 .foregroundStyle(.secondary)
             Text(title)
-                .font(.headline)
+                .appFont(.heading)
             if !message.isEmpty {
                 Text(message)
-                    .font(.subheadline)
+                    .appFont(.label)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -54,10 +54,10 @@ struct ErrorRetryBanner: View {
         VStack(spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.warningOrange)
                     .accessibilityHidden(true)
                 Text(message)
-                    .font(.subheadline)
+                    .appFont(.label)
                 Spacer()
             }
 
@@ -69,8 +69,7 @@ struct ErrorRetryBanner: View {
             .accessibilityHint(loc("common.retry.hint"))
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .appCardStyle(cornerRadius: 12, style: .subtle)
         .padding(.horizontal)
         .accessibilityElement(children: .combine)
     }
@@ -100,13 +99,13 @@ struct BatchProgressCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(title).font(.subheadline.weight(.semibold))
+                Text(title).appFont(.subheading)
                 Spacer()
-                Text("\(completedCount)/\(totalCount)").font(.caption).foregroundStyle(.secondary)
+                Text("\(completedCount)/\(totalCount)").appFont(.caption).foregroundStyle(.secondary)
             }
             ProgressView(value: Double(completedCount), total: Double(totalCount))
             if let currentHandle {
-                Text(currentHandle).font(.caption.monospaced()).foregroundStyle(.secondary)
+                Text(currentHandle).appFont(.captionSmall).monospaced().foregroundStyle(.secondary)
             }
             if let onCancel {
                 HStack {
@@ -121,8 +120,7 @@ struct BatchProgressCard: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .appCardStyle(cornerRadius: 12, style: .subtle)
         .padding(.horizontal)
         .accessibilityElement(children: .combine)
         .accessibilityHint(loc("common.progress.hint"))
@@ -139,10 +137,10 @@ struct StatusChip: View {
 
     var body: some View {
         Text(text)
-            .font(.caption2.weight(.semibold))
+            .appFont(.captionSmall)
             .foregroundStyle(foregroundColor)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 14)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 14)
             .background {
                 if #available(iOS 26, *) {
                     Color.clear.glassEffect(.regular.tint(tintColor), in: .rect(cornerRadius: .infinity))
@@ -154,31 +152,31 @@ struct StatusChip: View {
 
     private var foregroundColor: Color {
         switch style {
-        case .neutral: return .secondary
-        case .positive: return .green
-        case .warning: return .orange
-        case .destructive: return .red
-        case .info: return Color.skyPrimary
+        case .neutral: .secondary
+        case .positive: .successGreen
+        case .warning: .warningOrange
+        case .destructive: .errorRed
+        case .info: Color.skyPrimary
         }
     }
 
     private var tintColor: Color {
         switch style {
-        case .neutral: return .secondary
-        case .positive: return .green
-        case .warning: return .orange
-        case .destructive: return .red
-        case .info: return Color.skyPrimary
+        case .neutral: .secondary
+        case .positive: .successGreen
+        case .warning: .warningOrange
+        case .destructive: .errorRed
+        case .info: Color.skyPrimary
         }
     }
 
     private var backgroundColor: Color {
         switch style {
-        case .neutral: return Color(.systemGray6)
-        case .positive: return .green.opacity(0.12)
-        case .warning: return .orange.opacity(0.12)
-        case .destructive: return .red.opacity(0.12)
-        case .info: return Color.skyPrimary.opacity(0.12)
+        case .neutral: Color(.systemGray6)
+        case .positive: Color.successGreen.opacity(0.12)
+        case .warning: Color.warningOrange.opacity(0.12)
+        case .destructive: Color.errorRed.opacity(0.12)
+        case .info: Color.skyPrimary.opacity(0.12)
         }
     }
 }
@@ -190,24 +188,23 @@ struct HelpSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .appFont(.subheading)
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(bulletPoints, id: \.self) { point in
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "info.circle.fill")
-                            .font(.caption)
+                            .appFont(.caption)
                             .foregroundStyle(Color.skyPrimary)
                             .frame(width: 16, height: 16)
                         Text(point)
-                            .font(.caption)
+                            .appFont(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .appCardStyle(cornerRadius: 12, style: .subtle)
     }
 }
 
@@ -225,8 +222,8 @@ struct OnboardingRow: View {
                 .frame(width: 36, height: 36)
                 .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline.weight(.semibold))
-                Text(description).font(.caption).foregroundStyle(.secondary)
+                Text(title).appFont(.subheading)
+                Text(description).appFont(.caption).foregroundStyle(.secondary)
             }
         }
         .accessibilityElement(children: .combine)

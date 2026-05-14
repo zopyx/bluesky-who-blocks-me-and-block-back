@@ -8,10 +8,10 @@ enum RelationshipMode: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .followers: return "My followers"
-        case .following: return "My followings"
-        case .blocking: return "Blocking"
-        case .blockedBy: return "Blocked by"
+        case .followers: "My followers"
+        case .following: "My followings"
+        case .blocking: "Blocking"
+        case .blockedBy: "Blocked by"
         }
     }
 
@@ -98,7 +98,7 @@ struct RelationshipsView: View {
                         }
                     }
 
-                    if filteredActors.isEmpty && !isLoading {
+                    if filteredActors.isEmpty, !isLoading {
                         ContentUnavailableView {
                             Label(modeLocalized, systemImage: "person.3")
                         } description: {
@@ -143,6 +143,7 @@ struct RelationshipsView: View {
                                 }
                                 .padding(.vertical, 2)
                             }
+                            .appScrollTransition()
                             .contextMenu {
                                 Button(role: .destructive) {
                                     actorToBlock = actor
@@ -239,7 +240,7 @@ struct RelationshipsView: View {
                         .disabled(isExporting)
                     }
 
-                    if isLoading && actors.isEmpty {
+                    if isLoading, actors.isEmpty {
                         ProgressView()
                     } else if isRefreshing {
                         ProgressView()
@@ -280,7 +281,9 @@ struct RelationshipsView: View {
                     }
                 }
             }
+            .accessibilityInputLabels([loc("rel.block")])
             Button(loc("actions.cancel"), role: .cancel) {}
+                .accessibilityInputLabels([loc("actions.cancel")])
 
             Text(loc("rel.block_message"))
         }
@@ -341,7 +344,7 @@ struct RelationshipsView: View {
         let dids = actors.map(\.did)
         _ = (dids.count + 24) / 25
         exportProgressFraction = 0
-        let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
+        let stats = await (try? LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
             Task { @MainActor in
                 exportProgressFraction = Double(current) / Double(total)
                 exportProgressMessage = "Processing... \(current)/\(total)"
@@ -375,12 +378,16 @@ struct RelationshipsView: View {
             }
             if format == .xlsx {
                 guard let xlsx = SpreadsheetExport.generateXLSX(headers: headers, rows: rows) else {
-                    isExporting = false; exportProgressMessage = nil; return
+                    isExporting = false
+                    exportProgressMessage = nil
+                    return
                 }
                 data = xlsx
             } else {
                 guard let ods = SpreadsheetExport.generateODS(headers: headers, rows: rows) else {
-                    isExporting = false; exportProgressMessage = nil; return
+                    isExporting = false
+                    exportProgressMessage = nil
+                    return
                 }
                 data = ods
             }
@@ -446,11 +453,10 @@ struct RelationshipsView: View {
 
         errorMessage = nil
 
-        let cached: [BlueskyActor]
-        if let key = cacheKey {
-            cached = RelationshipCache.load(forKey: key)
+        let cached: [BlueskyActor] = if let key = cacheKey {
+            RelationshipCache.load(forKey: key)
         } else {
-            cached = []
+            []
         }
 
         if !cached.isEmpty {
@@ -474,16 +480,15 @@ struct RelationshipsView: View {
     private func fetchFromAPI(account: AppAccount, appPassword: String) async {
         do {
             let did = profileDID ?? account.did ?? account.handle
-            let result: [BlueskyActor]
-            switch mode {
+            let result: [BlueskyActor] = switch mode {
             case .followers:
-                result = try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
+                try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
             case .following:
-                result = try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
+                try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
             case .blocking:
-                result = try await blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
+                try await blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
             case .blockedBy:
-                result = try await blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
+                try await blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
             }
             actors = result
             isLoading = false
@@ -508,11 +513,11 @@ private enum ExportFormat: String, CaseIterable {
 private struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }
 
 struct ListPickerSheet: View {

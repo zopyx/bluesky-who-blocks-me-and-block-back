@@ -75,6 +75,7 @@ struct ListDetailView: View {
                     viewModel.errorMessage = nil
                 }
                 .accessibilityHint(loc("list.detail.dismiss_error.hint"))
+                .accessibilityInputLabels([loc("actions.ok")])
             }, message: {
                 Text(viewModel.errorMessage ?? "")
             })
@@ -137,8 +138,10 @@ struct ListDetailView: View {
                     }
                 }
                 .accessibilityHint(loc("list.detail.delete_list.hint"))
+                .accessibilityInputLabels([loc("actions.delete")])
                 Button(loc("actions.cancel"), role: .cancel) {}
                     .accessibilityHint(loc("list.detail.cancel_delete.hint"))
+                    .accessibilityInputLabels([loc("actions.cancel")])
             } message: {
                 Text(verbatim: loc("list.detail.delete_message"))
             }
@@ -148,7 +151,7 @@ struct ListDetailView: View {
                     title: newResult.operation.title,
                     summary: newResult.summaryText,
                     succeededHandles: newResult.succeededActors.map(\.handle),
-                    failedHandles: newResult.failures.map { $0.actor.handle }
+                    failedHandles: newResult.failures.map(\.actor.handle)
                 )
                 workspaceStore.recordOperation(entry)
             }
@@ -428,7 +431,8 @@ struct ListDetailView: View {
 
     private func exportList(format: ExportFormat) async {
         guard let account = accountStore.activeAccount,
-              let appPassword = accountStore.appPassword(for: account) else {
+              let appPassword = accountStore.appPassword(for: account)
+        else {
             isExporting = false
             return
         }
@@ -453,7 +457,7 @@ struct ListDetailView: View {
         let dids = members.map(\.actor.did)
         _ = (dids.count + 24) / 25
         exportProgressFraction = 0
-        let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
+        let stats = await (try? LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
             Task { @MainActor in
                 exportProgressFraction = Double(current) / Double(total)
                 exportProgressMessage = "Processing... \(current)/\(total)"
@@ -487,12 +491,16 @@ struct ListDetailView: View {
             }
             if format == .xlsx {
                 guard let xlsx = SpreadsheetExport.generateXLSX(headers: headers, rows: rows) else {
-                    isExporting = false; exportProgressMessage = nil; return
+                    isExporting = false
+                    exportProgressMessage = nil
+                    return
                 }
                 data = xlsx
             } else {
                 guard let ods = SpreadsheetExport.generateODS(headers: headers, rows: rows) else {
-                    isExporting = false; exportProgressMessage = nil; return
+                    isExporting = false
+                    exportProgressMessage = nil
+                    return
                 }
                 data = ods
             }
@@ -572,9 +580,9 @@ extension ListDetailView {
 private struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }

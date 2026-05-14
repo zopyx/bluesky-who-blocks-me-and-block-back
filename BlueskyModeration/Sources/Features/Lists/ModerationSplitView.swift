@@ -352,7 +352,6 @@ struct ModerationSplitView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .dynamicTypeSize(DynamicTypeSize.xSmall ... DynamicTypeSize.accessibility1)
         .refreshable { await reload() }
     }
 
@@ -367,16 +366,17 @@ struct ModerationSplitView: View {
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: label)
-                        .font(.headline)
+                        .appFont(.heading)
                         .foregroundStyle(.primary)
                     Text("\(count)")
-                        .font(.title3.weight(.semibold))
+                        .appFont(.statistic)
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(.vertical, 4)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
     }
 
     private func sectionHeader(title: String, icon: String, kind: BlueskyList.Kind) -> some View {

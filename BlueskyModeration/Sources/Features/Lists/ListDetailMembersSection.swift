@@ -19,12 +19,15 @@ extension ListDetailView {
             membersSection
         }
 
+        @FocusState private var memberFilterFocused: Bool
+
         private var findMembersSection: some View {
             Section {
                 TextField(loc("list.members.filter_placeholder"), text: $memberSearchQuery)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .accessibilityLabel(loc("list.members.filter.label"))
+                    .focused($memberFilterFocused)
 
                 if !viewModel.members.isEmpty {
                     Text(viewModel.loadedMemberSummary)
@@ -42,10 +45,9 @@ extension ListDetailView {
             }
         }
 
-        @ViewBuilder
         private var membersSection: some View {
             Section {
-                if viewModel.isLoadingMembers && viewModel.members.isEmpty {
+                if viewModel.isLoadingMembers, viewModel.members.isEmpty {
                     LoadingPanel(message: loc("list.members.loading"))
                 } else if let errorMsg = viewModel.membersErrorMessage, viewModel.members.isEmpty {
                     ErrorRetryBanner(message: errorMsg) {

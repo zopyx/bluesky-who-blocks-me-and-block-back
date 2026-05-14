@@ -210,7 +210,6 @@ struct ListsView: View {
                             }
                         }
                     }
-                    .dynamicTypeSize(DynamicTypeSize.xSmall...DynamicTypeSize.accessibility1)
                     .listStyle(.insetGrouped)
                     .refreshable {
                         await reload()
@@ -295,11 +294,11 @@ struct ListsView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
-                    .font(.headline)
+                    .appFont(.heading)
                     .lineLimit(1)
                     .foregroundStyle(.primary)
                 Text("\(count)")
-                    .font(.body.weight(.semibold))
+                    .appFont(.statistic)
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -310,6 +309,7 @@ struct ListsView: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 4)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .appButtonAccessibility(label: label, hint: loc("rel.view.hint"))
     }
 
     private func activeAccountMember(_ account: AppAccount) -> BlueskyListMember {
@@ -409,7 +409,7 @@ struct ListsView: View {
 
     private var allListsWithMembers: [BlueskyList] {
         viewModel.listsByKind.values
-            .flatMap { $0 }
+            .flatMap(\.self)
             .filter { ($0.memberCount ?? 0) > 0 }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
@@ -441,7 +441,7 @@ struct ListsView: View {
         let dids = members.map(\.actor.did)
         _ = (dids.count + 24) / 25
         exportProgressFraction = 0
-        let stats = (try? await LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
+        let stats = await (try? LiveBlueskyClient.fetchProfileStats(dids: dids) { current, total in
             Task { @MainActor in
                 exportProgressFraction = Double(current) / Double(total)
                 exportProgressMessage = "Processing... \(current)/\(total)"
@@ -476,12 +476,16 @@ struct ListsView: View {
             }
             if format == .xlsx {
                 guard let xlsx = SpreadsheetExport.generateXLSX(headers: headers, rows: rows) else {
-                    isExporting = false; exportProgressMessage = nil; return
+                    isExporting = false
+                    exportProgressMessage = nil
+                    return
                 }
                 data = xlsx
             } else {
                 guard let ods = SpreadsheetExport.generateODS(headers: headers, rows: rows) else {
-                    isExporting = false; exportProgressMessage = nil; return
+                    isExporting = false
+                    exportProgressMessage = nil
+                    return
                 }
                 data = ods
             }
@@ -535,11 +539,11 @@ private enum ExportFormat: String, CaseIterable {
 private struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }
 
 #Preview {

@@ -22,12 +22,15 @@ extension ListDetailView {
             workflowToolsSection
         }
 
+        @FocusState private var searchFieldFocused: Bool
+
         private var searchSection: some View {
             Section {
                 TextField(loc("list.search.placeholder"), text: $searchQuery)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .accessibilityLabel(loc("list.search.field.label"))
+                    .focused($searchFieldFocused)
 
                 if !viewModel.searchResults.isEmpty || viewModel.hasMoreSearchResults {
                     Text(viewModel.searchResultSummary)
@@ -41,7 +44,7 @@ extension ListDetailView {
 
                 if viewModel.isSearching {
                     LoadingPanel(message: loc("list.search.searching"))
-                } else if !searchQuery.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
+                } else if !searchQuery.isEmpty, searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).count < 2 {
                     EmptyStatePanel(
                         title: loc("list.search.keep_typing"),
                         message: loc("list.search.keep_typing_desc")
@@ -87,7 +90,7 @@ extension ListDetailView {
                         .accessibilityLabel(loc("list.search.load_more.label"))
                         .accessibilityHint(loc("list.search.load_more.hint"))
                     }
-                } else if !searchQuery.isEmpty && !viewModel.isSearching {
+                } else if !searchQuery.isEmpty, !viewModel.isSearching {
                     if let errorMsg = viewModel.searchErrorMessage {
                         ErrorRetryBanner(message: errorMsg) {
                             Task {
@@ -115,7 +118,7 @@ extension ListDetailView {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Button(viewModel.selectedSearchActorIDs.count == viewModel.searchResults.count && !viewModel.searchResults.isEmpty ? loc("list.search.clear_selection") : loc("list.search.select_all")) {
-                        if viewModel.selectedSearchActorIDs.count == viewModel.searchResults.count && !viewModel.searchResults.isEmpty {
+                        if viewModel.selectedSearchActorIDs.count == viewModel.searchResults.count, !viewModel.searchResults.isEmpty {
                             viewModel.clearSearchSelection()
                         } else {
                             viewModel.selectAllSearchResults()

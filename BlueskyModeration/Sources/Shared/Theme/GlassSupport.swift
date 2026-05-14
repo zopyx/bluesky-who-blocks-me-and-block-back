@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - Button Styles
+
 extension View {
     @ViewBuilder
     func glassProminentButton() -> some View {
@@ -19,6 +21,30 @@ extension View {
         }
     }
 }
+
+// MARK: - Glass Background
+
+extension View {
+    @ViewBuilder
+    func glassBackground(in shape: some Shape = RoundedRectangle(cornerRadius: 12)) -> some View {
+        if #available(iOS 26, *) {
+            background(Color.clear.glassEffect(.regular, in: shape))
+        } else {
+            background(.thinMaterial, in: shape)
+        }
+    }
+
+    @ViewBuilder
+    func glassTintedBackground(tint: Color, in shape: some Shape = RoundedRectangle(cornerRadius: 12)) -> some View {
+        if #available(iOS 26, *) {
+            background(Color.clear.glassEffect(.regular.tint(tint), in: shape))
+        } else {
+            background(tint.opacity(0.12), in: shape)
+        }
+    }
+}
+
+// MARK: - Account Switcher Toolbar
 
 extension View {
     func accountSwitcherToolbar(isPresented: Binding<Bool>, accountStore: AccountStore, localizationManager: LocalizationManager) -> some ToolbarContent {

@@ -26,9 +26,9 @@ struct ListRowView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(list.name)
-                    .font(.subheadline.weight(.semibold))
+                    .appFont(.subheading)
                 Text(list.description)
-                    .font(.subheadline)
+                    .appFont(.label)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
@@ -37,7 +37,7 @@ struct ListRowView: View {
 
             if let memberCount = list.memberCount {
                 Text("\(memberCount)")
-                    .font(.callout.monospacedDigit().weight(.semibold))
+                    .appFont(.statistic)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
@@ -48,6 +48,7 @@ struct ListRowView: View {
             }
         }
         .padding(.vertical, 6)
+        .appScrollTransition()
     }
 
     private var listIcon: some View {
