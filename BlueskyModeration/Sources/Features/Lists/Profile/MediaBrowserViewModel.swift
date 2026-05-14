@@ -245,17 +245,7 @@ final class MediaBrowserViewModel: ObservableObject {
             filteredItems = items.filter { $0.type == .video }
         }
 
-        let total = items.count
-        let shown = filteredItems.count
-        if shown == total {
-            let parts = [
-                imageCount > 0 ? "\(imageCount) image\(imageCount != 1 ? "s" : "")" : nil,
-                videoCount > 0 ? "\(videoCount) video\(videoCount != 1 ? "s" : "")" : nil,
-            ].compactMap(\.self)
-            summaryText = parts.joined(separator: " · ")
-        } else {
-            summaryText = "\(shown) of \(total)"
-        }
+        summaryText = ""
     }
 
     private static func sortedItems(_ items: [MediaItem]) -> [MediaItem] {

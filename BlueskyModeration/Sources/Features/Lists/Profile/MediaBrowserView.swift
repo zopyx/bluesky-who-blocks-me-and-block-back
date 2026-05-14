@@ -182,7 +182,6 @@ struct MediaBrowserView: View {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(loc("actions.done")) {
                                 viewModel.clearDownloadSummary()
-                                dismiss()
                             }
                         }
                     }
@@ -237,6 +236,7 @@ struct MediaBrowserView: View {
                 } label: {
                     Label(loc("profile.media.download_selected"), systemImage: "arrow.down.circle")
                         .font(.body.weight(.medium))
+                        .lineLimit(1)
                         .padding(.vertical, 6)
                 }
                 .disabled(viewModel.selectedIDs.isEmpty || viewModel.isDownloading)

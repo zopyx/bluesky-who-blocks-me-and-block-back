@@ -3,59 +3,56 @@ import SwiftUI
 struct SplashScreenView: View {
     @Binding var isActive: Bool
 
-    @State private var logoScale: CGFloat = 0.6
-    @State private var textOpacity: CGFloat = 0
-    @State private var textOffset: CGFloat = 24
-    @State private var subtitleOpacity: CGFloat = 0
-    @State private var subtitleOffset: CGFloat = 16
-    @State private var particlesOpacity: CGFloat = 0
-    @State private var footerOpacity: CGFloat = 0
-
     private let reduceMotion = UIAccessibility.isReduceMotionEnabled
+
+    @State private var phase = 0
+    @State private var logoScale: CGFloat = 0.2
+    @State private var logoRotation: Double = -12
+    @State private var logoGlow: CGFloat = 0
+    @State private var logoBreathing: CGFloat = 1
+    @State private var taglineOpacity: CGFloat = 0
+    @State private var taglineOffset: CGFloat = 24
+    @State private var footerOpacity: CGFloat = 0
+    @State private var showParticles = false
 
     var body: some View {
         ZStack {
-            AnimatedSplashBackground()
+            SplashBackground()
+                .ignoresSafeArea()
 
-            VStack(spacing: 12) {
+            StarField()
+                .opacity(showParticles ? 0.8 : 0)
+
+            VStack(spacing: 0) {
                 Spacer()
-
-                Text("RULYX")
-                    .font(.system(size: 52, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.white)
-                    .offset(y: textOffset)
-                    .opacity(textOpacity)
-                    .overlay(
-                        ShimmerOverlay()
-                            .offset(y: textOffset)
-                            .opacity(textOpacity)
-                    )
 
                 Image("RulyxLogo")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 260)
+                    .frame(height: 240)
+                    .scaleEffect(logoScale * logoBreathing)
+                    .rotationEffect(.degrees(logoRotation))
+                    .shadow(color: .blue.opacity(logoGlow * 0.5), radius: logoGlow * 50)
+                    .shadow(color: .purple.opacity(logoGlow * 0.25), radius: logoGlow * 70)
+                    .shadow(color: .cyan.opacity(logoGlow * 0.15), radius: logoGlow * 90)
 
-                Spacer().frame(height: 20)
+                Spacer().frame(height: 24)
 
                 Text(verbatim: loc("splash.tagline"))
                     .font(.body.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.75))
-                    .offset(y: subtitleOffset)
-                    .opacity(subtitleOpacity)
+                    .foregroundStyle(.white.opacity(0.7))
+                    .offset(y: taglineOffset)
+                    .opacity(taglineOpacity)
 
                 Spacer()
 
                 Text(verbatim: loc("splash.footer"))
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(.white.opacity(0.4))
                     .opacity(footerOpacity)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 44)
             }
             .padding()
-
-            SparkleParticles()
-                .opacity(particlesOpacity)
         }
         .task {
             if reduceMotion {
@@ -67,20 +64,38 @@ struct SplashScreenView: View {
     }
 
     private func animate() async {
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.55).delay(0.1)) {
-            logoScale = 1
+        withAnimation(.easeOut(duration: 0.8)) {
+            showParticles = true
         }
 
-        withAnimation(.easeOut(duration: 0.5).delay(0.2)) {
-            textOffset = 0
-            textOpacity = 1
-            subtitleOffset = 0
-            subtitleOpacity = 1
-            particlesOpacity = 0.8
+        try? await Task.sleep(for: .seconds(0.3))
+
+        withAnimation(.interpolatingSpring(mass: 1.0, stiffness: 160, damping: 12, initialVelocity: 5)) {
+            logoScale = 1
+            logoRotation = 0
+        }
+        withAnimation(.easeOut(duration: 1.2).delay(0.2)) {
+            logoGlow = 1
+        }
+
+        try? await Task.sleep(for: .seconds(1.2))
+
+        withAnimation(.easeOut(duration: 0.6)) {
+            taglineOffset = 0
+            taglineOpacity = 1
+        }
+
+        try? await Task.sleep(for: .seconds(0.3))
+
+        withAnimation(.easeOut(duration: 0.5)) {
             footerOpacity = 1
         }
 
-        try? await Task.sleep(for: .seconds(5.0))
+        withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(1.0)) {
+            logoBreathing = 1.03
+        }
+
+        try? await Task.sleep(for: .seconds(3.0))
 
         withAnimation(.easeOut(duration: 0.3)) {
             isActive = false
@@ -90,39 +105,48 @@ struct SplashScreenView: View {
 
 // MARK: - Animated Background
 
-private struct AnimatedSplashBackground: View {
+private struct SplashBackground: View {
     var body: some View {
         TimelineView(.animation) { timeline in
             ZStack {
-                Color(red: 0.04, green: 0.10, blue: 0.28)
+                Color(red: 0.02, green: 0.06, blue: 0.22)
 
-                let time = timeline.date.timeIntervalSince1970
+                let t = timeline.date.timeIntervalSince1970
 
                 SplashOrb(
-                    color: Color(red: 0.15, green: 0.45, blue: 0.95).opacity(0.45),
+                    color: Color(red: 0.1, green: 0.4, blue: 0.95).opacity(0.5),
                     position: CGPoint(
-                        x: cos(time * 0.25) * 0.35 + 0.5,
-                        y: sin(time * 0.3) * 0.35 + 0.5
+                        x: cos(t * 0.2) * 0.35 + 0.5,
+                        y: sin(t * 0.25) * 0.35 + 0.5
                     ),
-                    size: 260
+                    size: 300
                 )
 
                 SplashOrb(
-                    color: Color(red: 0.10, green: 0.70, blue: 0.75).opacity(0.35),
+                    color: Color(red: 0.05, green: 0.65, blue: 0.7).opacity(0.35),
                     position: CGPoint(
-                        x: cos(time * 0.35 + 2.5) * 0.35 + 0.5,
-                        y: sin(time * 0.25 + 1.2) * 0.35 + 0.5
+                        x: cos(t * 0.3 + 2.5) * 0.35 + 0.5,
+                        y: sin(t * 0.2 + 1.2) * 0.35 + 0.5
+                    ),
+                    size: 250
+                )
+
+                SplashOrb(
+                    color: Color(red: 0.5, green: 0.15, blue: 0.85).opacity(0.3),
+                    position: CGPoint(
+                        x: cos(t * 0.15 + 4.8) * 0.35 + 0.5,
+                        y: sin(t * 0.35 + 3.1) * 0.35 + 0.5
                     ),
                     size: 220
                 )
 
                 SplashOrb(
-                    color: Color(red: 0.50, green: 0.20, blue: 0.85).opacity(0.25),
+                    color: Color(red: 0.9, green: 0.3, blue: 0.4).opacity(0.12),
                     position: CGPoint(
-                        x: cos(time * 0.2 + 4.8) * 0.35 + 0.5,
-                        y: sin(time * 0.4 + 3.1) * 0.35 + 0.5
+                        x: cos(t * 0.22 + 1.7) * 0.3 + 0.5,
+                        y: sin(t * 0.28 + 0.8) * 0.3 + 0.5
                     ),
-                    size: 190
+                    size: 180
                 )
             }
         }
@@ -140,7 +164,7 @@ private struct SplashOrb: View {
             Circle()
                 .fill(color)
                 .frame(width: size, height: size)
-                .blur(radius: 70)
+                .blur(radius: 80)
                 .position(
                     x: position.x * geometry.size.width,
                     y: position.y * geometry.size.height
@@ -149,59 +173,53 @@ private struct SplashOrb: View {
     }
 }
 
-// MARK: - Shimmer
+// MARK: - Star Particles
 
-private struct ShimmerOverlay: View {
-    @State private var offset: CGFloat = -0.7
-
-    var body: some View {
-        GeometryReader { geo in
-            LinearGradient(
-                colors: [.clear, .white.opacity(0.5), .clear],
-                startPoint: .leading,
-                endPoint: .trailing
+private struct StarField: View {
+    private let stars: [Star] = {
+        (0..<60).map { _ in
+            Star(
+                x: Double.random(in: 0...1),
+                y: Double.random(in: 0...1),
+                size: Double.random(in: 1.0...3.5),
+                speed: Double.random(in: 0.02...0.08),
+                twinkleSpeed: Double.random(in: 0.5...2.5),
+                twinklePhase: Double.random(in: 0...6.28),
+                baseOpacity: Double.random(in: 0.2...0.8)
             )
-            .frame(width: geo.size.width * 0.3)
-            .offset(x: offset * geo.size.width * 1.5)
-            .blur(radius: 8)
-            .blendMode(.overlay)
         }
-        .onAppear {
-            withAnimation(.linear(duration: 2.8).repeatForever(autoreverses: false)) {
-                offset = 0.7
-            }
-        }
-    }
-}
-
-// MARK: - Sparkle Particles
-
-private struct SparkleParticles: View {
-    private let seeds: [Double] = {
-        (0..<24).map { _ in Double.random(in: 0...100) }
     }()
+
+    private struct Star {
+        let x: Double
+        let y: Double
+        let size: Double
+        let speed: Double
+        let twinkleSpeed: Double
+        let twinklePhase: Double
+        let baseOpacity: Double
+    }
 
     var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { context, size in
-                let time = timeline.date.timeIntervalSince1970
+                let t = timeline.date.timeIntervalSince1970
 
-                for seed in seeds {
-                    let x = (cos(time * 0.25 + seed * 0.08) + 1) * 0.5
-                    let y = (sin(time * 0.18 + seed * 0.12) + 1) * 0.5
-                    let dotSize = (sin(time * 1.8 + seed) + 1) * 1.5 + 1
-                    let alpha = (sin(time * 0.9 + seed * 2.3) + 1) * 0.3 + 0.1
+                for star in stars {
+                    let driftY = star.y + sin(t * star.speed + star.twinklePhase) * 0.04
+                    let normalizedY = driftY.truncatingRemainder(dividingBy: 1.0)
+                    let xPos = star.x * size.width
+                    let yPos = normalizedY * size.height
 
-                    let point = CGPoint(
-                        x: x * size.width,
-                        y: y * size.height
-                    )
+                    let twinkle = (sin(t * star.twinkleSpeed + star.twinklePhase) + 1) * 0.5
+                    let alpha = star.baseOpacity * (0.3 + twinkle * 0.7)
 
+                    let dotSize = star.size * (0.8 + twinkle * 0.4)
                     let rect = CGRect(
-                        x: point.x - dotSize,
-                        y: point.y - dotSize,
-                        width: dotSize * 2,
-                        height: dotSize * 2
+                        x: xPos - dotSize / 2,
+                        y: yPos - dotSize / 2,
+                        width: dotSize,
+                        height: dotSize
                     )
 
                     context.fill(
@@ -211,5 +229,6 @@ private struct SparkleParticles: View {
                 }
             }
         }
+        .ignoresSafeArea()
     }
 }

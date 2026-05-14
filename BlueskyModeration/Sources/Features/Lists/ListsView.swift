@@ -276,9 +276,18 @@ struct ListsView: View {
                 }
             }
             .task(id: accountStore.activeAccountID) {
-                await reload()
+                await loadInitial()
             }
         }
+    }
+
+    private func loadInitial() async {
+        let password = accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }
+        await viewModel.load(
+            for: accountStore.activeAccount,
+            appPassword: password,
+            using: blueskyClient
+        )
     }
 
     private func reload() async {
@@ -286,7 +295,8 @@ struct ListsView: View {
         await viewModel.load(
             for: accountStore.activeAccount,
             appPassword: password,
-            using: blueskyClient
+            using: blueskyClient,
+            isExplicitRefresh: true
         )
     }
 

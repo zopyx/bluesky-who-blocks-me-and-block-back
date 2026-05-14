@@ -13,7 +13,8 @@ final class ListsViewModel: ObservableObject {
     func load(
         for account: AppAccount?,
         appPassword: String?,
-        using client: LiveBlueskyClient
+        using client: LiveBlueskyClient,
+        isExplicitRefresh: Bool = false
     ) async {
         guard let account else {
             listsByKind = [:]
@@ -25,12 +26,16 @@ final class ListsViewModel: ObservableObject {
         }
 
         let cacheKey = account.did ?? account.handle
+        let hasCache: Bool
         if let cached = DashboardCache.load(forKey: cacheKey) {
             applyCached(cached)
             isFromCache = true
+            hasCache = true
+        } else {
+            hasCache = false
         }
 
-        isLoading = true
+        if isExplicitRefresh || !hasCache { isLoading = true }
         errorMessage = nil
 
         do {

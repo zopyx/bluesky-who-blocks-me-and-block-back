@@ -168,7 +168,10 @@ struct BlueskyProfileView: View {
                                     ProgressView()
                                         .scaleEffect(0.6)
                                 } else if viewModel.mediaImageCount > 0 || viewModel.mediaVideoCount > 0 {
-                                    Text("\(viewModel.mediaImageCount) images · \(viewModel.mediaVideoCount) videos")
+                                    Text([
+                                        viewModel.mediaImageCount > 0 ? "\(viewModel.mediaImageCount) image\(viewModel.mediaImageCount != 1 ? "s" : "")" : nil,
+                                        viewModel.mediaVideoCount > 0 ? "\(viewModel.mediaVideoCount) video\(viewModel.mediaVideoCount != 1 ? "s" : "")" : nil,
+                                    ].compactMap(\.self).joined(separator: " · "))
                                         .foregroundStyle(.secondary)
                                 } else {
                                     Text("-")

@@ -31,7 +31,7 @@ struct ModerationSplitView: View {
             }
         }
         .task(id: accountStore.activeAccountID) {
-            await reload()
+            await loadInitial()
         }
     }
 
@@ -413,12 +413,22 @@ struct ModerationSplitView: View {
         )
     }
 
-    private func reload() async {
+    private func loadInitial() async {
         let password = accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }
         await viewModel.load(
             for: accountStore.activeAccount,
             appPassword: password,
             using: blueskyClient
+        )
+    }
+
+    private func reload() async {
+        let password = accountStore.activeAccount.flatMap { accountStore.appPassword(for: $0) }
+        await viewModel.load(
+            for: accountStore.activeAccount,
+            appPassword: password,
+            using: blueskyClient,
+            isExplicitRefresh: true
         )
     }
 }
