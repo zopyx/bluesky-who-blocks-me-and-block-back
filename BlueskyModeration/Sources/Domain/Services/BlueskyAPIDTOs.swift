@@ -576,6 +576,34 @@ struct RichEmbedExternal: Decodable {
     }
 }
 
+extension RichEmbedExternal {
+    var isTenorEmbed: Bool {
+        guard let host = uri.flatMap(URL.init)?.host?.lowercased() else { return false }
+        return host == "tenor.com" || host == "www.tenor.com" || host.hasSuffix(".tenor.com")
+    }
+
+    var preferredInlineMediaURL: URL? {
+        let thumbURL = thumb.flatMap(URL.init)
+        let uriURL = uri.flatMap(URL.init)
+
+        if isTenorEmbed {
+            if let thumbURL, thumbURL.isAnimatedMediaAsset {
+                return thumbURL
+            }
+            return uriURL ?? thumbURL
+        }
+
+        return thumbURL ?? uriURL
+    }
+}
+
+private extension URL {
+    var isAnimatedMediaAsset: Bool {
+        let ext = pathExtension.lowercased()
+        return ["gif", "webp", "mp4", "webm", "mov", "m4v"].contains(ext)
+    }
+}
+
 private struct RichEmbedExternalThumbBlob: Decodable {
     let ref: BlobRef?
     let mimeType: String?

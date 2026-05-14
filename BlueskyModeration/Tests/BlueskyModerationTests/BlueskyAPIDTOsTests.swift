@@ -370,4 +370,16 @@ final class BlueskyAPIDTOsTests: XCTestCase {
         XCTAssertEqual(embed.external?.title, "GIPHY Clip")
         XCTAssertNil(embed.external?.thumb)
     }
+
+    func testRichEmbedExternalRecognizesTenorAndProvidesInlineMediaURL() {
+        let external = RichEmbedExternal(
+            uri: "https://tenor.com/view/dance-cat-gif-12345",
+            title: "Tenor",
+            description: "Animated preview",
+            thumb: "https://media.tenor.com/example.gif"
+        )
+
+        XCTAssertTrue(external.isTenorEmbed)
+        XCTAssertEqual(external.preferredInlineMediaURL?.absoluteString, "https://media.tenor.com/example.gif")
+    }
 }

@@ -16,7 +16,6 @@ struct PostRowView: View {
     var onTranslate: (() -> Void)?
     var onDeletePost: (() -> Void)?
     var onOpenProfile: ((String) -> Void)?
-    var onPlayGIF: ((URL) -> Void)?
     @Environment(\.openURL) private var openURL
     @State private var altTextToShow: String?
 
@@ -179,31 +178,12 @@ struct PostRowView: View {
             }
 
             if let external = post.embed?.external, let uri = external.uri, let url = URL(string: uri) {
-                if isTenorEmbed(external) {
-                    let gifURL = external.thumb.flatMap(URL.init) ?? url
-                    Button {
-                        onPlayGIF?(gifURL)
-                    } label: {
-                        Group {
-                            if let thumbURL = external.thumb.flatMap(URL.init) {
-                                ThumbnailImageView(url: thumbURL, maxPixelSize: 640) {
-                                    Rectangle().fill(Color.skyPrimary.opacity(0.08))
-                                }
-                            } else {
-                                Rectangle().fill(Color.skyPrimary.opacity(0.08))
-                            }
+                if external.isTenorEmbed, let gifURL = external.preferredInlineMediaURL {
+                    InlineAnimatedMediaView(url: gifURL, allowsInteraction: true)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
                         }
-                        .scaledToFill()
-                        .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(alignment: .center) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.system(size: 44))
-                                .foregroundStyle(.white)
-                                .shadow(radius: 4)
-                        }
-                    }
-                    .buttonStyle(.plain)
                 } else {
                     Button {
                         openURL(url)
@@ -216,11 +196,6 @@ struct PostRowView: View {
 
             actionBar
         }
-    }
-
-    private func isTenorEmbed(_ external: RichEmbedExternal) -> Bool {
-        guard let host = external.uri.flatMap(URL.init)?.host else { return false }
-        return host.contains("tenor.com")
     }
 
     private var actionBar: some View {

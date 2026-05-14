@@ -20,7 +20,6 @@ struct FeedTimelineView: View {
     @State private var showMuteConfirmation = false
     @State private var postToDelete: RichFeedEntry?
     @State private var profileToShow: BlueskyActor?
-    @State private var gifToPlay: URL?
 
     var body: some View {
         NavigationStack {
@@ -68,11 +67,6 @@ struct FeedTimelineView: View {
             .fullScreenCover(item: $videoPreviewURL) { url in
                 VideoPlayerView(url: url) {
                     videoPreviewURL = nil
-                }
-            }
-            .fullScreenCover(item: $gifToPlay) { url in
-                GIFInlinePlayerView(url: url) {
-                    gifToPlay = nil
                 }
             }
             .sheet(item: $showLikesForURI) { uri in
@@ -198,8 +192,7 @@ struct FeedTimelineView: View {
                         onCopy: { UIPasteboard.general.string = entry.post.safeRecord.text },
                         onTranslate: { translateText(entry.post.safeRecord.text ?? "") },
                         onDeletePost: isOwnPost(entry) ? { postToDelete = entry } : nil,
-                        onOpenProfile: { handle in openProfile(handle) },
-                        onPlayGIF: { gifToPlay = $0 }
+                        onOpenProfile: { handle in openProfile(handle) }
                     )
                     .contextMenu {
                         if let word = muteWord(from: entry) {
@@ -470,62 +463,6 @@ private struct ComposeContext: Identifiable {
     var rootCID: String = ""
     var uri: String = ""
     var cid: String = ""
-}
-
-import WebKit
-
-private struct GIFInlinePlayerView: View {
-    let url: URL
-    let onDismiss: () -> Void
-
-    var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            GIFWebView(url: url)
-                .ignoresSafeArea()
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .padding()
-                    }
-                }
-                Spacer()
-            }
-        }
-    }
-}
-
-private struct GIFWebView: UIViewRepresentable {
-    let url: URL
-
-    func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-        config.mediaTypesRequiringUserActionForPlayback = []
-        config.allowsInlineMediaPlayback = true
-        let web = WKWebView(frame: .zero, configuration: config)
-        web.backgroundColor = .black
-        web.isOpaque = true
-        web.scrollView.isScrollEnabled = true
-        let ext = url.pathExtension.lowercased()
-        if ["gif", "jpg", "jpeg", "png", "webp"].contains(ext) {
-            let html = """
-            <html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>body{margin:0;background:black;display:flex;align-items:center;justify-content:center;height:100vh}
-            img{max-width:100%;max-height:100vh;object-fit:contain}</style></head>
-            <body><img src="\(url.absoluteString)" /></body></html>
-            """
-            web.loadHTMLString(html, baseURL: nil)
-        } else {
-            web.load(URLRequest(url: url))
-        }
-        return web
-    }
-
-    func updateUIView(_ web: WKWebView, context: Context) {}
 }
 
 #Preview {

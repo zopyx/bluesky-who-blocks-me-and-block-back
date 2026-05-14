@@ -1,5 +1,4 @@
 import SwiftUI
-import WebKit
 
 extension String: @retroactive Identifiable {
     public var id: String {
@@ -24,7 +23,6 @@ struct UserPostsView: View {
     @State private var selectedPostURI: String?
     @State private var imagePreview: ImagePreviewCollection?
     @State private var videoPreviewURL: URL?
-    @State private var gifToPlay: URL?
     @State private var showLikesForURI: String?
     @State private var shareFileURL: URL?
     @State private var initialLoadTask: Task<Void, Never>?
@@ -95,11 +93,6 @@ struct UserPostsView: View {
                     videoPreviewURL = nil
                 }
             }
-            .fullScreenCover(item: $gifToPlay) { url in
-                GIFInlinePlayerView(url: url) {
-                    gifToPlay = nil
-                }
-            }
             .sheet(item: $showLikesForURI) { uri in
                 LikesListView(uri: uri)
                     .environmentObject(accountStore)
@@ -136,8 +129,7 @@ struct UserPostsView: View {
                             videoPreviewURL = url
                         }
                     },
-                    onShowLikes: { showLikesForURI = entry.post.uri },
-                    onPlayGIF: { gifToPlay = $0 }
+                    onShowLikes: { showLikesForURI = entry.post.uri }
                 )
                 .onAppear {
                     if entry.post.uri == viewModel.sortedFilteredPosts.last?.post.uri {
@@ -396,58 +388,4 @@ private struct ImagePreviewView: View {
                 }
             }
     }
-}
-
-private struct GIFInlinePlayerView: View {
-    let url: URL
-    let onDismiss: () -> Void
-
-    var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            GIFWebView(url: url)
-                .ignoresSafeArea()
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .padding()
-                    }
-                }
-                Spacer()
-            }
-        }
-    }
-}
-
-private struct GIFWebView: UIViewRepresentable {
-    let url: URL
-
-    func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-        config.mediaTypesRequiringUserActionForPlayback = []
-        config.allowsInlineMediaPlayback = true
-        let web = WKWebView(frame: .zero, configuration: config)
-        web.backgroundColor = .black
-        web.isOpaque = true
-        web.scrollView.isScrollEnabled = true
-        let ext = url.pathExtension.lowercased()
-        if ["gif", "jpg", "jpeg", "png", "webp"].contains(ext) {
-            let html = """
-            <html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>body{margin:0;background:black;display:flex;align-items:center;justify-content:center;height:100vh}
-            img{max-width:100%;max-height:100vh;object-fit:contain}</style></head>
-            <body><img src="\(url.absoluteString)" /></body></html>
-            """
-            web.loadHTMLString(html, baseURL: nil)
-        } else {
-            web.load(URLRequest(url: url))
-        }
-        return web
-    }
-
-    func updateUIView(_ web: WKWebView, context: Context) {}
 }

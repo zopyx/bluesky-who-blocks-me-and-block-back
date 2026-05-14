@@ -36,12 +36,13 @@ struct ThreadView: View {
                 } else if let thread = viewModel.thread {
                     let ancestors = collectAncestors(from: thread)
                     let hasAncestors = !ancestors.isEmpty
+                    let reversedAncestors = Array(ancestors.reversed())
                     List {
                         threadPostSection(thread.post)
 
                         if hasAncestors {
                             Section {
-                                ForEach(Array(ancestors.reversed().enumerated()), id: \.offset) { index, ancestor in
+                                ForEach(Array(reversedAncestors.enumerated()), id: \.offset) { index, ancestor in
                                     ancestorRow(ancestor, isFirst: index == 0, isLast: index == ancestors.count - 1)
                                 }
                             } header: {
@@ -657,49 +658,57 @@ struct ThreadView: View {
         }
 
         if let external = embed.external, let uri = external.uri, let url = URL(string: uri) {
-            Button {
-                UIApplication.shared.open(url)
-            } label: {
-                HStack(spacing: 12) {
-                    if let thumb = external.thumb, let thumbURL = URL(string: thumb) {
-                        ThumbnailImageView(url: thumbURL, maxPixelSize: 512) {
-                            RoundedRectangle(cornerRadius: 10).fill(Color.skyPrimary.opacity(0.08))
-                        }
-                        .scaledToFill()
-                        .frame(width: 96, height: 96)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+            if external.isTenorEmbed, let gifURL = external.preferredInlineMediaURL {
+                InlineAnimatedMediaView(url: gifURL, allowsInteraction: true)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
                     }
+            } else {
+                Button {
+                    UIApplication.shared.open(url)
+                } label: {
+                    HStack(spacing: 12) {
+                        if let thumb = external.thumb, let thumbURL = URL(string: thumb) {
+                            ThumbnailImageView(url: thumbURL, maxPixelSize: 512) {
+                                RoundedRectangle(cornerRadius: 10).fill(Color.skyPrimary.opacity(0.08))
+                            }
+                            .scaledToFill()
+                            .frame(width: 96, height: 96)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        if let title = external.title, !title.isEmpty {
-                            Text(title)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.primary)
-                                .lineLimit(2)
+                        VStack(alignment: .leading, spacing: 6) {
+                            if let title = external.title, !title.isEmpty {
+                                Text(title)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(2)
+                            }
+                            if let description = external.description, !description.isEmpty {
+                                Text(description)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(3)
+                            }
+                            if let host = URL(string: uri)?.host, !host.isEmpty {
+                                Label(host, systemImage: "link")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
-                        if let description = external.description, !description.isEmpty {
-                            Text(description)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(3)
-                        }
-                        if let host = URL(string: uri)?.host, !host.isEmpty {
-                            Label(host, systemImage: "link")
-                                .font(.caption2)
-                                .foregroundStyle(.tertiary)
-                        }
+
+                        Spacer(minLength: 0)
                     }
-
-                    Spacer(minLength: 0)
+                    .padding(10)
+                    .background(Color.skyPrimary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
+                    }
                 }
-                .padding(10)
-                .background(Color.skyPrimary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
-                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
     }
 }
