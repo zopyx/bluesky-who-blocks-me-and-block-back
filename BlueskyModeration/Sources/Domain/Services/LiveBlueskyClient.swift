@@ -376,11 +376,11 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
 
     // MARK: - Clearsky Integration
 
-    func fetchBlockedActors(account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] {
+    func fetchBlockedActors(account: AppAccount, appPassword _: String?) async throws -> [BlueskyActor] {
         try await fetchClearskyActors(account: account, endpoint: "blocklist")
     }
 
-    func fetchBlockedByActors(account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] {
+    func fetchBlockedByActors(account: AppAccount, appPassword _: String?) async throws -> [BlueskyActor] {
         try await fetchClearskyActors(account: account, endpoint: "single-blocklist")
     }
 
@@ -417,7 +417,9 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             }
             let decoded = try JSONDecoder().decode(ClearskyBlocklistResponse.self, from: data)
             let entries = decoded.data.blocklist
-            for entry in entries { allDIDs.insert(entry.did) }
+            for entry in entries {
+                allDIDs.insert(entry.did)
+            }
             if entries.count < 100 { break }
             page += 1
         } while true
@@ -598,6 +600,47 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
+    func fetchTimeline(cursor: String? = nil, limit: Int = 50, account: AppAccount, appPassword: String?) async throws -> RichFeedResponse {
+        try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            var queryItems = [URLQueryItem(name: "limit", value: "\(limit)")]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.feed.getTimeline",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func fetchFeed(feedURI: String, cursor: String? = nil, limit: Int = 50, account: AppAccount, appPassword: String?) async throws -> RichFeedResponse {
+        try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            var queryItems = [
+                URLQueryItem(name: "feed", value: feedURI),
+                URLQueryItem(name: "limit", value: "\(limit)"),
+            ]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.feed.getFeed",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
     func fetchPLCAuditLog(did: String) async throws -> [PLCAuditLogEntry] {
         guard let url = URL(string: "https://plc.directory/\(did)/log/audit") else {
             throw BlueskyAPIError.invalidURL
@@ -633,7 +676,9 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                 break
             }
         } while cursor != nil
-        if all.isEmpty, let lastError { throw lastError }
+        if all.isEmpty, let lastError {
+            throw lastError
+        }
         return all
     }
 
@@ -683,7 +728,9 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                 break
             }
         } while cursor != nil
-        if all.isEmpty, let lastError { throw lastError }
+        if all.isEmpty, let lastError {
+            throw lastError
+        }
         return all
     }
 
@@ -780,16 +827,35 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         }
     }
 
-    func createPost(text: String, images: [PostImageAttachment]?, account: AppAccount, appPassword: String?) async throws -> CreateRecordResponse {
+    func createPost(
+        text: String,
+        images: [PostImageAttachment]? = nil,
+        replyTo: (parentURI: String, parentCID: String, rootURI: String, rootCID: String)? = nil,
+        quote: (uri: String, cid: String)? = nil,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws -> CreateRecordResponse {
         try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
-            let embed: FeedPostEmbed? = images.flatMap { imgs in
-                guard !imgs.isEmpty else { return nil }
-                return FeedPostEmbed(images: imgs.map { img in
-                    FeedPostImage(
-                        image: FeedPostImageRef(ref: img.blob.ref, mimeType: img.blob.mimeType, size: img.blob.size),
-                        alt: img.alt
-                    )
-                })
+            let embed: FeedPostRecordEmbed? = {
+                if let quote {
+                    return .record(uri: quote.uri, cid: quote.cid)
+                }
+                if let images {
+                    guard !images.isEmpty else { return nil }
+                    return .images(images.map { img in
+                        FeedPostImage(
+                            image: FeedPostImageRef(ref: img.blob.ref, mimeType: img.blob.mimeType, size: img.blob.size),
+                            alt: img.alt
+                        )
+                    })
+                }
+                return nil
+            }()
+            let reply: FeedPostReplyRef? = replyTo.map {
+                FeedPostReplyRef(
+                    root: FeedPostTarget(uri: $0.rootURI, cid: $0.rootCID),
+                    parent: FeedPostTarget(uri: $0.parentURI, cid: $0.parentCID)
+                )
             }
             let body = CreateGenericRecordRequest(
                 repo: authSession.did,
@@ -797,11 +863,85 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
                 record: FeedPostRecord(
                     text: text,
                     createdAt: ISO8601DateFormatter().string(from: .now),
+                    reply: reply,
                     embed: embed
                 )
             )
             return try await requestExecutor.send(
                 path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func createLike(uri: String, cid: String, account: AppAccount, appPassword: String?) async throws -> CreateRecordResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.feed.like",
+                record: LikeRecord(
+                    subject: FeedPostTarget(uri: uri, cid: cid),
+                    createdAt: ISO8601DateFormatter().string(from: .now)
+                )
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func createRepost(uri: String, cid: String, account: AppAccount, appPassword: String?) async throws -> CreateRecordResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.feed.repost",
+                record: RepostRecord(
+                    subject: FeedPostTarget(uri: uri, cid: cid),
+                    createdAt: ISO8601DateFormatter().string(from: .now)
+                )
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func fetchLikes(uri: String, cursor: String? = nil, account: AppAccount, appPassword: String?) async throws -> GetLikesResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            var queryItems = [URLQueryItem(name: "uri", value: uri), URLQueryItem(name: "limit", value: "100")]
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.feed.getLikes",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
+    func deleteRecord(recordURI: String, account: AppAccount, appPassword: String?) async throws -> EmptyResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            let components = try parseATURI(recordURI)
+            let body = DeleteRecordRequest(repo: components.repo, collection: components.collection, rkey: components.rkey)
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.deleteRecord",
                 method: "POST",
                 queryItems: [],
                 body: body,

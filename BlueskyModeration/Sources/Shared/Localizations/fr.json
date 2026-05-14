@@ -800,5 +800,20 @@
   "profile.posts.sort_asc": "Oldest first",
   "profile.posts.no_matches": "No posts match your filter",
   "profile.posts.from_date": "From",
-  "profile.posts.to_date": "To"
+  "profile.posts.to_date": "To",
+  "timeline.title": "Timeline",
+  "timeline.loading": "Loading timeline…",
+  "timeline.empty": "Your Timeline Is Empty",
+  "timeline.empty_desc": "Follow more accounts to see their posts here.",
+  "timeline.end": "You've reached the end",
+  "likes.title": "Likes",
+  "likes.empty": "No Likes Yet",
+  "likes.empty_desc": "No one has liked this post yet.",
+  "time.just_now": "just now",
+  "time.minute_ago": "{n} minute ago",
+  "time.minutes_ago": "{n} minutes ago",
+  "time.hour_ago": "{n} hour ago",
+  "time.hours_ago": "{n} hours ago",
+  "time.day_ago": "{n} day ago",
+  "time.days_ago": "{n} days ago"
 }

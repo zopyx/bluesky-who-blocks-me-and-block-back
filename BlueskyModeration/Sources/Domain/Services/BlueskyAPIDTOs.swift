@@ -266,6 +266,33 @@ func parseDate(_ value: String?) -> Date? {
     return formatter.date(from: value)
 }
 
+@MainActor
+func relativeTimeString(from date: Date) -> String {
+    let interval = -date.timeIntervalSinceNow
+    let minutes = Int(interval / 60)
+    let hours = minutes / 60
+    let days = hours / 24
+
+    if minutes < 1 { return loc("time.just_now") }
+    if minutes < 60 {
+        let key = minutes == 1 ? "time.minute_ago" : "time.minutes_ago"
+        return loc(key).replacingOccurrences(of: "{n}", with: "\(minutes)")
+    }
+    if hours < 24 {
+        let key = hours == 1 ? "time.hour_ago" : "time.hours_ago"
+        return loc(key).replacingOccurrences(of: "{n}", with: "\(hours)")
+    }
+    if days < 28 {
+        let key = days == 1 ? "time.day_ago" : "time.days_ago"
+        return loc(key).replacingOccurrences(of: "{n}", with: "\(days)")
+    }
+
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .none
+    return formatter.string(from: date)
+}
+
 func mapViewerState(_ viewer: ProfileViewerState?) -> BlueskyViewerState? {
     guard let viewer else { return nil }
 
@@ -346,18 +373,18 @@ enum ListPurpose: String, Decodable {
     var kind: BlueskyList.Kind {
         switch self {
         case .curate:
-            return .regular
+            .regular
         case .mod:
-            return .moderation
+            .moderation
         }
     }
 
     var displayTitle: String {
         switch self {
         case .curate:
-            return "Curation list"
+            "Curation list"
         case .mod:
-            return "Moderation list"
+            "Moderation list"
         }
     }
 }
@@ -396,13 +423,26 @@ struct RichFeedResponse: Decodable {
 
 struct RichFeedEntry: Decodable {
     let post: RichPost
+    let reply: RichFeedReply?
+}
+
+struct RichFeedReply: Decodable {
+    let root: RichPost?
+    let parent: RichPost?
+}
+
+struct PostViewerState: Decodable {
+    let like: String?
+    let repost: String?
 }
 
 struct RichPost: Decodable {
     let uri: String
+    let cid: String?
     let author: RichAuthor?
     let record: RichRecord?
     let embed: RichEmbed?
+    let viewer: PostViewerState?
     let replyCount: Int?
     let repostCount: Int?
     let likeCount: Int?
@@ -414,6 +454,22 @@ struct RichPost: Decodable {
 
     var safeRecord: RichRecord {
         record ?? RichRecord(text: "", createdAt: "")
+    }
+
+    var isLikedByMe: Bool {
+        viewer?.like != nil
+    }
+
+    var isRepostedByMe: Bool {
+        viewer?.repost != nil
+    }
+
+    var myLikeURI: String? {
+        viewer?.like
+    }
+
+    var myRepostURI: String? {
+        viewer?.repost
     }
 }
 
@@ -449,10 +505,10 @@ struct RichEmbed: Decodable {
             video = nil
         } else if type == "app.bsky.embed.video#view" {
             images = nil
-            video = RichEmbedVideo(
-                thumbnail: try container.decodeIfPresent(String.self, forKey: .thumbnail),
-                playlist: try container.decodeIfPresent(String.self, forKey: .playlist),
-                aspectRatio: try container.decodeIfPresent(RichAspectRatio.self, forKey: .aspectRatio)
+            video = try RichEmbedVideo(
+                thumbnail: container.decodeIfPresent(String.self, forKey: .thumbnail),
+                playlist: container.decodeIfPresent(String.self, forKey: .playlist),
+                aspectRatio: container.decodeIfPresent(RichAspectRatio.self, forKey: .aspectRatio)
             )
         } else {
             images = nil
@@ -498,12 +554,43 @@ final class ThreadNode: Decodable {
 
 struct ThreadPostNode: Decodable {
     let uri: String?
+    let cid: String?
     let author: RichAuthor?
     let record: RichRecord?
+    let embed: RichEmbed?
+    let viewer: PostViewerState?
     let replyCount: Int?
     let repostCount: Int?
     let likeCount: Int?
     let indexedAt: String?
+
+    var isLikedByMe: Bool {
+        viewer?.like != nil
+    }
+
+    var isRepostedByMe: Bool {
+        viewer?.repost != nil
+    }
+
+    var myLikeURI: String? {
+        viewer?.like
+    }
+
+    var myRepostURI: String? {
+        viewer?.repost
+    }
+}
+
+// MARK: - Likes
+
+struct GetLikesResponse: Decodable {
+    let cursor: String?
+    let likes: [LikeItem]
+}
+
+struct LikeItem: Decodable {
+    let createdAt: String
+    let actor: RichAuthor
 }
 
 // MARK: - Blob Upload & Feed Post
@@ -530,23 +617,22 @@ struct FeedPostRecord: Encodable {
     let type = "app.bsky.feed.post"
     let text: String
     let createdAt: String
-    let embed: FeedPostEmbed?
+    let reply: FeedPostReplyRef?
+    let embed: FeedPostRecordEmbed?
 
     enum CodingKeys: String, CodingKey {
         case type = "$type"
         case text
         case createdAt
+        case reply
         case embed
     }
-}
 
-struct FeedPostEmbed: Encodable {
-    let type = "app.bsky.embed.images"
-    let images: [FeedPostImage]
-
-    enum CodingKeys: String, CodingKey {
-        case type = "$type"
-        case images
+    init(text: String, createdAt: String, reply: FeedPostReplyRef? = nil, embed: FeedPostRecordEmbed? = nil) {
+        self.text = text
+        self.createdAt = createdAt
+        self.reply = reply
+        self.embed = embed
     }
 }
 
@@ -567,4 +653,56 @@ struct FeedPostImageRef: Encodable {
         case mimeType
         case size
     }
+}
+
+// MARK: - Reply, Quote, Like, Repost
+
+struct FeedPostReplyRef: Encodable {
+    let root: FeedPostTarget
+    let parent: FeedPostTarget
+}
+
+struct FeedPostTarget: Encodable {
+    let uri: String
+    let cid: String
+}
+
+enum FeedPostRecordEmbed: Encodable {
+    case images([FeedPostImage])
+    case record(uri: String, cid: String)
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case let .images(images):
+            try container.encode("app.bsky.embed.images", forKey: .type)
+            try container.encode(images, forKey: .images)
+        case let .record(uri, cid):
+            try container.encode("app.bsky.embed.record", forKey: .type)
+            var record = container.nestedContainer(keyedBy: RecordCodingKeys.self, forKey: .record)
+            try record.encode(uri, forKey: .uri)
+            try record.encode(cid, forKey: .cid)
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case images
+        case record
+    }
+
+    private enum RecordCodingKeys: String, CodingKey {
+        case uri
+        case cid
+    }
+}
+
+struct LikeRecord: Encodable {
+    let subject: FeedPostTarget
+    let createdAt: String
+}
+
+struct RepostRecord: Encodable {
+    let subject: FeedPostTarget
+    let createdAt: String
 }

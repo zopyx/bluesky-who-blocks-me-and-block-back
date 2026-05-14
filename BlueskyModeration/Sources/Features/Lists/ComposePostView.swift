@@ -1,5 +1,5 @@
-import SwiftUI
 import PhotosUI
+import SwiftUI
 import UIKit
 
 struct ComposePostView: View {
@@ -7,6 +7,9 @@ struct ComposePostView: View {
     let appPassword: String
     let blueskyClient: LiveBlueskyClient
     let onComplete: () -> Void
+    var replyTo: (parentURI: String, parentCID: String, rootURI: String, rootCID: String)?
+    var quote: (uri: String, cid: String)?
+    var placeholder: String?
 
     @Environment(\.dismiss) private var dismiss
     @State private var postText = ""
@@ -18,11 +21,33 @@ struct ComposePostView: View {
     @State private var textViewRef: UITextView?
 
     private let maxImages = 4
-    @MainActor private static var addImagesLabel: String { loc("compose.add_images") }
+    @MainActor private static var addImagesLabel: String {
+        loc("compose.add_images")
+    }
 
     var body: some View {
         NavigationStack {
             List {
+                if let replyTo {
+                    Section {
+                        Text(verbatim: "\(loc("profile.posts.replying_to")) @\(extractHandle(from: replyTo.parentURI))")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+
+                if let quote {
+                    Section {
+                        HStack {
+                            Image(systemName: "quote.bubble.fill")
+                                .foregroundStyle(.tertiary)
+                            Text(verbatim: loc("compose.quoting"))
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+
                 Section {
                     WritingToolsTextView(text: $postText, textViewRef: $textViewRef)
                         .frame(minHeight: 120)
@@ -86,8 +111,31 @@ struct ComposePostView: View {
                     }
                     .disabled(postText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+
+                Section {
+                    HStack(spacing: 16) {
+                        Button { formatText(wrap: "**") } label: {
+                            Label { Text(verbatim: loc("compose.bold")) } icon: { Image(systemName: "bold") }
+                        }
+                        .buttonStyle(.plain)
+
+                        Button { formatText(wrap: "*") } label: {
+                            Label { Text(verbatim: loc("compose.italic")) } icon: { Image(systemName: "italic") }
+                        }
+                        .buttonStyle(.plain)
+
+                        Button { formatText(wrap: "~~") } label: {
+                            Label { Text(verbatim: loc("compose.strikethrough")) } icon: { Image(systemName: "strikethrough") }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .font(.body)
+                    .foregroundStyle(.tertiary)
+                } header: {
+                    Text(verbatim: loc("compose.format"))
+                }
             }
-            .navigationTitle(loc("compose.title"))
+            .navigationTitle(replyTo != nil ? loc("compose.reply_title") : (quote != nil ? loc("compose.quote_title") : loc("compose.title")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -105,6 +153,35 @@ struct ComposePostView: View {
             } message: {
                 Text(errorMessage ?? "")
             }
+        }
+    }
+
+    private func extractHandle(from uri: String) -> String {
+        let parts = uri.dropFirst("at://".count).split(separator: "/")
+        return parts.first.map(String.init) ?? uri
+    }
+
+    private func formatText(wrap delimiter: String) {
+        guard let textView = textViewRef else {
+            postText = "\(delimiter)\(postText)\(delimiter)"
+            return
+        }
+        let selectedRange = textView.selectedRange
+        let fullText = textView.text ?? ""
+        if selectedRange.length > 0,
+           let range = Range(selectedRange, in: fullText)
+        {
+            let selected = fullText[range]
+            let replacement = "\(delimiter)\(selected)\(delimiter)"
+            textView.text = fullText.replacingCharacters(in: range, with: replacement)
+            postText = textView.text
+            textView.selectedRange = NSRange(location: selectedRange.location + delimiter.count, length: selectedRange.length)
+        } else {
+            let insertion = "\(delimiter)\(delimiter)"
+            let location = selectedRange.location
+            textView.text.insert(contentsOf: insertion, at: fullText.index(fullText.startIndex, offsetBy: location))
+            postText = textView.text
+            textView.selectedRange = NSRange(location: location + delimiter.count, length: 0)
         }
     }
 
@@ -155,6 +232,8 @@ struct ComposePostView: View {
             _ = try await blueskyClient.createPost(
                 text: postText,
                 images: images,
+                replyTo: replyTo,
+                quote: quote,
                 account: account,
                 appPassword: appPassword
             )
@@ -186,7 +265,7 @@ private struct WritingToolsTextView: UIViewRepresentable {
         return tv
     }
 
-    func updateUIView(_ uiView: UITextView, context: Context) {
+    func updateUIView(_ uiView: UITextView, context _: Context) {
         if uiView.text != text {
             uiView.text = text
         }
@@ -202,6 +281,7 @@ private struct WritingToolsTextView: UIViewRepresentable {
         init(text: Binding<String>) {
             _text = text
         }
+
         func textViewDidChange(_ textView: UITextView) {
             text = textView.text
         }

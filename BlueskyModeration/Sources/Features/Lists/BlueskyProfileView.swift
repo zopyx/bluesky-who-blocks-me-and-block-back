@@ -16,13 +16,16 @@ struct BlueskyProfileView: View {
     @State private var moderationTask: Task<Void, Never>?
     @State private var exportTask: Task<Void, Never>?
     @State private var showPostComposer = false
+    @State private var showTimeline = false
     @AppStorage("showBetaFeatures") private var showBetaFeatures = false
     @State private var blockedAccessType: BlockedAccessType?
 
     enum BlockedAccessType: String, Identifiable {
         case posts
         case media
-        var id: String { rawValue }
+        var id: String {
+            rawValue
+        }
     }
 
     var body: some View {
@@ -100,6 +103,11 @@ struct BlueskyProfileView: View {
                     }
                 )
             }
+        }
+        .sheet(isPresented: $showTimeline) {
+            FeedTimelineView()
+                .environmentObject(accountStore)
+                .environmentObject(blueskyClient)
         }
         .sheet(item: $blockedAccessType) { type in
             NavigationStack {
@@ -234,16 +242,21 @@ struct BlueskyProfileView: View {
                     }
                     .buttonStyle(.plain)
                 } header: {
-                        Text(verbatim: loc("profile.stats"))
-                            .onTapGesture(count: 2) { showPostBrowser = true }
-                    }
+                    Text(verbatim: loc("profile.stats"))
+                        .onTapGesture(count: 2) { showPostBrowser = true }
+                }
 
-                if isOwnProfile && showBetaFeatures {
+                if isOwnProfile, showBetaFeatures {
                     Section {
                         Button {
                             showPostComposer = true
                         } label: {
                             Label { Text(verbatim: loc("compose.title")) } icon: { Image(systemName: "square.and.pencil") }
+                        }
+                        Button {
+                            showTimeline = true
+                        } label: {
+                            Label { Text(verbatim: loc("timeline.title")) } icon: { Image(systemName: "clock.arrow.circlepath") }
                         }
                     } header: {
                         HStack(spacing: 4) {
@@ -344,7 +357,7 @@ struct BlueskyProfileView: View {
                         Link(destination: profileURL) {
                             Label { Text(verbatim: loc("profile.open_bluesky")) } icon: { Image(systemName: "arrow.up.right.square") }
                         }
-                            .accessibilityHint(loc("profile.open_bluesky.hint"))
+                        .accessibilityHint(loc("profile.open_bluesky.hint"))
                     }
                 }
 
@@ -391,8 +404,8 @@ struct BlueskyProfileView: View {
                         LabeledContent(loc("profile.stats.labels"), value: profile.labels.joined(separator: ", "))
                     }
                 } header: {
-                        Text(verbatim: loc("profile.account_info"))
-                    }
+                    Text(verbatim: loc("profile.account_info"))
+                }
 
                 if !viewModel.handleHistory.isEmpty {
                     Section {

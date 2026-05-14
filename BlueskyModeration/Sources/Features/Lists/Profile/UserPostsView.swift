@@ -20,7 +20,9 @@ struct UserPostsView: View {
     @EnvironmentObject var blueskyClient: LiveBlueskyClient
     @Environment(\.dismiss) private var dismiss
     @State private var selectedPostURI: String?
-    @State private var previewImageURL: URL?
+    @State private var imagePreview: ImagePreviewCollection?
+    @State private var videoPreviewURL: URL?
+    @State private var showLikesForURI: String?
     @State private var shareFileURL: URL?
     @State private var initialLoadTask: Task<Void, Never>?
     @State private var loadMoreTask: Task<Void, Never>?
@@ -79,8 +81,20 @@ struct UserPostsView: View {
             .sheet(item: $shareFileURL) { url in
                 ShareSheet(activityItems: [url])
             }
-            .fullScreenCover(item: $previewImageURL) { url in
-                ImagePreviewView(url: url) { previewImageURL = nil }
+            .fullScreenCover(item: $imagePreview) { preview in
+                ImageCarouselView(urls: preview.urls, initialIndex: preview.initialIndex) {
+                    imagePreview = nil
+                }
+            }
+            .fullScreenCover(item: $videoPreviewURL) { url in
+                VideoPlayerView(url: url) {
+                    videoPreviewURL = nil
+                }
+            }
+            .sheet(item: $showLikesForURI) { uri in
+                LikesListView(uri: uri)
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
             }
             .task {
                 await loadInitial()
@@ -97,11 +111,24 @@ struct UserPostsView: View {
             searchSection
 
             ForEach(viewModel.sortedFilteredPosts, id: \.post.uri) { entry in
-                PostRowView(entry: entry, onTapThread: {
-                    selectedPostURI = entry.post.uri
-                }, onTapImage: { url in
-                    previewImageURL = url
-                })
+                PostRowView(
+                    entry: entry,
+                    onTapThread: {
+                        selectedPostURI = entry.post.uri
+                    },
+                    onTapImage: { index in
+                        let allImages = entry.post.embed?.images ?? []
+                        let urls = allImages.compactMap { $0.fullsize.flatMap(URL.init) }
+                        guard index < urls.count else { return }
+                        imagePreview = ImagePreviewCollection(urls: urls, initialIndex: index)
+                    },
+                    onPlayVideo: {
+                        if let playlist = entry.post.embed?.video?.playlist, let url = URL(string: playlist) {
+                            videoPreviewURL = url
+                        }
+                    },
+                    onShowLikes: { showLikesForURI = entry.post.uri }
+                )
                 .onAppear {
                     if entry.post.uri == viewModel.sortedFilteredPosts.last?.post.uri {
                         Task { await loadMore() }

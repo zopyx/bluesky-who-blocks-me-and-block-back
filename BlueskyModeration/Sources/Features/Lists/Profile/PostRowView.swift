@@ -3,7 +3,18 @@ import SwiftUI
 struct PostRowView: View {
     let entry: RichFeedEntry
     let onTapThread: () -> Void
-    let onTapImage: (URL) -> Void
+    let onTapImage: (Int) -> Void
+    var onPlayVideo: (() -> Void)?
+    var onReply: (() -> Void)?
+    var onLike: (() -> Void)?
+    var onShowLikes: (() -> Void)?
+    var isLiked: Bool = false
+    var isReposted: Bool = false
+    var onRepost: (() -> Void)?
+    var onQuote: (() -> Void)?
+    var onCopy: (() -> Void)?
+    var onTranslate: (() -> Void)?
+    var onOpenProfile: ((String) -> Void)?
 
     private var post: RichPost {
         entry.post
@@ -45,24 +56,85 @@ struct PostRowView: View {
                 }
                 Spacer()
                 if let created = post.safeRecord.createdAt, let date = parseDate(created) {
-                    Text(date.formatted(date: .abbreviated, time: .omitted))
+                    Text(relativeTimeString(from: date))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
+                Menu {
+                    if let onCopy {
+                        Button(action: onCopy) {
+                            Label(loc("post.copy"), systemImage: "doc.on.doc")
+                        }
+                    }
+                    if let onTranslate {
+                        Button(action: onTranslate) {
+                            Label(loc("post.translate"), systemImage: "globe")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.tertiary)
+                        .padding(.leading, 4)
+                }
             }
 
-            Button(action: onTapThread) {
-                Text(post.safeRecord.text ?? "")
-                    .font(.body)
-                    .lineLimit(6)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            if let parent = entry.reply?.parent {
+                let parentAuthor = parent.safeAuthor
+                HStack(spacing: 6) {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 2)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 4) {
+                            Text(parentAuthor.displayName ?? parentAuthor.handle ?? "")
+                                .font(.caption2.weight(.semibold))
+                                .lineLimit(1)
+                            if let handle = parentAuthor.handle {
+                                Text("@\(handle)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        Text(parent.safeRecord.text ?? "")
+                            .font(.caption2)
+                            .lineLimit(2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(8)
+                .background(Color.skyPrimary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
+                Text(verbatim: "\(loc("profile.posts.replying_to")) @\(parentAuthor.handle ?? "")")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
-            .buttonStyle(.plain)
+
+            Group {
+                if let text = post.safeRecord.text, !text.isEmpty {
+                    Text(mentionAttributedString(from: text))
+                        .font(.body)
+                        .lineLimit(6)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .environment(\.openURL, OpenURLAction { url in
+                            if url.scheme == "mention", let handle = url.host {
+                                onOpenProfile?(handle)
+                                return .handled
+                            }
+                            return .systemAction
+                        })
+                        .contentShape(Rectangle())
+                        .onTapGesture { onTapThread() }
+                }
+            }
 
             if let video = post.embed?.video, let thumb = video.thumbnail, let url = URL(string: thumb) {
                 Button {
-                    onTapImage(url)
+                    if let onPlayVideo {
+                        onPlayVideo()
+                    }
                 } label: {
                     ZStack {
                         ThumbnailImageView(url: url, maxPixelSize: 720) {
@@ -83,10 +155,10 @@ struct PostRowView: View {
             if let images = post.embed?.images, !images.isEmpty {
                 let cols = images.count == 1 ? 1 : 2
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: cols), spacing: 4) {
-                    ForEach(Array(images.prefix(4).enumerated()), id: \.offset) { _, item in
+                    ForEach(Array(images.prefix(4).enumerated()), id: \.offset) { index, item in
                         if let previewURL = item.fullsize.flatMap(URL.init) {
                             Button {
-                                onTapImage(previewURL)
+                                onTapImage(index)
                             } label: {
                                 ThumbnailImageView(url: item.thumb.flatMap(URL.init) ?? previewURL, maxPixelSize: 512) {
                                     Rectangle().fill(Color.skyPrimary.opacity(0.08))
@@ -101,32 +173,91 @@ struct PostRowView: View {
                 }
             }
 
-            Button(action: onTapThread) {
-                HStack(spacing: 16) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrowshape.turn.up.left")
-                            .font(.caption2)
-                        Text("\(post.replyCount ?? 0)")
-                            .font(.caption2)
+            actionBar
+        }
+    }
+
+    private var actionBar: some View {
+        HStack(spacing: 24) {
+            actionButton(
+                icon: "bubble.left",
+                count: post.replyCount,
+                action: onReply
+            )
+            Button(action: { onRepost?() }) {
+                HStack(spacing: 4) {
+                    Image(systemName: isReposted ? "repeat.circle.fill" : "repeat")
+                        .font(.body.weight(.medium))
+                    if let count = post.repostCount {
+                        Text("\(count)")
+                            .font(.callout)
                     }
-                    .foregroundStyle(.tertiary)
-                    HStack(spacing: 4) {
-                        Image(systemName: "repeat")
-                            .font(.caption2)
-                        Text("\(post.repostCount ?? 0)")
-                            .font(.caption2)
+                }
+                .foregroundStyle(isReposted ? Color.green : Color.gray.opacity(0.6))
+            }
+            .buttonStyle(.plain)
+            HStack(spacing: 4) {
+                Button(action: { onLike?() }) {
+                    Image(systemName: isLiked ? "heart.fill" : "heart")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(isLiked ? Color.red : Color.gray.opacity(0.6))
+                }
+                if let count = post.likeCount {
+                    Button(action: { onShowLikes?() }) {
+                        Text("\(count)")
+                            .font(.callout)
                     }
-                    .foregroundStyle(.tertiary)
-                    HStack(spacing: 4) {
-                        Image(systemName: "heart")
-                            .font(.caption2)
-                        Text("\(post.likeCount ?? 0)")
-                            .font(.caption2)
-                    }
-                    .foregroundStyle(.tertiary)
                 }
             }
             .buttonStyle(.plain)
+            .foregroundStyle(.tertiary)
+            actionButton(
+                icon: "quote.bubble",
+                count: nil,
+                action: onQuote
+            )
+        }
+        .foregroundStyle(.tertiary)
+    }
+
+    @ViewBuilder
+    private func actionButton(icon: String, count: Int?, action: (() -> Void)?) -> some View {
+        if let action {
+            Button(action: action) {
+                HStack(spacing: 4) {
+                    Image(systemName: icon)
+                        .font(.body.weight(.medium))
+                    if let count {
+                        Text("\(count)")
+                            .font(.callout)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        } else {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.body.weight(.medium))
+                if let count {
+                    Text("\(count)")
+                        .font(.callout)
+                }
+            }
         }
     }
+}
+
+func mentionAttributedString(from text: String) -> AttributedString {
+    var attributed = AttributedString(text)
+    guard let regex = try? NSRegularExpression(pattern: "@[a-zA-Z0-9_]([a-zA-Z0-9_.-]*[a-zA-Z0-9_])?") else { return attributed }
+    let nsRange = NSRange(text.startIndex..., in: text)
+    for match in regex.matches(in: text, range: nsRange).reversed() {
+        guard let range = Range(match.range, in: text),
+              let attrRange = Range(match.range, in: attributed) else { continue }
+        let handle = String(text[range].dropFirst())
+        attributed[attrRange].link = URL(string: "mention://\(handle)")
+        attributed[attrRange].foregroundColor = Color.skyPrimary
+        attributed[attrRange].underlineStyle = .single
+    }
+    return attributed
 }

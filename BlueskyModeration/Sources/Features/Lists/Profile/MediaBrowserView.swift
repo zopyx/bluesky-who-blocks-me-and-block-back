@@ -378,11 +378,16 @@ private struct MediaPreviewView: View {
     }
 }
 
-private struct VideoPlayerView: View {
+struct VideoPlayerView: View {
     let url: URL
     let onDismiss: () -> Void
 
     @State private var player: AVPlayer?
+
+    init(url: URL, onDismiss: @escaping () -> Void) {
+        self.url = url
+        self.onDismiss = onDismiss
+    }
 
     var body: some View {
         Color.black
@@ -404,16 +409,11 @@ private struct VideoPlayerView: View {
                 }
             }
             .onAppear {
-                try? AVAudioSession.sharedInstance().setCategory(.playback)
-                try? AVAudioSession.sharedInstance().setActive(true)
-                let p = AVPlayer(url: url)
-                p.play()
-                player = p
+                player = AVPlayer(url: url)
+                player?.play()
             }
             .onDisappear {
                 player?.pause()
-                player = nil
-                try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
             }
     }
 }

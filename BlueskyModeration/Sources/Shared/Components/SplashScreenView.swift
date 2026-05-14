@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SplashScreenView: View {
     @Binding var isActive: Bool
+    var showDismissButton = false
+    var dismissAutomatically = true
 
     private let reduceMotion = UIAccessibility.isReduceMotionEnabled
 
@@ -24,18 +26,20 @@ struct SplashScreenView: View {
                 .opacity(showParticles ? 0.8 : 0)
 
             VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    Button {
-                        isActive = false
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.white.opacity(0.5))
+                if showDismissButton {
+                    HStack {
+                        Spacer()
+                        Button {
+                            isActive = false
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.white.opacity(0.5))
+                        }
+                        .padding(16)
+                        .opacity(phase >= 2 ? 1 : 0)
+                        .animation(.easeOut(duration: 0.4).delay(0.5), value: phase)
                     }
-                    .padding(16)
-                    .opacity(phase >= 2 ? 1 : 0)
-                    .animation(.easeOut(duration: 0.4).delay(0.5), value: phase)
                 }
 
                 Spacer()
@@ -112,10 +116,12 @@ struct SplashScreenView: View {
             logoBreathing = 1.03
         }
 
-        try? await Task.sleep(for: .seconds(3.0))
+        if dismissAutomatically {
+            try? await Task.sleep(for: .seconds(3.0))
 
-        withAnimation(.easeOut(duration: 0.3)) {
-            isActive = false
+            withAnimation(.easeOut(duration: 0.3)) {
+                isActive = false
+            }
         }
     }
 }
@@ -193,19 +199,17 @@ private struct SplashOrb: View {
 // MARK: - Star Particles
 
 private struct StarField: View {
-    private let stars: [Star] = {
-        (0..<60).map { _ in
-            Star(
-                x: Double.random(in: 0...1),
-                y: Double.random(in: 0...1),
-                size: Double.random(in: 1.0...3.5),
-                speed: Double.random(in: 0.02...0.08),
-                twinkleSpeed: Double.random(in: 0.5...2.5),
-                twinklePhase: Double.random(in: 0...6.28),
-                baseOpacity: Double.random(in: 0.2...0.8)
-            )
-        }
-    }()
+    private let stars: [Star] = (0 ..< 60).map { _ in
+        Star(
+            x: Double.random(in: 0 ... 1),
+            y: Double.random(in: 0 ... 1),
+            size: Double.random(in: 1.0 ... 3.5),
+            speed: Double.random(in: 0.02 ... 0.08),
+            twinkleSpeed: Double.random(in: 0.5 ... 2.5),
+            twinklePhase: Double.random(in: 0 ... 6.28),
+            baseOpacity: Double.random(in: 0.2 ... 0.8)
+        )
+    }
 
     private struct Star {
         let x: Double
