@@ -15,6 +15,8 @@ struct BlueskyProfileView: View {
     @State private var loadTask: Task<Void, Never>?
     @State private var moderationTask: Task<Void, Never>?
     @State private var exportTask: Task<Void, Never>?
+    @State private var betaFeatureEnabled = false
+    @State private var showPostComposer = false
 
     var body: some View {
         Group {
@@ -78,6 +80,20 @@ struct BlueskyProfileView: View {
                     .environmentObject(blueskyClient)
             }
         }
+        .sheet(isPresented: $showPostComposer) {
+            if let account = accountStore.activeAccount,
+               let appPassword = accountStore.appPassword(for: account)
+            {
+                ComposePostView(
+                    account: account,
+                    appPassword: appPassword,
+                    blueskyClient: blueskyClient,
+                    onComplete: {
+                        betaFeatureEnabled = false
+                    }
+                )
+            }
+        }
     }
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
@@ -107,36 +123,40 @@ struct BlueskyProfileView: View {
                 }
 
                 Section {
-                    LabeledContent(loc("profile.stats.followers"), value: statText(profile.followersCount))
-                    LabeledContent(loc("profile.stats.following"), value: statText(profile.followsCount))
-                    HStack {
-                        Text(loc("profile.stats.posts"))
-                        Spacer()
-                        Text(statText(profile.postsCount))
-                            .foregroundStyle(.secondary)
-                        Menu {
-                            Button {
-                                runExport(.csv, account: account, appPassword: appPassword)
-                            } label: {
-                                Label("CSV", systemImage: "doc.text")
-                            }
-                            Button {
-                                runExport(.json, account: account, appPassword: appPassword)
-                            } label: {
-                                Label("JSON", systemImage: "doc")
-                            }
-                        } label: {
-                            if viewModel.isExportingPosts {
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                            } else {
-                                Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.tertiary)
-                            }
+                    NavigationLink {
+                        RelationshipsView(mode: .followers, initialCount: profile.followersCount, profileDID: profile.did, profileHandle: profile.handle)
+                    } label: {
+                        HStack {
+                            Text(verbatim: loc("profile.stats.followers"))
+                            Spacer()
+                            Text(statText(profile.followersCount))
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    .accessibilityElement(children: .combine)
+                    NavigationLink {
+                        RelationshipsView(mode: .following, initialCount: profile.followsCount, profileDID: profile.did, profileHandle: profile.handle)
+                    } label: {
+                        HStack {
+                            Text(verbatim: loc("profile.stats.following"))
+                            Spacer()
+                            Text(statText(profile.followsCount))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Button {
+                        showPostBrowser = true
+                    } label: {
+                        HStack {
+                            Text(loc("profile.stats.posts"))
+                            Spacer()
+                            Text(statText(profile.postsCount))
+                                .foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .buttonStyle(.plain)
                     Button {
                         showMediaBrowser = true
                     } label: {
@@ -162,8 +182,25 @@ struct BlueskyProfileView: View {
                     }
                     .buttonStyle(.plain)
                 } header: {
-                    Text(verbatim: loc("profile.stats"))
-                        .onTapGesture(count: 2) { showPostBrowser = true }
+                        Text(verbatim: loc("profile.stats"))
+                            .onTapGesture(count: 2) { showPostBrowser = true }
+                    }
+
+                if isOwnProfile && betaFeatureEnabled {
+                    Section {
+                        Button {
+                            showPostComposer = true
+                        } label: {
+                            Label { Text(verbatim: loc("compose.title")) } icon: { Image(systemName: "square.and.pencil") }
+                        }
+                    } header: {
+                        HStack(spacing: 4) {
+                            Text(verbatim: loc("profile.beta"))
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.orange)
+                            Text(verbatim: loc("profile.actions_section"))
+                        }
+                    }
                 }
 
                 if !isOwnProfile {
@@ -184,7 +221,7 @@ struct BlueskyProfileView: View {
                                 Label { Text(verbatim: loc("profile.block")) } icon: { Image(systemName: "hand.raised") }
                             }
                             .disabled(viewModel.isUpdatingModeration)
-                            .accessibilityHint(viewerState.isBlocking ? "Turns off block for this account" : "Blocks this account from interacting with you")
+                            .accessibilityHint(viewerState.isBlocking ? loc("profile.unblock.hint") : loc("profile.block.hint"))
 
                             Toggle(isOn: Binding(
                                 get: { viewerState.muted },
@@ -201,7 +238,7 @@ struct BlueskyProfileView: View {
                                 Label { Text(verbatim: loc("profile.mute")) } icon: { Image(systemName: "speaker.slash") }
                             }
                             .disabled(viewModel.isUpdatingModeration)
-                            .accessibilityHint(viewerState.muted ? "Unmutes this account" : "Mutes this account so you no longer see their posts")
+                            .accessibilityHint(viewerState.muted ? loc("profile.unmute.hint") : loc("profile.mute.hint"))
                         }
 
                         if let statusMessage = viewModel.statusMessage {
@@ -255,7 +292,7 @@ struct BlueskyProfileView: View {
                         Link(destination: profileURL) {
                             Label { Text(verbatim: loc("profile.open_bluesky")) } icon: { Image(systemName: "arrow.up.right.square") }
                         }
-                        .accessibilityHint("Opens this Bluesky profile in your default browser")
+                            .accessibilityHint(loc("profile.open_bluesky.hint"))
                     }
                 }
 
@@ -303,6 +340,10 @@ struct BlueskyProfileView: View {
                     }
                 } header: {
                     Text(verbatim: loc("profile.account_info"))
+                        .onTapGesture(count: 2) {
+                            withAnimation { betaFeatureEnabled.toggle() }
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        }
                 }
 
                 if !viewModel.handleHistory.isEmpty {
@@ -355,7 +396,7 @@ struct BlueskyProfileView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "hand.raised.slash")
                                     Text(verbatim: loc("profile.block_all"))
-                                    Text("BETA")
+                                    Text(verbatim: loc("profile.beta"))
                                         .font(.caption2.weight(.bold))
                                         .foregroundStyle(.white)
                                         .padding(.horizontal, 5)
@@ -364,7 +405,7 @@ struct BlueskyProfileView: View {
                                 }
                             }
                             .disabled(true)
-                            .accessibilityHint("Blocks every account that follows this profile — queued as a background action")
+                            .accessibilityHint(loc("profile.block_all.hint"))
                             HStack(spacing: 8) {
                                 Image(systemName: "hand.raised.slash")
                                     .hidden()
@@ -472,7 +513,8 @@ struct BlueskyProfileView: View {
     private var isOwnProfile: Bool {
         guard let profile = viewModel.profile,
               let activeAccount = accountStore.activeAccount else { return false }
-        return activeAccount.did != nil && profile.did == activeAccount.did
+        if let activeDID = activeAccount.did, activeDID == profile.did { return true }
+        return activeAccount.handle.lowercased() == profile.handle.lowercased()
     }
 
     private func statusChip(title: String, tint: Color, emphasized: Bool) -> some View {

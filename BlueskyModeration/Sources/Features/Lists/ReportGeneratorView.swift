@@ -12,7 +12,7 @@ struct ReportGeneratorView: View {
                 Toggle(isOn: $includeStats) {
                     Text(verbatim: loc("report.include_stats"))
                 }
-                .accessibilityHint("Toggles whether to include statistics in the report")
+                .accessibilityHint(loc("report.include_stats.hint"))
             }
 
             if !reportText.isEmpty {
@@ -30,7 +30,7 @@ struct ReportGeneratorView: View {
                             Image(systemName: "square.and.arrow.up")
                         }
                     }
-                    .accessibilityHint("Shares the generated report")
+                    .accessibilityHint(loc("report.share.hint"))
                 }
             }
 
@@ -38,7 +38,7 @@ struct ReportGeneratorView: View {
                 Button(loc("report.generate")) {
                     generateReport()
                 }
-                .accessibilityHint("Generates the moderation report")
+                .accessibilityHint(loc("report.generate.hint"))
             }
         }
         .listStyle(.insetGrouped)
@@ -47,8 +47,8 @@ struct ReportGeneratorView: View {
 
     private func generateReport() {
         var lines: [String] = []
-        lines.append("# Moderation Report")
-        lines.append("Generated: \(Date.now.formatted(date: .complete, time: .shortened))")
+        lines.append(loc("report.doc_title"))
+        lines.append(loc("report.doc_generated").replacingOccurrences(of: "{date}", with: Date.now.formatted(date: .complete, time: .shortened)))
         lines.append("")
 
         let log = workspaceStore.operationLog
@@ -56,25 +56,25 @@ struct ReportGeneratorView: View {
             let totalOps = log.count
             let totalSuccess = log.reduce(0) { $0 + $1.succeededHandles.count }
             let totalFailed = log.reduce(0) { $0 + $1.failedHandles.count }
-            lines.append("## Summary")
-            lines.append("- Total operations: \(totalOps)")
-            lines.append("- Total accounts actioned: \(totalSuccess)")
-            lines.append("- Total failures: \(totalFailed)")
+            lines.append(loc("report.doc_summary"))
+            lines.append(loc("report.doc_total_operations").replacingOccurrences(of: "{count}", with: "\(totalOps)"))
+            lines.append(loc("report.doc_accounts_actioned").replacingOccurrences(of: "{count}", with: "\(totalSuccess)"))
+            lines.append(loc("report.doc_total_failures").replacingOccurrences(of: "{count}", with: "\(totalFailed)"))
             lines.append("")
 
             let byType = Dictionary(grouping: log, by: \.title)
                 .mapValues(\.count)
                 .sorted { $0.value > $1.value }
-            lines.append("## Operations by Type")
+            lines.append(loc("report.doc_operations_by_type"))
             for (type, count) in byType {
-                lines.append("- \(type): \(count)")
+                lines.append(loc("report.doc_operation_line").replacingOccurrences(of: "{type}", with: type).replacingOccurrences(of: "{count}", with: "\(count)"))
             }
             lines.append("")
         }
 
-        lines.append("## Recent Activity")
+        lines.append(loc("report.doc_recent_activity"))
         for entry in log.prefix(10) {
-            lines.append("- \(entry.title): \(entry.summary) (\(entry.createdAt.formatted(date: .abbreviated, time: .shortened)))")
+            lines.append(loc("report.doc_activity_line").replacingOccurrences(of: "{title}", with: entry.title).replacingOccurrences(of: "{summary}", with: entry.summary).replacingOccurrences(of: "{date}", with: entry.createdAt.formatted(date: .abbreviated, time: .shortened)))
         }
 
         reportText = lines.joined(separator: "\n")

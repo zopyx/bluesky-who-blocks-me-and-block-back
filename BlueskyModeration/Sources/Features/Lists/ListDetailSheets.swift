@@ -37,7 +37,7 @@ struct ImportHandlesSheet: View {
                     Button(loc("actions.cancel")) {
                         dismiss()
                     }
-                    .accessibilityHint("Dismisses the import sheet")
+                    .accessibilityHint(loc("list.import.dismiss.hint"))
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -46,7 +46,7 @@ struct ImportHandlesSheet: View {
                         dismiss()
                     }
                     .disabled(rawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .accessibilityHint("Reviews the imported handles")
+                    .accessibilityHint(loc("list.import.review.hint"))
                 }
             }
         }
@@ -114,7 +114,7 @@ struct ImportPreviewSheet: View {
                         dismiss()
                     }
                     .disabled(isImporting)
-                    .accessibilityHint("Closes the import preview")
+                    .accessibilityHint(loc("list.import.close_preview.hint"))
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -122,7 +122,7 @@ struct ImportPreviewSheet: View {
                         importAction()
                     }
                     .disabled(isImporting || preview.readyItems.isEmpty)
-                    .accessibilityHint("Imports the reviewed items")
+                    .accessibilityHint(loc("list.import.import_items.hint"))
                 }
             }
         }
@@ -210,7 +210,7 @@ struct EditListMetadataSheet: View {
                         dismiss()
                     }
                     .disabled(isSaving)
-                    .accessibilityHint("Discards changes and dismisses the edit sheet")
+                    .accessibilityHint(loc("list.edit.discard.hint"))
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -218,7 +218,7 @@ struct EditListMetadataSheet: View {
                         saveAction(title, description)
                     }
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
-                    .accessibilityHint("Saves the updated list metadata")
+                    .accessibilityHint(loc("list.edit.save.hint"))
                 }
             }
         }

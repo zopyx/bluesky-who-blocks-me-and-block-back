@@ -7,6 +7,43 @@ final class UserPostsViewModel: ObservableObject {
     @Published private(set) var isLoadingMore = false
     @Published private(set) var hasMore = true
     @Published var errorMessage: String?
+    @Published var sortAscending = false
+    @Published var searchText = ""
+    @Published var fromDate: Date?
+    @Published var toDate: Date?
+
+    var sortedFilteredPosts: [RichFeedEntry] {
+        var result = posts
+
+        if !searchText.isEmpty {
+            let query = searchText.lowercased()
+            result = result.filter { entry in
+                entry.post.safeRecord.text?.lowercased().contains(query) ?? false
+            }
+        }
+
+        if let fromDate {
+            result = result.filter { entry in
+                guard let d = parseDate(entry.post.safeRecord.createdAt) else { return false }
+                return d >= fromDate
+            }
+        }
+
+        if let toDate {
+            result = result.filter { entry in
+                guard let d = parseDate(entry.post.safeRecord.createdAt) else { return false }
+                return d <= toDate
+            }
+        }
+
+        result.sort { a, b in
+            let dateA = parseDate(a.post.safeRecord.createdAt) ?? .distantPast
+            let dateB = parseDate(b.post.safeRecord.createdAt) ?? .distantPast
+            return sortAscending ? dateA < dateB : dateA > dateB
+        }
+
+        return result
+    }
 
     private var cursor: String?
     private let did: String
@@ -16,10 +53,24 @@ final class UserPostsViewModel: ObservableObject {
     }
 
     func refresh(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
         posts = []
         cursor = nil
         hasMore = true
-        await loadPosts(account: account, appPassword: appPassword, using: client)
+        defer { isLoading = false }
+        do {
+            guard !Task.isCancelled else { return }
+            let response = try await client.fetchRichFeed(did: did, cursor: nil, account: account, appPassword: appPassword)
+            posts = response.feed
+            cursor = response.cursor
+            hasMore = cursor != nil
+        } catch {
+            guard !AppError.isCancellation(error) else { return }
+            errorMessage = AppError.userMessage(from: error)
+            AppLogger.moderation.error("Failed to refresh posts: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     func loadPosts(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
@@ -33,9 +84,8 @@ final class UserPostsViewModel: ObservableObject {
             posts = response.feed
             cursor = response.cursor
             hasMore = cursor != nil
-        } catch is CancellationError {
-            return
         } catch {
+            guard !AppError.isCancellation(error) else { return }
             errorMessage = AppError.userMessage(from: error)
             AppLogger.moderation.error("Failed to load posts: \(error.localizedDescription, privacy: .public)")
         }
@@ -51,9 +101,8 @@ final class UserPostsViewModel: ObservableObject {
             posts += response.feed
             self.cursor = response.cursor
             hasMore = response.cursor != nil
-        } catch is CancellationError {
-            return
         } catch {
+            guard !AppError.isCancellation(error) else { return }
             errorMessage = AppError.userMessage(from: error)
             AppLogger.moderation.error("Failed to load more posts: \(error.localizedDescription, privacy: .public)")
         }
@@ -61,7 +110,7 @@ final class UserPostsViewModel: ObservableObject {
 
     func exportCSV() -> String {
         let header = "uri,author_did,author_handle,text,created_at,reply_count,repost_count,like_count"
-        let rows = posts.map { entry -> String in
+        let rows = sortedFilteredPosts.map { entry -> String in
             let p = entry.post
             let author = p.safeAuthor
             let text = (p.safeRecord.text ?? "").replacingOccurrences(of: "\"", with: "\"\"")
@@ -81,7 +130,7 @@ final class UserPostsViewModel: ObservableObject {
     }
 
     func exportJSON() -> Data {
-        let objects = posts.map { entry -> [String: Any] in
+        let objects = sortedFilteredPosts.map { entry -> [String: Any] in
             let p = entry.post
             let author = p.safeAuthor
             return [

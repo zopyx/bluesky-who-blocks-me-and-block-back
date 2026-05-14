@@ -62,8 +62,8 @@ struct NetworkGraphView: View {
                 Section {
                     LabeledContent(loc("network.mutual_followers"), value: "\(mutualFollowers.count)")
                     LabeledContent(loc("network.mutual_following"), value: "\(mutualFollowing.count)")
-                    LabeledContent("\(a.handle) follows \(b.handle)", value: aFollowsB ? loc("network.yes") : loc("network.no"))
-                    LabeledContent("\(b.handle) follows \(a.handle)", value: bFollowsA ? loc("network.yes") : loc("network.no"))
+                    LabeledContent(loc("network.follows_relationship").replacingOccurrences(of: "{handle1}", with: a.handle).replacingOccurrences(of: "{handle2}", with: b.handle), value: aFollowsB ? loc("network.yes") : loc("network.no"))
+                    LabeledContent(loc("network.follows_relationship").replacingOccurrences(of: "{handle1}", with: b.handle).replacingOccurrences(of: "{handle2}", with: a.handle), value: bFollowsA ? loc("network.yes") : loc("network.no"))
                 } header: {
                     Text(verbatim: loc("network.overlap"))
                 }
@@ -74,7 +74,7 @@ struct NetworkGraphView: View {
                             Text(did).font(.caption.monospaced())
                         }
                         if mutualFollowers.count > 20 {
-                            Text("+ \(mutualFollowers.count - 20) more").font(.caption).foregroundStyle(.secondary)
+                            Text(verbatim: loc("network.more_count").replacingOccurrences(of: "{count}", with: "\(mutualFollowers.count - 20)")).font(.caption).foregroundStyle(.secondary)
                         }
                     } header: {
                         Text(verbatim: loc("network.following_both"))
@@ -86,7 +86,7 @@ struct NetworkGraphView: View {
                 Button(loc("network.analyze")) { Task { await analyze() } }
                     .disabled(accountA == nil || accountB == nil || isLoading)
                     .foregroundStyle(Color.skyPrimary)
-                    .accessibilityHint("Analyzes the network relationship between the two selected accounts")
+                    .accessibilityHint(loc("network.analyze.hint"))
             }
 
             if isLoading {
@@ -159,7 +159,7 @@ private struct SearchField: View {
                 } label: {
                     Label(actor.handle, systemImage: "person").foregroundStyle(.primary)
                 }
-                .accessibilityHint("Selects \(actor.handle) for analysis")
+                .accessibilityHint(loc("network.select.hint"))
             }
         }
     }

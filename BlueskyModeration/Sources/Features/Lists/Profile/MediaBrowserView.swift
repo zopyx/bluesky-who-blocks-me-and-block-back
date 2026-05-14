@@ -45,7 +45,7 @@ struct MediaBrowserView: View {
                 if !viewModel.items.isEmpty || viewModel.isScanning {
                     if viewModel.availableFilters.count > 1 {
                         HStack(spacing: 8) {
-                            Picker("Filter", selection: $viewModel.filter) {
+                            Picker(loc("media.filter_label"), selection: $viewModel.filter) {
                                 ForEach(viewModel.availableFilters, id: \.self) { f in
                                     Text(filterLabel(f, count: f == .images ? viewModel.imageCount : viewModel.videoCount))
                                         .tag(f)
@@ -90,7 +90,7 @@ struct MediaBrowserView: View {
                 }
 
                 if !viewModel.items.isEmpty {
-                    Text("Tap to select · Double-tap to preview")
+                    Text(verbatim: loc("media.instruction"))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)

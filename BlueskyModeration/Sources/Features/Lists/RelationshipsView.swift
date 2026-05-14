@@ -23,6 +23,8 @@ enum RelationshipMode: String, CaseIterable {
 struct RelationshipsView: View {
     let mode: RelationshipMode
     let initialCount: Int?
+    var profileDID: String?
+    var profileHandle: String?
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @AppStorage("debugMode") private var debugMode = false
@@ -51,6 +53,14 @@ struct RelationshipsView: View {
     }
 
     private var modeLocalized: String {
+        if let handle = profileHandle {
+            switch mode {
+            case .followers: return loc("rel.mode.followers_of").replacingOccurrences(of: "{handle}", with: handle)
+            case .following: return loc("rel.mode.following_of").replacingOccurrences(of: "{handle}", with: handle)
+            case .blocking: return loc("rel.mode.blocking")
+            case .blockedBy: return loc("rel.mode.blocked_by")
+            }
+        }
         switch mode {
         case .followers: return loc("rel.mode.followers")
         case .following: return loc("rel.mode.following")
@@ -140,7 +150,7 @@ struct RelationshipsView: View {
                                 } label: {
                                     Label(loc("rel.block"), systemImage: "hand.raised.fill")
                                 }
-                                .accessibilityHint("Blocks this account from interacting with you")
+                                .accessibilityHint(loc("rel.block.hint"))
 
                                 Button {
                                     selectedActorForList = actor
@@ -148,7 +158,7 @@ struct RelationshipsView: View {
                                 } label: {
                                     Label(loc("rel.add_to_list"), systemImage: "list.bullet")
                                 }
-                                .accessibilityHint("Adds this account to one of your moderation lists")
+                                .accessibilityHint(loc("rel.add_to_list.hint"))
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
@@ -157,7 +167,7 @@ struct RelationshipsView: View {
                                 } label: {
                                     Label(loc("rel.block"), systemImage: "hand.raised.fill")
                                 }
-                                .accessibilityHint("Blocks this account — swipe action")
+                                .accessibilityHint(loc("rel.block_swipe.hint"))
                             }
                         }
                         .onDelete { indexSet in
@@ -196,14 +206,14 @@ struct RelationshipsView: View {
                                 isExporting = true
                                 Task { await exportAll(format: .xlsx) }
                             } label: {
-                                Label("Export All to Excel", systemImage: "tablecells")
+                                Label { Text(verbatim: loc("list.export.excel")) } icon: { Image(systemName: "tablecells") }
                             }
 
                             Button {
                                 isExporting = true
                                 Task { await exportAll(format: .ods) }
                             } label: {
-                                Label("Export All to ODS", systemImage: "doc.text")
+                                Label { Text(verbatim: loc("list.export.ods")) } icon: { Image(systemName: "doc.text") }
                             }
                         } label: {
                             if isExporting {
@@ -239,7 +249,7 @@ struct RelationshipsView: View {
                         } label: {
                             Image(systemName: "arrow.clockwise")
                         }
-                        .accessibilityHint("Reloads this list from Bluesky")
+                        .accessibilityHint(loc("rel.refresh.hint"))
                         .disabled(isExporting)
                     }
                 }
@@ -420,8 +430,9 @@ struct RelationshipsView: View {
     }
 
     private var cacheKey: String? {
-        guard let did = accountStore.activeAccount?.did else { return nil }
-        return "\(mode.rawValue)_\(did)"
+        guard let accountDID = accountStore.activeAccount?.did else { return nil }
+        let subject = profileDID ?? accountDID
+        return "\(mode.rawValue)_\(subject)"
     }
 
     private func load() async {
@@ -462,7 +473,7 @@ struct RelationshipsView: View {
 
     private func fetchFromAPI(account: AppAccount, appPassword: String) async {
         do {
-            let did = account.did ?? account.handle
+            let did = profileDID ?? account.did ?? account.handle
             let result: [BlueskyActor]
             switch mode {
             case .followers:
@@ -484,7 +495,7 @@ struct RelationshipsView: View {
                 errorMessage = AppError.userMessage(from: error)
                 isLoading = false
             } else {
-                statusMessage = "Loaded \(actors.count) of \(initialCount ?? actors.count). Pull to refresh."
+                statusMessage = loc("rel.loaded_status").replacingOccurrences(of: "{count}", with: "\(actors.count)").replacingOccurrences(of: "{total}", with: "\(initialCount ?? actors.count)")
             }
         }
     }
@@ -542,7 +553,7 @@ struct ListPickerSheet: View {
                                     .foregroundStyle(Color.skyPrimary)
                             }
                         }
-                        .accessibilityHint("Adds \(actor.handle) to \(list.name)")
+                        .accessibilityHint(loc("rel.added_to_list.hint"))
                     }
                 }
             }
@@ -551,7 +562,7 @@ struct ListPickerSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(loc("actions.cancel")) { dismiss() }
-                        .accessibilityHint("Closes the list picker without adding")
+                        .accessibilityHint(loc("rel.close_picker.hint"))
                 }
             }
             .task {

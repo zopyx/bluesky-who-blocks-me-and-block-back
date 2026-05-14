@@ -34,7 +34,7 @@ struct AccountTabView: View {
                                 )
                             }
                             .buttonStyle(.plain)
-                            .accessibilityHint("Switches the active account to \(account.label ?? account.handle)")
+                            .accessibilityHint(loc("account.switch_tab.hint"))
                         }
                         .onMove(perform: accountStore.moveAccount)
                         .onDelete { indexSet in

@@ -122,7 +122,7 @@ extension ListDetailView {
                         }
                     }
                     .disabled(batchState.isPerformingBulkAction)
-                    .accessibilityHint(viewModel.selectedSearchActorIDs.count == viewModel.searchResults.count && !viewModel.searchResults.isEmpty ? "Deselects all search results" : "Selects every account in the search results")
+                    .accessibilityHint(viewModel.selectedSearchActorIDs.count == viewModel.searchResults.count && !viewModel.searchResults.isEmpty ? loc("list.search.deselect_all.hint") : loc("list.search.select_all.hint"))
 
                     Spacer()
 
@@ -147,7 +147,7 @@ extension ListDetailView {
                     Label { Text(verbatim: loc("list.search.add_selected")) } icon: { Image(systemName: "person.crop.circle.badge.plus") }
                 }
                 .disabled(viewModel.selectedSearchActorIDs.isEmpty || batchState.isPerformingBulkAction)
-                .accessibilityHint("Adds all selected accounts to this list")
+                .accessibilityHint(loc("list.search.add_selected.hint"))
             }
         }
 

@@ -66,7 +66,7 @@ struct ErrorRetryBanner: View {
             }
             .buttonStyle(.bordered)
             .glassBorderedButton()
-            .accessibilityLabel("Retry: \(message)")
+            .accessibilityHint(loc("common.retry.hint"))
         }
         .padding()
         .background(Color(.systemGray6))
@@ -125,7 +125,7 @@ struct BatchProgressCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(completedCount) of \(totalCount) complete")
+        .accessibilityHint(loc("common.progress.hint"))
     }
 }
 
@@ -230,7 +230,7 @@ struct OnboardingRow: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title): \(description)")
+        .accessibilityHint(loc("common.status.hint"))
         .padding(.vertical, 8)
     }
 }

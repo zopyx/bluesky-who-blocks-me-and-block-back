@@ -48,40 +48,7 @@ struct UserPostsView: View {
                         description: Text(verbatim: loc("profile.posts.empty_desc"))
                     )
                 } else {
-                    List {
-                        ForEach(viewModel.posts, id: \.post.uri) { entry in
-                            PostRowView(entry: entry, onTapThread: {
-                                selectedPostURI = entry.post.uri
-                            }, onTapImage: { url in
-                                previewImageURL = url
-                            })
-                            .onAppear {
-                                if entry.post.uri == viewModel.posts.last?.post.uri {
-                                    Task { await loadMore() }
-                                }
-                            }
-                        }
-                        if viewModel.isLoadingMore {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                                Spacer()
-                            }
-                            .listRowSeparator(.hidden)
-                        }
-                        if !viewModel.hasMore, !viewModel.posts.isEmpty {
-                            Text(verbatim: loc("profile.posts.end"))
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                                .frame(maxWidth: .infinity)
-                                .listRowSeparator(.hidden)
-                        }
-                    }
-                    .listStyle(.plain)
-                    .refreshable {
-                        await refresh()
-                    }
+                    listContent
                 }
             }
             .navigationTitle(loc("profile.posts.title"))
@@ -92,26 +59,7 @@ struct UserPostsView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if !viewModel.posts.isEmpty {
-                        Menu {
-                            Button {
-                                let csv = viewModel.exportCSV()
-                                let url = FileManager.default.temporaryDirectory.appendingPathComponent("posts.csv")
-                                try? csv.write(to: url, atomically: true, encoding: .utf8)
-                                shareFileURL = url
-                            } label: {
-                                Label("CSV", systemImage: "doc.text")
-                            }
-                            Button {
-                                let json = viewModel.exportJSON()
-                                let url = FileManager.default.temporaryDirectory.appendingPathComponent("posts.json")
-                                try? json.write(to: url, options: .atomic)
-                                shareFileURL = url
-                            } label: {
-                                Label("JSON", systemImage: "doc")
-                            }
-                        } label: {
-                            Image(systemName: "square.and.arrow.up")
-                        }
+                        exportMenu
                     }
                 }
             }
@@ -133,6 +81,177 @@ struct UserPostsView: View {
                 initialLoadTask?.cancel()
                 loadMoreTask?.cancel()
             }
+        }
+    }
+
+    private var listContent: some View {
+        List {
+            searchSection
+
+            ForEach(viewModel.sortedFilteredPosts, id: \.post.uri) { entry in
+                PostRowView(entry: entry, onTapThread: {
+                    selectedPostURI = entry.post.uri
+                }, onTapImage: { url in
+                    previewImageURL = url
+                })
+                .onAppear {
+                    if entry.post.uri == viewModel.sortedFilteredPosts.last?.post.uri {
+                        Task { await loadMore() }
+                    }
+                }
+            }
+            if viewModel.isLoadingMore {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Spacer()
+                }
+                .listRowSeparator(.hidden)
+            }
+            if !viewModel.hasMore, !viewModel.posts.isEmpty {
+                Text(verbatim: loc("profile.posts.end"))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity)
+                    .listRowSeparator(.hidden)
+            }
+            if !viewModel.searchText.isEmpty, viewModel.sortedFilteredPosts.isEmpty {
+                Text(loc("profile.posts.no_matches"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(.plain)
+        .refreshable {
+            await refresh()
+        }
+    }
+
+    private var searchSection: some View {
+        Section {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.tertiary)
+                    .font(.subheadline)
+                TextField(loc("profile.posts.search"), text: $viewModel.searchText)
+                    .textFieldStyle(.plain)
+                    .font(.subheadline)
+                if !viewModel.searchText.isEmpty {
+                    Button {
+                        viewModel.searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.tertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                HStack(spacing: 16) {
+                    sortButton
+                    dateFilterButton
+                }
+            }
+            .padding(.vertical, 4)
+
+            if viewModel.fromDate != nil || viewModel.toDate != nil {
+                dateFilterPickers
+            }
+        }
+    }
+
+    private var dateFilterButton: some View {
+        let isActive = viewModel.fromDate != nil || viewModel.toDate != nil
+        return Button {
+            if isActive {
+                viewModel.fromDate = nil
+                viewModel.toDate = nil
+            } else {
+                viewModel.fromDate = Calendar.current.date(byAdding: .month, value: -1, to: Date())
+                viewModel.toDate = Date()
+            }
+        } label: {
+            Image(systemName: isActive ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(width: 36, height: 36)
+        }
+    }
+
+    private var dateFilterPickers: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(loc("profile.posts.from_date"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                DatePicker(
+                    "",
+                    selection: Binding(
+                        get: { viewModel.fromDate ?? Date() },
+                        set: { viewModel.fromDate = $0 }
+                    ),
+                    in: ...Date(),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(loc("profile.posts.to_date"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                DatePicker(
+                    "",
+                    selection: Binding(
+                        get: { viewModel.toDate ?? Date() },
+                        set: { viewModel.toDate = $0 }
+                    ),
+                    in: ...Date(),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
+            }
+        }
+        .padding(.bottom, 6)
+    }
+
+    private var sortButton: some View {
+        Button {
+            withAnimation(.none) {
+                viewModel.sortAscending.toggle()
+            }
+        } label: {
+            Image(systemName: viewModel.sortAscending ? "arrow.up" : "arrow.down")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(width: 36, height: 36)
+        }
+        .help(viewModel.sortAscending ? loc("profile.posts.sort_asc") : loc("profile.posts.sort_desc"))
+        .accessibilityLabel(viewModel.sortAscending ? loc("profile.posts.sort_asc") : loc("profile.posts.sort_desc"))
+    }
+
+    private var exportMenu: some View {
+        Menu {
+            Button {
+                let csv = viewModel.exportCSV()
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent("posts.csv")
+                try? csv.write(to: url, atomically: true, encoding: .utf8)
+                shareFileURL = url
+            } label: {
+                Label { Text(verbatim: loc("profile.export.csv")) } icon: { Image(systemName: "doc.text") }
+            }
+            Button {
+                let json = viewModel.exportJSON()
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent("posts.json")
+                try? json.write(to: url, options: .atomic)
+                shareFileURL = url
+            } label: {
+                Label { Text(verbatim: loc("profile.export.json")) } icon: { Image(systemName: "doc") }
+            }
+        } label: {
+            Image(systemName: "square.and.arrow.down")
         }
     }
 

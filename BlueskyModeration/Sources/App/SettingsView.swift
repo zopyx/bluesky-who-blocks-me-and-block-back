@@ -51,7 +51,7 @@ struct SettingsView: View {
                             Image(systemName: "globe")
                         }
                     }
-                    .accessibilityHint("Changes the display language for the entire app")
+                    .accessibilityHint(loc("settings.language.hint"))
                 } header: {
                     Text(localizationManager.localized("settings.preferences"))
                 }
@@ -92,7 +92,7 @@ struct SettingsView: View {
                             Image(systemName: "wrench.adjustable")
                         }
                     }
-                    .accessibilityHint("Enables additional debugging tools and logging")
+                    .accessibilityHint(loc("settings.debug_tools.hint"))
 
                     Button(role: .destructive) {
                         isShowingClearCacheConfirmation = true
@@ -103,7 +103,7 @@ struct SettingsView: View {
                             Image(systemName: "trash")
                         }
                     }
-                    .accessibilityHint("Removes cached network data and images from the device")
+                    .accessibilityHint(loc("settings.clear_cache.hint"))
 
                     if let cacheStatusMessage {
                         Text(cacheStatusMessage)

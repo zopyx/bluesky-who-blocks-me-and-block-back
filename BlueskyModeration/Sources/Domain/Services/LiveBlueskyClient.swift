@@ -2,6 +2,7 @@ import Foundation
 
 @MainActor
 class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListServicing, BlueskyProfileInspecting {
+    private let baseURL: URL
     private let session: URLSession
     private let requestExecutor: BlueskyRequestExecuting
     private let sessionService: BlueskySessionServicing
@@ -13,6 +14,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         requestExecutor: BlueskyRequestExecuting? = nil,
         sessionService: BlueskySessionServicing? = nil
     ) {
+        self.baseURL = baseURL
         self.session = session
         let executor = requestExecutor ?? BlueskyRequestExecutor(baseURL: baseURL, session: session)
         self.requestExecutor = executor
@@ -764,4 +766,53 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             }
         )
     }
+
+    func uploadBlob(data: Data, mimeType: String, account: AppAccount, appPassword: String?) async throws -> UploadBlobResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            let url = (authSession.pdsURL ?? baseURL).appendingPathComponent("xrpc/com.atproto.repo.uploadBlob")
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(authSession.accessJWT)", forHTTPHeaderField: "Authorization")
+            request.setValue(mimeType, forHTTPHeaderField: "Content-Type")
+            request.httpBody = data
+            let (responseData, _) = try await session.data(for: request)
+            return try JSONDecoder().decode(UploadBlobResponse.self, from: responseData)
+        }
+    }
+
+    func createPost(text: String, images: [PostImageAttachment]?, account: AppAccount, appPassword: String?) async throws -> CreateRecordResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            let embed: FeedPostEmbed? = images.flatMap { imgs in
+                guard !imgs.isEmpty else { return nil }
+                return FeedPostEmbed(images: imgs.map { img in
+                    FeedPostImage(
+                        image: FeedPostImageRef(ref: img.blob.ref, mimeType: img.blob.mimeType, size: img.blob.size),
+                        alt: img.alt
+                    )
+                })
+            }
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.feed.post",
+                record: FeedPostRecord(
+                    text: text,
+                    createdAt: ISO8601DateFormatter().string(from: .now),
+                    embed: embed
+                )
+            )
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+}
+
+struct PostImageAttachment {
+    let blob: UploadedBlob
+    let alt: String
 }

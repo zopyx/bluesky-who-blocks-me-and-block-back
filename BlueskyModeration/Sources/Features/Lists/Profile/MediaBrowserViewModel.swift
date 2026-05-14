@@ -15,10 +15,11 @@ enum MediaFilter: String, CaseIterable {
     case images
     case videos
 
+    @MainActor
     var label: String {
         switch self {
-        case .images: "Images"
-        case .videos: "Videos"
+        case .images: loc("media.filter.images")
+        case .videos: loc("media.filter.videos")
         }
     }
 }

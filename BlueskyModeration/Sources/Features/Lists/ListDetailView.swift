@@ -74,7 +74,7 @@ struct ListDetailView: View {
                 Button(loc("actions.ok")) {
                     viewModel.errorMessage = nil
                 }
-                .accessibilityHint("Dismisses this error message")
+                .accessibilityHint(loc("list.detail.dismiss_error.hint"))
             }, message: {
                 Text(viewModel.errorMessage ?? "")
             })
@@ -85,7 +85,7 @@ struct ListDetailView: View {
                 Button(loc("actions.ok")) {
                     viewModel.bulkActionResult = nil
                 }
-                .accessibilityHint("Dismisses the bulk operation result")
+                .accessibilityHint(loc("list.detail.dismiss_bulk.hint"))
 
                 if let account = accountStore.activeAccount,
                    let appPassword = accountStore.appPassword(for: account),
@@ -105,7 +105,7 @@ struct ListDetailView: View {
                             syncSnapshot()
                         }
                     }
-                    .accessibilityHint("Retries the failed operations")
+                    .accessibilityHint(loc("list.detail.retry_failed.hint"))
                 }
             } message: {
                 if let result = viewModel.bulkActionResult {
@@ -136,9 +136,9 @@ struct ListDetailView: View {
                         }
                     }
                 }
-                .accessibilityHint("Deletes this list permanently")
+                .accessibilityHint(loc("list.detail.delete_list.hint"))
                 Button(loc("actions.cancel"), role: .cancel) {}
-                    .accessibilityHint("Cancels the deletion")
+                    .accessibilityHint(loc("list.detail.cancel_delete.hint"))
             } message: {
                 Text(verbatim: loc("list.detail.delete_message"))
             }
@@ -187,7 +187,7 @@ struct ListDetailView: View {
             } label: {
                 Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
             }
-            .accessibilityHint("Deletes this list permanently")
+            .accessibilityHint(loc("list.detail.delete_list.hint"))
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -196,7 +196,7 @@ struct ListDetailView: View {
             } label: {
                 Label { Text(verbatim: loc("list.detail.edit")) } icon: { Image(systemName: "pencil") }
             }
-            .accessibilityHint("Opens the edit sheet for this list")
+            .accessibilityHint(loc("list.detail.edit_list.hint"))
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -220,14 +220,14 @@ struct ListDetailView: View {
                         isExporting = true
                         Task { await exportList(format: .xlsx) }
                     } label: {
-                        Label("Export All to Excel", systemImage: "tablecells")
+                        Label { Text(verbatim: loc("list.export.excel")) } icon: { Image(systemName: "tablecells") }
                     }
 
                     Button {
                         isExporting = true
                         Task { await exportList(format: .ods) }
                     } label: {
-                        Label("Export All to ODS", systemImage: "doc.text")
+                        Label { Text(verbatim: loc("list.export.ods")) } icon: { Image(systemName: "doc.text") }
                     }
                 } label: {
                     if isExporting {
@@ -274,7 +274,7 @@ struct ListDetailView: View {
                 Task {
                     await viewModel.prepareImportPreview(
                         from: rawInput,
-                        sourceDescription: "Pasted input",
+                        sourceDescription: loc("list.import.pasted_input"),
                         account: account,
                         appPassword: appPassword,
                         using: blueskyClient

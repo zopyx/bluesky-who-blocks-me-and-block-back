@@ -46,14 +46,14 @@ struct PendingActionsSheet: View {
                                     workspaceStore.actionQueue.cancel(action.id)
                                 }
                                 .font(.caption)
-                                .accessibilityHint("Cancels this queued action before it starts")
+                                .accessibilityHint(loc("action_queue.cancel.hint"))
                             }
                             if case .completed = action.status {
                                 Button(loc("pending.retry_button")) {
                                     workspaceStore.actionQueue.retry(action.id)
                                 }
                                 .font(.caption)
-                                .accessibilityHint("Re-runs this action for any failed items")
+                                .accessibilityHint(loc("action_queue.retry.hint"))
                             }
                         }
                         .padding(.vertical, 4)
@@ -70,7 +70,7 @@ struct PendingActionsSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(loc("pending.done_button")) { isPresented = false }
-                        .accessibilityHint("Closes the pending actions sheet")
+                        .accessibilityHint(loc("action_queue.close.hint"))
                 }
             }
         }

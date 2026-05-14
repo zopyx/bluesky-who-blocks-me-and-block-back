@@ -16,7 +16,7 @@ struct ActorSearchResultRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(isSelected ? "Deselect \(actor.handle)" : "Select \(actor.handle)")
-            .accessibilityHint("Toggles the selection of this actor")
+            .accessibilityHint(loc("actor_search.toggle.hint"))
 
             BlueskyActorRow(actor: actor)
 
@@ -35,7 +35,7 @@ struct ActorSearchResultRow: View {
             .buttonStyle(.plain)
             .disabled(isAdding)
             .accessibilityLabel(loc("actor_search.add"))
-            .accessibilityHint("Adds \(actor.handle) to the list")
+            .accessibilityHint(loc("actor_search.add_to_list.hint"))
         }
     }
 }

@@ -45,7 +45,7 @@ struct AddAccountView: View {
                     } label: {
                         Text(verbatim: loc("account.add.provider"))
                     }
-                    .accessibilityHint("Selects the Bluesky PDS provider for this account")
+                    .accessibilityHint(loc("account.select_pds.hint"))
 
                     if selectedProvider == .other {
                         TextField(loc("account.add.placeholder.url"), text: $customPDS)
@@ -83,7 +83,7 @@ struct AddAccountView: View {
                     Button(loc("account.add.cancel")) {
                         dismiss()
                     }
-                    .accessibilityHint("Discards changes and closes the add account form")
+                    .accessibilityHint(loc("account.discard_add.hint"))
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -112,7 +112,7 @@ struct AddAccountView: View {
                             appPassword.isEmpty ||
                             accountStore.isAddingAccount
                     )
-                    .accessibilityHint("Validates credentials and adds the account")
+                    .accessibilityHint(loc("account.validate.hint"))
                 }
             }
             .overlay {

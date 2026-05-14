@@ -90,7 +90,7 @@ extension ListDetailView {
                                 Label { Text(verbatim: loc("actions.remove")) } icon: { Image(systemName: "person.crop.circle.badge.minus") }
                             }
                             .disabled(viewModel.isRemoving(member) || batchState.isPerformingBulkAction)
-                            .accessibilityHint("This action cannot be undone.")
+                            .accessibilityHint(loc("list.members.remove.hint"))
                         }
                     }
 

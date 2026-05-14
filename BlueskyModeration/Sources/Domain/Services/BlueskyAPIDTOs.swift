@@ -505,3 +505,66 @@ struct ThreadPostNode: Decodable {
     let likeCount: Int?
     let indexedAt: String?
 }
+
+// MARK: - Blob Upload & Feed Post
+
+struct UploadBlobResponse: Decodable {
+    let blob: UploadedBlob
+}
+
+struct UploadedBlob: Decodable {
+    let ref: BlobRef
+    let mimeType: String
+    let size: Int
+}
+
+struct BlobRef: Decodable, Encodable {
+    let link: String
+
+    enum CodingKeys: String, CodingKey {
+        case link = "$link"
+    }
+}
+
+struct FeedPostRecord: Encodable {
+    let type = "app.bsky.feed.post"
+    let text: String
+    let createdAt: String
+    let embed: FeedPostEmbed?
+
+    enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case text
+        case createdAt
+        case embed
+    }
+}
+
+struct FeedPostEmbed: Encodable {
+    let type = "app.bsky.embed.images"
+    let images: [FeedPostImage]
+
+    enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case images
+    }
+}
+
+struct FeedPostImage: Encodable {
+    let image: FeedPostImageRef
+    let alt: String
+}
+
+struct FeedPostImageRef: Encodable {
+    let type = "blob"
+    let ref: BlobRef
+    let mimeType: String
+    let size: Int
+
+    enum CodingKeys: String, CodingKey {
+        case type = "$type"
+        case ref
+        case mimeType
+        case size
+    }
+}

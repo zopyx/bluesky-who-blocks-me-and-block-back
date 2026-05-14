@@ -42,7 +42,7 @@ extension ListDetailView {
                             Text(list.name).tag(list.id)
                         }
                     }
-                    .accessibilityHint("Choose another list to compare members against")
+                    .accessibilityHint(loc("list.compare.picker.hint"))
 
                     Button {
                         if let comparisonList {
@@ -60,7 +60,7 @@ extension ListDetailView {
                         Label { Text(verbatim: loc("list.compare.button")) } icon: { Image(systemName: "rectangle.split.3x1") }
                     }
                     .disabled(comparisonList == nil || viewModel.isComparingLists)
-                    .accessibilityHint("Calculates overlap and differences between the two lists")
+                    .accessibilityHint(loc("list.compare.calculate.hint"))
 
                     Button {
                         if let comparisonList {
@@ -79,7 +79,7 @@ extension ListDetailView {
                         Label { Text(verbatim: loc("list.compare.copy")) } icon: { Image(systemName: "square.on.square") }
                     }
                     .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || batchState.isPerformingBulkAction)
-                    .accessibilityHint("Copies selected members to the other list without removing them from this list")
+                    .accessibilityHint(loc("list.compare.copy.hint"))
 
                     Button {
                         if let comparisonList {
@@ -98,7 +98,7 @@ extension ListDetailView {
                         Label { Text(verbatim: loc("list.compare.move")) } icon: { Image(systemName: "arrow.right.square") }
                     }
                     .disabled(comparisonList == nil || viewModel.selectedMemberIDs.isEmpty || batchState.isPerformingBulkAction)
-                    .accessibilityHint("Moves selected members to the other list and removes them from this list")
+                    .accessibilityHint(loc("list.compare.move.hint"))
 
                     Button {
                         if let comparisonList {
@@ -165,7 +165,7 @@ extension ListDetailView {
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(loc("actions.done")) { showingCompareHelp = false }
-                                .accessibilityHint("Closes the comparison help screen")
+                                .accessibilityHint(loc("list.compare.help.close.hint"))
                         }
                     }
                 }
@@ -193,13 +193,13 @@ extension ListDetailView {
                             }
                         }
                     }
-                    .accessibilityHint("Filters comparison results to a specific bucket: overlap, only in this list, or only in the other list")
+                    .accessibilityHint(loc("list.compare.filter_bucket.hint"))
 
                     Button(loc("list.compare.clear_diff")) {
                         viewModel.clearComparisonSelection()
                     }
                     .disabled(viewModel.selectedComparisonActorDIDs.isEmpty)
-                    .accessibilityHint("Deselects all actors in the comparison results")
+                    .accessibilityHint(loc("list.compare.clear_diff.hint"))
 
                     Spacer()
 
@@ -224,13 +224,13 @@ extension ListDetailView {
                     Label { Text(verbatim: loc("list.compare.add_here")) } icon: { Image(systemName: "arrow.down.left.and.arrow.up.right") }
                 }
                 .disabled(viewModel.selectedComparisonActorDIDs.isEmpty || batchState.isPerformingBulkAction)
-                .accessibilityHint("Adds all selected comparison actors to this list")
+                .accessibilityHint(loc("list.compare.add_here.hint"))
 
                 if let diffExportFileURL {
                     ShareLink(item: diffExportFileURL) {
                         Label { Text(verbatim: loc("list.compare.export_csv")) } icon: { Image(systemName: "square.and.arrow.up") }
                     }
-                    .accessibilityHint("Shares a CSV file with the comparison results")
+                    .accessibilityHint(loc("list.compare.export_csv.hint"))
                 }
             }
             .padding(.vertical, 4)
@@ -255,10 +255,10 @@ extension ListDetailView {
                             .buttonStyle(.plain)
                             .accessibilityLabel(
                                 viewModel.selectedComparisonActorDIDs.contains(member.actor.did)
-                                    ? "Deselect \(member.actor.handle)"
-                                    : "Select \(member.actor.handle)"
+                                    ? loc("list.compare.deselect_actor.label").replacingOccurrences(of: "{handle}", with: member.actor.handle)
+                                    : loc("list.compare.select_actor.label").replacingOccurrences(of: "{handle}", with: member.actor.handle)
                             )
-                            .accessibilityHint("Toggles this actor for bulk add or removal actions")
+                            .accessibilityHint(loc("list.compare.toggle_actor.hint"))
                         }
                     } header: {
                         Text(verbatim: loc(bucketLocKey(bucket)))

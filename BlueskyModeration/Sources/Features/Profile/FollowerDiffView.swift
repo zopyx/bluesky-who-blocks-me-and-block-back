@@ -62,7 +62,7 @@ struct FollowerDiffView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(loc("follower_diff.refresh")) { Task { await load() } }
                     .disabled(isLoading)
-                    .accessibilityHint("Refreshes the follower data to detect changes")
+                    .accessibilityHint(loc("follower_diff.refresh.hint"))
             }
         }
         .task { await load() }

@@ -20,11 +20,6 @@ struct SplashScreenView: View {
             VStack(spacing: 12) {
                 Spacer()
 
-                Image("RulyxLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 260)
-
                 Text("RULYX")
                     .font(.system(size: 52, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
@@ -36,7 +31,14 @@ struct SplashScreenView: View {
                             .opacity(textOpacity)
                     )
 
-                Text("Bluesky moderation made easy")
+                Image("RulyxLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 260)
+
+                Spacer().frame(height: 20)
+
+                Text(verbatim: loc("splash.tagline"))
                     .font(.body.weight(.medium))
                     .foregroundStyle(.white.opacity(0.75))
                     .offset(y: subtitleOffset)
@@ -44,7 +46,7 @@ struct SplashScreenView: View {
 
                 Spacer()
 
-                Text("Free  ·  Open source  ·  No ads  ·  No tracking")
+                Text(verbatim: loc("splash.footer"))
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.45))
                     .opacity(footerOpacity)
@@ -69,23 +71,12 @@ struct SplashScreenView: View {
             logoScale = 1
         }
 
-        try? await Task.sleep(for: .seconds(0.1))
-
-        withAnimation(.easeOut(duration: 0.35).delay(0.15)) {
+        withAnimation(.easeOut(duration: 0.5).delay(0.2)) {
             textOffset = 0
             textOpacity = 1
-        }
-
-        withAnimation(.easeOut(duration: 0.3).delay(0.4)) {
             subtitleOffset = 0
             subtitleOpacity = 1
-        }
-
-        withAnimation(.easeIn(duration: 0.4).delay(0.55)) {
             particlesOpacity = 0.8
-        }
-
-        withAnimation(.easeOut(duration: 0.25).delay(0.65)) {
             footerOpacity = 1
         }
 

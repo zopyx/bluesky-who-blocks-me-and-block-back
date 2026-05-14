@@ -5,12 +5,13 @@ struct BlueskyList: Identifiable, Hashable, Codable {
         case moderation
         case regular
 
+        @MainActor
         var title: String {
             switch self {
             case .moderation:
-                "Moderation Lists"
+                loc("list.kind.moderation")
             case .regular:
-                "Lists"
+                loc("list.kind.regular")
             }
         }
 

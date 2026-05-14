@@ -190,8 +190,31 @@ struct ProfileInspectorView: View {
                     }
 
                     Section {
-                        LabeledContent(loc("profile.stats.followers"), value: countText(inspection.profile.followersCount))
-                        LabeledContent(loc("profile.stats.following"), value: countText(inspection.profile.followsCount))
+                        if isOwnProfile {
+                            NavigationLink {
+                                RelationshipsView(mode: .followers, initialCount: inspection.profile.followersCount)
+                            } label: {
+                                HStack {
+                                    Text(verbatim: loc("profile.stats.followers"))
+                                    Spacer()
+                                    Text(countText(inspection.profile.followersCount))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            NavigationLink {
+                                RelationshipsView(mode: .following, initialCount: inspection.profile.followsCount)
+                            } label: {
+                                HStack {
+                                    Text(verbatim: loc("profile.stats.following"))
+                                    Spacer()
+                                    Text(countText(inspection.profile.followsCount))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        } else {
+                            LabeledContent(loc("profile.stats.followers"), value: countText(inspection.profile.followersCount))
+                            LabeledContent(loc("profile.stats.following"), value: countText(inspection.profile.followsCount))
+                        }
                         LabeledContent(loc("profile.stats.posts"), value: countText(inspection.profile.postsCount))
                         LabeledContent(loc("profile.stats.lists"), value: countText(inspection.profile.listsCount))
                         LabeledContent(loc("profile.stats.starter_packs"), value: countText(inspection.profile.starterPacksCount))
@@ -355,6 +378,13 @@ struct ProfileInspectorView: View {
                 }
             }
         }
+    }
+
+    private var isOwnProfile: Bool {
+        guard let account = accountStore.activeAccount,
+              let inspection = viewModel.inspection else { return false }
+        if let activeDID = account.did, activeDID == inspection.profile.did { return true }
+        return account.handle.lowercased() == inspection.profile.handle.lowercased()
     }
 
     private var activePassword: String? {
