@@ -117,6 +117,7 @@
 		8D51374098DD19897AD47672 /* BlueskyAPIDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4590FB0D22143F4162812588 /* BlueskyAPIDTOs.swift */; };
 		8FABAB12A6DDE1BF0B7B0BF7 /* TimelineState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8CC026CCDC48BA9D07151F /* TimelineState.swift */; };
 		928BFEA59B9C48DFFFFBF82A /* th.json in Resources */ = {isa = PBXBuildFile; fileRef = 90CA4252CA04D98D4E480275 /* th.json */; };
+		93B87D523A168AD8BEB609DA /* ClearskyListsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D4D69AD60052A31111DB5B /* ClearskyListsView.swift */; };
 		94E753C0AECBBD439B885AC0 /* WorkspacePreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22658F63F96F89A793256985 /* WorkspacePreferencesStoreTests.swift */; };
 		94FA3749012F8FE45D8FA1F2 /* ActionQueueStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BE861EB8C76980DD8DD581 /* ActionQueueStore.swift */; };
 		99CBFED5BCD536122863CE17 /* ListDetailView+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */; };
@@ -244,6 +245,7 @@
 		1C0333662556B11CF98A88B2 /* RelationshipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelationshipsView.swift; sourceTree = "<group>"; };
 		1D071F1CF3D62971E99E7446 /* ListBatchController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBatchController.swift; sourceTree = "<group>"; };
 		20DB7A42818E5B167DE1EA46 /* LikesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikesListView.swift; sourceTree = "<group>"; };
+		21D4D69AD60052A31111DB5B /* ClearskyListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearskyListsView.swift; sourceTree = "<group>"; };
 		22658F63F96F89A793256985 /* WorkspacePreferencesStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspacePreferencesStoreTests.swift; sourceTree = "<group>"; };
 		2280BC45F8BE5A6E1B43CE9D /* ListMembersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListMembersController.swift; sourceTree = "<group>"; };
 		2349CFDC982D84D9D988FA4C /* FeedTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTimelineView.swift; sourceTree = "<group>"; };
@@ -373,7 +375,7 @@
 		C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIError.swift; sourceTree = "<group>"; };
 		C6B884F490FEB25B8E1D1176 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Data.swift"; sourceTree = "<group>"; };
-		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB4E57BAD6E7DFECAC4CBBD3 /* BulkProfileLookupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkProfileLookupView.swift; sourceTree = "<group>"; };
 		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		CF294652EF8FD853EEA4FB99 /* BlueskyPushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyPushNotificationService.swift; sourceTree = "<group>"; };
@@ -389,7 +391,7 @@
 		DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePanels.swift; sourceTree = "<group>"; };
 		DBD49F5D31AD7E39041AD778 /* ListTemplatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTemplatesView.swift; sourceTree = "<group>"; };
 		DF724B3AC46DD8943DA15180 /* ListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsView.swift; sourceTree = "<group>"; };
-		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSummaryCard.swift; sourceTree = "<group>"; };
 		E038BB7F81793651195D96DF /* MediaDownloadServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDownloadServiceTests.swift; sourceTree = "<group>"; };
 		E20DA0AD00F89BF117613EC6 /* ListsView+Presentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Presentation.swift"; sourceTree = "<group>"; };
@@ -562,6 +564,7 @@
 				83B4ADF018E91D04F8AA93D1 /* ActionPresetsView.swift */,
 				90F621A53763D04B73DCF960 /* BlueskyProfileView.swift */,
 				9D493CE6BEC23FAEDADC7AED /* BlueskyProfileViewModel.swift */,
+				21D4D69AD60052A31111DB5B /* ClearskyListsView.swift */,
 				AE305280A1A0EDD058EDD5C8 /* ComposePostView.swift */,
 				6B1F6017FABE697E2F1D8BDC /* CreateListSheet.swift */,
 				1428B2B7544B3F6DDABF69BA /* DashboardView.swift */,
@@ -874,6 +877,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					0608BB4380516450DC5105DF = {
+						DevelopmentTeam = "";
+					};
 					28FA462115B88F07A4C1D7CE = {
 						DevelopmentTeam = "";
 						TestTargetID = 0608BB4380516450DC5105DF;
@@ -1044,6 +1050,7 @@
 				65FFDF957E816033BDFE1CA3 /* ChatServicing.swift in Sources */,
 				C6E6DDD546A882D8227022CA /* ChatStore.swift in Sources */,
 				4D776976C2279A83C64DBA5F /* ChatTab.swift in Sources */,
+				93B87D523A168AD8BEB609DA /* ClearskyListsView.swift in Sources */,
 				DDD604A9F008B2000E73FCC0 /* Color+BlueskyModeration.swift in Sources */,
 				4D5288FDAC4AE69FE419CA4B /* ComposePostView.swift in Sources */,
 				07D01FC25B45588D9C74F55F /* ConversationDetailView.swift in Sources */,
@@ -1338,7 +1345,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				INFOPLIST_FILE = Sources/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1375,7 +1381,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				INFOPLIST_FILE = Sources/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

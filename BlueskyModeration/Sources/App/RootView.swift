@@ -91,6 +91,11 @@ struct RootView: View {
                 workspaceStore.selectedTab = .moderation
             }
         }
+        .onChange(of: accountStore.activeAccountID) { _, newValue in
+            if newValue != nil {
+                workspaceStore.selectedTab = .moderation
+            }
+        }
         .sheet(isPresented: .init(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = !$0 })) {
             NavigationStack {
                 ScrollView {
