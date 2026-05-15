@@ -55,6 +55,13 @@ struct ComposePostView: View {
                 Section {
                     WritingToolsTextView(text: $postText, textViewRef: $textViewRef)
                         .frame(minHeight: 120)
+
+                    HStack {
+                        Spacer()
+                        Text("\(postText.count)/300")
+                            .font(.caption)
+                            .foregroundStyle(postText.count > 300 ? .red : .green)
+                    }
                 } header: {
                     Text(verbatim: loc("compose.text_section"))
                 }
