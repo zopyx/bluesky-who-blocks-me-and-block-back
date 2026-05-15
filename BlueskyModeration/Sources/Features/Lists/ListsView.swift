@@ -250,8 +250,11 @@ struct ListsView: View {
             .task(id: accountStore.activeAccountID) {
                 await loadInitial()
             }
-            .onChange(of: accountStore.activeAccountID) { _, _ in
+            .onChange(of: accountStore.activeAccountID) { _, newValue in
                 viewModel.reset()
+                if newValue != nil {
+                    Task { await loadInitial() }
+                }
             }
             .navigationDestination(isPresented: $presentationState.showProfile) {
                 if let activeAccount = accountStore.activeAccount {
