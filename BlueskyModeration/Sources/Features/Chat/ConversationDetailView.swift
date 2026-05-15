@@ -7,6 +7,7 @@ struct ConversationDetailView: View {
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @State private var messageText = ""
     @State private var showProfile = false
+    @State private var showScrollToBottom = false
     @FocusState private var isFocused: Bool
 
     let conversation: ChatConversation
@@ -82,6 +83,11 @@ struct ConversationDetailView: View {
                         } label: {
                             Label(loc("chat.mute"), systemImage: "bell.slash")
                         }
+                    }
+                    Button {
+                        Task { await chatStore.loadMessages(convoId: conversation.id) }
+                    } label: {
+                        Label(loc("chat.reload"), systemImage: "arrow.clockwise")
                     }
                     Button(role: .destructive) {
                         Task { await chatStore.leave(convoId: conversation.id) }
@@ -171,11 +177,38 @@ struct ConversationDetailView: View {
                         .frame(height: 1)
                         .id("bottom")
                 }
+                .background(GeometryReader { geo in
+                    Color.clear.preference(
+                        key: ScrollOffsetKey.self,
+                        value: geo.frame(in: .named("scroll")).maxY
+                    )
+                })
             }
-            .onChange(of: convoMessages.count) { _, newCount in
-                guard newCount > 0 else { return }
-                if newCount <= 50 {
-                    withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+            .coordinateSpace(name: "scroll")
+            .onPreferenceChange(ScrollOffsetKey.self) { maxY in
+                let isNearBottom = UIScreen.main.bounds.height - maxY < 80
+                showScrollToBottom = !isNearBottom
+            }
+            .task(id: convoMessages.count) {
+                guard convoMessages.count > 0, convoMessages.count <= 50 else { return }
+                withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if showScrollToBottom {
+                    Button {
+                        withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+                        showScrollToBottom = false
+                    } label: {
+                        Image(systemName: "arrow.down")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(Color.skyPrimary)
+                            .frame(width: 40, height: 40)
+                            .background(Circle().fill(.bar))
+                            .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 8)
+                    .transition(.scale.combined(with: .opacity))
                 }
             }
         }
@@ -293,6 +326,13 @@ struct ConversationDetailView: View {
         case let .deleted(d): d.id
         case let .system(s): s.id
         }
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    nonisolated(unsafe) static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
