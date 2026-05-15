@@ -33,6 +33,11 @@ struct ModerationSplitView: View {
         .task(id: accountStore.activeAccountID) {
             await loadInitial()
         }
+        .onChange(of: accountStore.activeAccountID) { _, newValue in
+            if newValue != nil {
+                Task { await loadInitial() }
+            }
+        }
     }
 
     // MARK: - Compact (iPhone) — delegate to existing ListsView
