@@ -7,12 +7,18 @@ struct ClearskyListsView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @State private var entryKinds: [String: BlueskyList.Kind] = [:]
 
+    private var sortedEntries: [ClearskyListEntry] {
+        entries.sorted { a, b in
+            date(from: a.createdDate) > date(from: b.createdDate)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    ForEach(entries) { entry in
-                        VStack(alignment: .leading, spacing: 6) {
+                    ForEach(sortedEntries) { entry in
+                        VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 6) {
                                 Text(entry.name)
                                     .font(.headline)
@@ -32,24 +38,22 @@ struct ClearskyListsView: View {
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
                             }
-                            HStack(spacing: 12) {
-                                Label {
-                                    Text(entry.did)
-                                        .font(.caption2)
-                                        .foregroundStyle(.tertiary)
-                                } icon: {
-                                    Image(systemName: "person.circle")
-                                        .font(.caption2)
-                                }
-                                Label {
-                                    Text(formatDate(entry.createdDate))
-                                        .font(.caption2)
-                                        .foregroundStyle(.tertiary)
-                                } icon: {
-                                    Image(systemName: "calendar")
-                                        .font(.caption2)
-                                }
+                            HStack {
                                 Spacer()
+                                Button {
+                                    UIPasteboard.general.string = entry.did
+                                } label: {
+                                    Label(entry.did, systemImage: "doc.on.doc")
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            HStack {
+                                Spacer()
+                                Label(formatDate(entry.createdDate), systemImage: "calendar")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
                             }
                         }
                         .padding(.vertical, 6)
@@ -93,6 +97,15 @@ struct ClearskyListsView: View {
                 }
             }
         }
+    }
+
+    private func date(from string: String) -> Date {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: string) { return date }
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: string) { return date }
+        return .distantPast
     }
 }
 
