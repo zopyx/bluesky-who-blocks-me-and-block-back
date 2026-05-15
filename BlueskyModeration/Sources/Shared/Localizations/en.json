@@ -930,7 +930,6 @@
   "list.details.created": "Created",
   "list.details.type": "Type",
   "profile.stats.display_name": "Display Name",
-  "profile.lists_on": "Lists on profile",
-  "profile.lists_count": "{mod} mod · {reg} regular",
+  "profile.stats.lists": "Lists",
   "profile.lists_error": "Failed to load lists"
 }

@@ -240,6 +240,25 @@ struct BlueskyProfileView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    Button {
+                        showClearskyLists = true
+                    } label: {
+                        HStack {
+                            Text(loc("profile.stats.lists"))
+                            Spacer()
+                            if viewModel.isFetchingLists {
+                                ProgressView()
+                                    .scaleEffect(0.6)
+                            } else if !viewModel.clearskyLists.isEmpty {
+                                Text("\(viewModel.moderationListCount) mod · \(viewModel.regularListCount) reg")
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
                 } header: {
                     Text(verbatim: loc("profile.stats"))
                         .onTapGesture(count: 2) { showPostBrowser = true }
@@ -327,39 +346,6 @@ struct BlueskyProfileView: View {
                     } header: {
                         Text(verbatim: loc("lists.lists"))
                     }
-                }
-
-                Section {
-                    Button {
-                        showClearskyLists = true
-                    } label: {
-                        HStack {
-                            Label(loc("profile.lists_on"), systemImage: "list.bullet.rectangle")
-                            Spacer()
-                            if viewModel.isFetchingLists {
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                            } else if !viewModel.clearskyLists.isEmpty {
-                                Text(loc("profile.lists_count")
-                                    .replacingOccurrences(of: "{mod}", with: "\(viewModel.moderationListCount)")
-                                    .replacingOccurrences(of: "{reg}", with: "\(viewModel.regularListCount)"))
-                                    .foregroundStyle(.secondary)
-                                    .font(.caption)
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-
-                    if let error = viewModel.listError {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                } header: {
-                    Text(verbatim: loc("profile.lists_on"))
                 }
 
                 if let profileURL = profile.profileURL {
