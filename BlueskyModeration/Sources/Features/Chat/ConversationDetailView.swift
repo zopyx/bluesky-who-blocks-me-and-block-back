@@ -85,6 +85,7 @@ struct ConversationDetailView: View {
                         }
                     }
                     Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         Task { await chatStore.loadMessages(convoId: conversation.id) }
                     } label: {
                         Label(loc("chat.reload"), systemImage: "arrow.clockwise")
@@ -176,18 +177,9 @@ struct ConversationDetailView: View {
                     Color.clear
                         .frame(height: 1)
                         .id("bottom")
+                        .onAppear { showScrollToBottom = false }
+                        .onDisappear { showScrollToBottom = true }
                 }
-                .background(GeometryReader { geo in
-                    Color.clear.preference(
-                        key: ScrollOffsetKey.self,
-                        value: geo.frame(in: .named("scroll")).maxY
-                    )
-                })
-            }
-            .coordinateSpace(name: "scroll")
-            .onPreferenceChange(ScrollOffsetKey.self) { maxY in
-                let isNearBottom = UIScreen.main.bounds.height - maxY < 80
-                showScrollToBottom = !isNearBottom
             }
             .task(id: convoMessages.count) {
                 guard convoMessages.count > 0, convoMessages.count <= 50 else { return }
@@ -326,13 +318,6 @@ struct ConversationDetailView: View {
         case let .deleted(d): d.id
         case let .system(s): s.id
         }
-    }
-}
-
-private struct ScrollOffsetKey: PreferenceKey {
-    nonisolated(unsafe) static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
     }
 }
 
