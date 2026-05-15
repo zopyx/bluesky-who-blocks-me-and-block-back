@@ -919,5 +919,18 @@
   "profile.block_back.confirm.first.title": "Block Back",
   "profile.block_back.confirm.first.message": "Block {count} account(s) that block you but aren't blocked back?",
   "profile.block_back.confirm.second.title": "Are you sure?",
-  "profile.block_back.confirm.second.message": "This cannot be undone."
+  "profile.block_back.confirm.second.message": "This cannot be undone.",
+  "lists.lists_on_profile": "Lists on Profile",
+  "lists.moderation_lists": "Moderation Lists",
+  "lists.regular_lists": "Regular Lists",
+  "lists.moderation": "Moderation",
+  "lists.regular": "Regular",
+  "list.detail.owner": "List Owner",
+  "list.details.members": "Members",
+  "list.details.created": "Created",
+  "list.details.type": "Type",
+  "profile.stats.display_name": "Display Name",
+  "profile.lists_on": "Lists on profile",
+  "profile.lists_count": "{mod} mod · {reg} regular",
+  "profile.lists_error": "Failed to load lists"
 }

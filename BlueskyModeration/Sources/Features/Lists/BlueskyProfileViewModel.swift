@@ -12,6 +12,24 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published var statusMessage: String?
     @Published var errorMessage: String?
     @Published private(set) var isExportingPosts = false
+    @Published private(set) var clearskyLists: [ClearskyListEntry] = []
+    @Published private(set) var isFetchingLists = false
+    @Published var listError: String?
+
+    var regularListCount: Int { clearskyLists.filter { !$0.isModerationList }.count }
+    var moderationListCount: Int { clearskyLists.filter { $0.isModerationList }.count }
+
+    func fetchClearskyLists(did: String, using client: LiveBlueskyClient) async {
+        isFetchingLists = true
+        listError = nil
+        do {
+            clearskyLists = try await client.fetchClearskyLists(did: did)
+        } catch {
+            listError = error.localizedDescription
+            AppLogger.moderation.error("Clearsky lists failed: \(error.localizedDescription, privacy: .public)")
+        }
+        isFetchingLists = false
+    }
 
     private var hasLoadedOnce = false
     private let downloadService = MediaDownloadService.shared

@@ -443,6 +443,39 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         return decoded.data.count
     }
 
+    func fetchClearskyLists(did: String) async throws -> [ClearskyListEntry] {
+        guard let url = URL(string: "https://public.api.clearsky.services/api/v1/anon/lists/\(did)") else {
+            throw BlueskyAPIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 30
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        let decoded = try JSONDecoder().decode(ClearskyListsResponse.self, from: data)
+        return decoded.data.lists
+    }
+
+    func fetchClearskyListMembers(listURI: String) async throws -> [ClearskyListMemberEntry] {
+        guard let encoded = listURI.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let url = URL(string: "https://public.api.clearsky.services/api/v1/anon/list/\(encoded)") else {
+            throw BlueskyAPIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 30
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
+            throw BlueskyAPIError.invalidResponse
+        }
+        let decoded = try JSONDecoder().decode(ClearskyListDetailResponse.self, from: data)
+        return decoded.data.members
+    }
+
     // MARK: - DID Resolution & PLC Audit
 
     private func resolveProfiles(dids: [String]) async throws -> [BlueskyActor] {

@@ -28,6 +28,7 @@ struct BlueskyProfileView: View {
     @State private var blockBackError: String?
     @State private var showBlockBackConfirm1 = false
     @State private var showBlockBackConfirm2 = false
+    @State private var showClearskyLists = false
 
     private var unblockedBlockers: Int? {
         guard let b = blockedByCount, let k = blockingCount else { return nil }
@@ -108,6 +109,9 @@ struct BlueskyProfileView: View {
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
             }
+        }
+        .sheet(isPresented: $showClearskyLists) {
+            ClearskyListsView(entries: viewModel.clearskyLists)
         }
         .sheet(item: $blockedAccessType) { type in
             NavigationStack {
@@ -319,6 +323,41 @@ struct BlueskyProfileView: View {
                                 }
                             }
                             .disabled(viewModel.isUpdatingModeration)
+                        }
+                    } header: {
+                        Text(verbatim: loc("lists.lists"))
+                    }
+                }
+
+                if !viewModel.clearskyLists.isEmpty || viewModel.isFetchingLists {
+                    Section {
+                        Button {
+                            showClearskyLists = true
+                        } label: {
+                            HStack {
+                                Label(loc("profile.lists_on"), systemImage: "list.bullet.rectangle")
+                                Spacer()
+                                if viewModel.isFetchingLists {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                } else {
+                                    Text(loc("profile.lists_count")
+                                        .replacingOccurrences(of: "{mod}", with: "\(viewModel.moderationListCount)")
+                                        .replacingOccurrences(of: "{reg}", with: "\(viewModel.regularListCount)"))
+                                        .foregroundStyle(.secondary)
+                                        .font(.caption)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+
+                        if let error = viewModel.listError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
                         }
                     } header: {
                         Text(verbatim: loc("lists.lists"))
@@ -599,6 +638,9 @@ struct BlueskyProfileView: View {
         }
         .task(id: viewModel.profile?.did) {
             await fetchBlockCounts()
+            if let did = viewModel.profile?.did {
+                await viewModel.fetchClearskyLists(did: did, using: blueskyClient)
+            }
         }
         .alert(loc("profile.block_back.confirm.first.title"), isPresented: $showBlockBackConfirm1) {
             Button(loc("actions.cancel"), role: .cancel) {}
