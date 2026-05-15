@@ -135,10 +135,10 @@ struct AccountTabView: View {
         switchingAccountID = account.id
         let generator = UISelectionFeedbackGenerator()
         generator.prepare()
+        workspaceStore.selectedTab = .moderation
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(300))
             await accountStore.switchAccount(to: account, using: blueskyClient)
-            workspaceStore.selectedTab = .moderation
             generator.selectionChanged()
             switchingAccountID = nil
         }
