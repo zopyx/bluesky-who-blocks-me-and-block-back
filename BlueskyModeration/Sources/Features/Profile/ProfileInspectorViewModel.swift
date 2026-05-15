@@ -92,9 +92,10 @@ final class ProfileInspectorViewModel: ObservableObject {
             let lowered = requestQuery.lowercased()
             searchResults = actors.filter {
                 $0.handle.lowercased().contains(lowered) ||
-                ($0.displayName?.lowercased().contains(lowered) ?? false) ||
-                $0.did.lowercased().contains(lowered)
+                    ($0.displayName?.lowercased().contains(lowered) ?? false) ||
+                    $0.did.lowercased().contains(lowered)
             }
+            // swiftformat:disable:next redundantSelf
             AppLogger.search.debug("Profile search for '\(requestQuery, privacy: .public)' returned \(self.searchResults.count) filtered results.")
         } catch {
             if AppError.isCancellation(error) {

@@ -8,7 +8,7 @@ struct SplashScreenView: View {
     private let reduceMotion = UIAccessibility.isReduceMotionEnabled
 
     @State private var phase = 0
-    @State private var logoScale: CGFloat = 0.2
+    @State private var logoScale: CGFloat = 1
     @State private var logoGlow: CGFloat = 0
     @State private var logoBreathing: CGFloat = 1
     @State private var taglineOpacity: CGFloat = 0
@@ -20,7 +20,8 @@ struct SplashScreenView: View {
 
     private var buildDate: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         if let url = Bundle.main.executableURL,
            let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
            let date = attrs[.modificationDate] as? Date
@@ -108,9 +109,6 @@ struct SplashScreenView: View {
 
         try? await Task.sleep(for: .seconds(0.3))
 
-        withAnimation(.interpolatingSpring(mass: 1.0, stiffness: 160, damping: 12, initialVelocity: 5)) {
-            logoScale = 1
-        }
         withAnimation(.easeOut(duration: 1.2).delay(0.2)) {
             logoGlow = 1
         }

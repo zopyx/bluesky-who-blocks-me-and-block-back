@@ -8,6 +8,7 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
     @StateObject private var viewModel = BlueskyProfileViewModel()
+    @AppStorage("showBetaFeatures") private var showBetaFeatures = false
     @State private var isShowingAvatarPreview = false
     @State private var showPostBrowser = false
     @State private var showMediaBrowser = false
@@ -16,6 +17,25 @@ struct BlueskyProfileView: View {
     @State private var moderationTask: Task<Void, Never>?
     @State private var exportTask: Task<Void, Never>?
     @State private var blockedAccessType: BlockedAccessType?
+    @State private var blockingCount: Int?
+    @State private var blockedByCount: Int?
+    @State private var isFetchingBlockCounts = false
+    @State private var isBlockingBack = false
+    @State private var blockBackCompleted = 0
+    @State private var blockBackTotal = 0
+    @State private var blockBackError: String?
+    @State private var showBlockBackConfirm1 = false
+    @State private var showBlockBackConfirm2 = false
+
+    private var unblockedBlockers: Int? {
+        guard let b = blockedByCount, let k = blockingCount else { return nil }
+        return max(0, b - k)
+    }
+
+    private var hasUnblockedBlockers: Bool {
+        guard let count = unblockedBlockers else { return false }
+        return count > 0
+    }
 
     enum BlockedAccessType: String, Identifiable {
         case posts
@@ -436,6 +456,77 @@ struct BlueskyProfileView: View {
                         Text(verbatim: loc("profile.actions_section"))
                     }
                 }
+
+                if isOwnProfile, showBetaFeatures {
+                    Section {
+                        if isFetchingBlockCounts {
+                            HStack {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                                Text(loc("profile.block_back.loading"))
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            LabeledContent(loc("profile.block_back.blocking"), value: countText(blockingCount))
+                            LabeledContent(loc("profile.block_back.blocked_by"), value: countText(blockedByCount))
+
+                            if isBlockingBack {
+                                HStack {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                    if blockBackTotal > 0 {
+                                        Text("\(blockBackCompleted)/\(blockBackTotal)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Text(loc("profile.block_back.progress"))
+                                        .foregroundStyle(.secondary)
+                                }
+                            } else if hasUnblockedBlockers {
+                                Button {
+                                    showBlockBackConfirm1 = true
+                                } label: {
+                                    HStack {
+                                        Label(loc("profile.block_back.action"), systemImage: "hand.raised.slash.fill")
+                                        Spacer()
+                                        if let count = unblockedBlockers {
+                                            Text("\(count)")
+                                                .foregroundStyle(.secondary)
+                                                .font(.caption.weight(.semibold))
+                                        }
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                }
+                            } else if let blockedBy = blockedByCount {
+                                if blockedBy == 0 {
+                                    Label(loc("profile.block_back.none_blocking"), systemImage: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                } else {
+                                    Label(loc("profile.block_back.all_clear"), systemImage: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                }
+                            }
+                        }
+
+                        if let error = blockBackError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    } header: {
+                        HStack(spacing: 6) {
+                            Text(loc("profile.block_back.section"))
+                            Text(verbatim: loc("profile.beta"))
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.orange, in: RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
+                }
             } else if viewModel.isLoading {
                 LoadingPanel(message: loc("profile.loading"))
             }
@@ -479,6 +570,31 @@ struct BlueskyProfileView: View {
             loadTask?.cancel()
             moderationTask?.cancel()
             exportTask?.cancel()
+        }
+        .task(id: viewModel.profile?.did) {
+            await fetchBlockCounts()
+        }
+        .alert(loc("profile.block_back.confirm.first.title"), isPresented: $showBlockBackConfirm1) {
+            Button(loc("actions.cancel"), role: .cancel) {}
+            Button(loc("profile.block_back.action")) {
+                showBlockBackConfirm2 = true
+            }
+        } message: {
+            if let count = unblockedBlockers {
+                Text(loc("profile.block_back.confirm.first.message").replacingOccurrences(of: "{count}", with: "\(count)"))
+            }
+        }
+        .alert(loc("profile.block_back.confirm.second.title"), isPresented: $showBlockBackConfirm2) {
+            Button(loc("actions.cancel"), role: .cancel) {}
+            Button(loc("profile.block_back.action"), role: .destructive) {
+                Task {
+                    await blockBack(account: account, appPassword: appPassword)
+                }
+            }
+        } message: {
+            if let count = unblockedBlockers {
+                Text(loc("profile.block_back.confirm.second.message").replacingOccurrences(of: "{count}", with: "\(count)"))
+            }
         }
     }
 
@@ -527,6 +643,76 @@ struct BlueskyProfileView: View {
               let activeAccount = accountStore.activeAccount else { return false }
         if let activeDID = activeAccount.did, activeDID == profile.did { return true }
         return activeAccount.handle.lowercased() == profile.handle.lowercased()
+    }
+
+    private func countText(_ value: Int?) -> String {
+        if let value { return "\(value)" }
+        return "-"
+    }
+
+    private func fetchBlockCounts() async {
+        guard let account = accountStore.activeAccount,
+              let appPassword = accountStore.appPassword(for: account) else { return }
+        guard isOwnProfile, showBetaFeatures else { return }
+        isFetchingBlockCounts = true
+        do {
+            async let b = blueskyClient.fetchBlockedByCount(for: account)
+            async let k = blueskyClient.fetchBlockingCount(for: account)
+            (blockedByCount, blockingCount) = try await (b, k)
+        } catch {
+            AppLogger.moderation.error("Failed to fetch block counts: \(error.localizedDescription, privacy: .public)")
+        }
+        isFetchingBlockCounts = false
+    }
+
+    private func blockBack(account: AppAccount, appPassword: String) async {
+        isBlockingBack = true
+        blockBackError = nil
+        blockBackCompleted = 0
+        blockBackTotal = 0
+
+        do {
+            async let blockedBy = blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
+            async let blocked = blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
+            let (blockedByActors, blockedActors) = try await (blockedBy, blocked)
+
+            let blockedDIDs = Set(blockedActors.map(\.did))
+            let toBlock = blockedByActors.filter { !blockedDIDs.contains($0.did) }
+
+            guard !toBlock.isEmpty else {
+                isBlockingBack = false
+                return
+            }
+
+            blockBackTotal = toBlock.count
+            let batchSize = 5
+
+            for batchStart in stride(from: 0, to: blockBackTotal, by: batchSize) {
+                let batchEnd = min(batchStart + batchSize, blockBackTotal)
+                let batch = toBlock[batchStart ..< batchEnd]
+
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    for actor in batch {
+                        group.addTask {
+                            try await blueskyClient.blockActor(did: actor.did, account: account, appPassword: appPassword)
+                        }
+                    }
+                    for try await _ in group {
+                        blockBackCompleted += 1
+                    }
+                }
+
+                if batchEnd < blockBackTotal {
+                    try await Task.sleep(for: .milliseconds(300))
+                }
+            }
+
+            await fetchBlockCounts()
+        } catch {
+            blockBackError = error.localizedDescription
+        }
+
+        isBlockingBack = false
     }
 
     @ViewBuilder

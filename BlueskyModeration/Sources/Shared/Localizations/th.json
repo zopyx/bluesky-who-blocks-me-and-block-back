@@ -831,5 +831,17 @@
   "time.hour_ago": "{n} hour ago",
   "time.hours_ago": "{n} hours ago",
   "time.day_ago": "{n} day ago",
-  "time.days_ago": "{n} days ago"
+  "time.days_ago": "{n} days ago",
+  "profile.block_back.section": "Block Back",
+  "profile.block_back.blocking": "Blocking",
+  "profile.block_back.blocked_by": "Blocked By",
+  "profile.block_back.action": "Block Back",
+  "profile.block_back.loading": "Loading block info…",
+  "profile.block_back.progress": "Blocking back…",
+  "profile.block_back.all_clear": "You block all accounts that block you",
+  "profile.block_back.none_blocking": "No accounts are blocking you.",
+  "profile.block_back.confirm.first.title": "Block Back",
+  "profile.block_back.confirm.first.message": "Block {count} account(s) that block you but aren't blocked back?",
+  "profile.block_back.confirm.second.title": "Are you sure?",
+  "profile.block_back.confirm.second.message": "This cannot be undone."
 }

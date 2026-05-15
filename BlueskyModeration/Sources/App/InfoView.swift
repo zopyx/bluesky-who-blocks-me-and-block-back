@@ -71,7 +71,41 @@ struct InfoView: View {
             claimsGrid
             openSourceCard
             securityNote
+
+            HStack(spacing: 12) {
+                Image(systemName: "clock")
+                    .font(.title)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 40, height: 40)
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(verbatim: "Build")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(buildDate)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+            .padding(16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         }
+    }
+
+    private var buildDate: String {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        if let url = Bundle.main.executableURL,
+           let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let date = attrs[.modificationDate] as? Date
+        {
+            return formatter.string(from: date)
+        }
+        return "Unknown"
     }
 
     private var heroCard: some View {
@@ -509,6 +543,7 @@ private struct DebugInfoView: View {
         add("Content Size", UIApplication.shared.preferredContentSizeCategory.rawValue)
         add("Total Disk", byteCount(process.physicalMemory))
         add("Thermal State", process.thermalState == .nominal ? "Nominal" : process.thermalState == .fair ? "Fair" : process.thermalState == .serious ? "Serious" : "Critical")
+        add("Build Date", buildDate)
 
         return result
     }
@@ -540,6 +575,19 @@ private struct DebugInfoView: View {
         case .critical: return "Critical"
         @unknown default: return "Unknown"
         }
+    }
+
+    private var buildDate: String {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        if let url = Bundle.main.executableURL,
+           let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let date = attrs[.modificationDate] as? Date
+        {
+            return formatter.string(from: date)
+        }
+        return "Unknown"
     }
 
     private func byteCount(_ bytes: UInt64) -> String {
