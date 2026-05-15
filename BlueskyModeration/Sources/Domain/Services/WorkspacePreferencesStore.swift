@@ -6,6 +6,7 @@ enum WorkspaceTab: Hashable {
     case settings
     case info
     case timeline
+    case chat
 }
 
 struct SavedProfileSearch: Identifiable, Codable, Hashable {

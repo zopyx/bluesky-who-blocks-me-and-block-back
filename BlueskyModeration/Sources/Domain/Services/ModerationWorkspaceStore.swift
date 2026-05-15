@@ -7,6 +7,8 @@ final class ModerationWorkspaceStore: ObservableObject {
     @Published private(set) var recentSearches: [RecentProfileSearch] = []
     @Published private(set) var operationLog: [ModerationOperationLogEntry] = []
     @Published var selectedTab: WorkspaceTab = .moderation
+    @Published var pendingChatConversation: ChatConversation?
+    @Published var pendingChatConversationID: String?
     @Published var lastProfileQuery = ""
     @Published private(set) var queuedActions: [QueuedAction] = []
 

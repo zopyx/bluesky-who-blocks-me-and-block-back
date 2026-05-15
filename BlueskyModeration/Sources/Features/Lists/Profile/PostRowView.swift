@@ -112,7 +112,6 @@ struct PostRowView: View {
                 if let text = post.safeRecord.text, !text.isEmpty {
                     Text(mentionAttributedString(from: text))
                         .font(.body)
-                        .lineLimit(6)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .environment(\.openURL, OpenURLAction { url in

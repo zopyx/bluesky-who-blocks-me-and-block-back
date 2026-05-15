@@ -26,12 +26,43 @@ final class FeedTimelineViewModel: ObservableObject {
     private var cursor: String?
     private var knownURIs: Set<String> = []
     private var lastRefreshHadPosts = false
+    private var pollingTask: Task<Void, Never>?
 
-    private func fetchFeed(account: AppAccount, appPassword: String, cursor: String?, using client: LiveBlueskyClient) async throws -> RichFeedResponse {
-        if let feedURI = feedStore.customFeedURI, feedStore.isUsingCustomFeed {
-            return try await client.fetchFeed(feedURI: feedURI, cursor: cursor, account: account, appPassword: appPassword)
+    func startPolling(account: AppAccount, appPassword: String, using client: LiveBlueskyClient, interval: TimeInterval = 15) {
+        stopPolling()
+        pollingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                guard let self, !Task.isCancelled else { return }
+                await checkForNewPosts(account: account, appPassword: appPassword, using: client)
+            }
         }
-        return try await client.fetchTimeline(cursor: cursor, account: account, appPassword: appPassword)
+    }
+
+    func stopPolling() {
+        pollingTask?.cancel()
+        pollingTask = nil
+    }
+
+    private func checkForNewPosts(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {
+        guard !knownURIs.isEmpty, state != .initialLoading else { return }
+        do {
+            let response = try await fetchFeed(account: account, appPassword: appPassword, cursor: nil, limit: 5, using: client)
+            let newURIs = Set(response.feed.map(\.post.uri)).subtracting(knownURIs)
+            guard !newURIs.isEmpty else { return }
+            knownURIs.formUnion(newURIs)
+            newPostCount += newURIs.count
+        } catch {
+            if AppError.isCancellation(error) { return }
+            AppLogger.moderation.debug("Polling check failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private func fetchFeed(account: AppAccount, appPassword: String, cursor: String?, limit: Int = 50, using client: LiveBlueskyClient) async throws -> RichFeedResponse {
+        if let feedURI = feedStore.customFeedURI, feedStore.isUsingCustomFeed {
+            return try await client.fetchFeed(feedURI: feedURI, cursor: cursor, limit: limit, account: account, appPassword: appPassword)
+        }
+        return try await client.fetchTimeline(cursor: cursor, limit: limit, account: account, appPassword: appPassword)
     }
 
     func loadTimeline(account: AppAccount, appPassword: String, using client: LiveBlueskyClient) async {

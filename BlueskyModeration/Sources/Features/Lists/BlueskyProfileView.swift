@@ -7,6 +7,8 @@ struct BlueskyProfileView: View {
     @EnvironmentObject private var accountStore: AccountStore
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var workspaceStore: ModerationWorkspaceStore
+    @EnvironmentObject private var chatStore: ChatStore
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = BlueskyProfileViewModel()
     @AppStorage("showBetaFeatures") private var showBetaFeatures = false
     @State private var isShowingAvatarPreview = false
@@ -450,6 +452,30 @@ struct BlueskyProfileView: View {
                         if let list {
                             Label { Text(verbatim: loc("profile.member_of").replacingOccurrences(of: "{list}", with: list.name)) } icon: { Image(systemName: "person.2.badge.gearshape") }
                                 .foregroundStyle(.secondary)
+                        }
+
+                        if showBetaFeatures {
+                            Button {
+                                Task {
+                                    chatStore.setAccount(account, appPassword: appPassword)
+                                    if let convo = await chatStore.getOrCreateConvo(memberDID: member.actor.did) {
+                                        workspaceStore.pendingChatConversation = convo
+                                        workspaceStore.selectedTab = .chat
+                                        dismiss()
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "bubble.left.and.bubble.right")
+                                    Text(loc("profile.direct_message"))
+                                    Text(verbatim: loc("profile.beta"))
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 2)
+                                        .background(Capsule().fill(.orange))
+                                }
+                            }
                         }
 
                     } header: {

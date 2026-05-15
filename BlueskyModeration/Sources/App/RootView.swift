@@ -7,6 +7,7 @@ struct RootView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var mutedWordsStore: MutedWordsStore
     @EnvironmentObject private var analyticsStore: AnalyticsStore
+    @EnvironmentObject private var chatStore: ChatStore
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @AppStorage("showBetaFeatures") private var showBetaFeatures = false
@@ -39,6 +40,16 @@ struct RootView: View {
                             Text(localizationManager.localized("tab.timeline"))
                         } icon: {
                             Image(systemName: "clock.arrow.circlepath")
+                        }
+                    }
+
+                ChatTab()
+                    .tag(WorkspaceTab.chat)
+                    .tabItem {
+                        Label {
+                            Text(localizationManager.localized("tab.chat"))
+                        } icon: {
+                            Image(systemName: "bubble.left.and.bubble.right")
                         }
                     }
             }
@@ -76,7 +87,7 @@ struct RootView: View {
         .tint(.skyPrimary)
         .preferredColorScheme(preferredScheme)
         .onChange(of: showBetaFeatures) { _, newValue in
-            if !newValue, workspaceStore.selectedTab == .timeline {
+            if !newValue, workspaceStore.selectedTab == .timeline || workspaceStore.selectedTab == .chat {
                 workspaceStore.selectedTab = .moderation
             }
         }

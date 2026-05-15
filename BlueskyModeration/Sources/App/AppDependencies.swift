@@ -11,20 +11,31 @@ final class AppDependencies: ObservableObject {
     let localizationManager: LocalizationManager
     let mutedWordsStore: MutedWordsStore
     let analyticsStore: AnalyticsStore
+    let chatStore: ChatStore
+    let pushNotificationCoordinator: PushNotificationCoordinator
 
     init() {
         if CommandLine.arguments.contains("--uitesting") {
             UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
             UserDefaults.standard.set("en", forKey: "selectedLanguage")
             accountStore = AccountStore(preview: true)
-            listService = BlueskyListService(requestExecutor: BlueskyRequestExecutor(), sessionService: BlueskySessionService(requestExecutor: BlueskyRequestExecutor(), keychain: KeychainService()))
-            profileService = BlueskyProfileService(requestExecutor: BlueskyRequestExecutor(), sessionService: BlueskySessionService(requestExecutor: BlueskyRequestExecutor(), keychain: KeychainService()))
+            let requestExecutor = BlueskyRequestExecutor()
+            let sessionService = BlueskySessionService(requestExecutor: requestExecutor, keychain: KeychainService())
+            listService = BlueskyListService(requestExecutor: requestExecutor, sessionService: sessionService)
+            profileService = BlueskyProfileService(requestExecutor: requestExecutor, sessionService: sessionService)
             workspaceStore = ModerationWorkspaceStore()
             actionPresetStore = ActionPresetStore()
             blueskyClient = PreviewBlueskyClient()
             localizationManager = LocalizationManager.shared
             mutedWordsStore = MutedWordsStore()
             analyticsStore = AnalyticsStore()
+            chatStore = ChatStore(chatService: ChatService(requestExecutor: requestExecutor, sessionService: sessionService))
+            pushNotificationCoordinator = PushNotificationCoordinator(
+                pushService: BlueskyPushNotificationService(requestExecutor: requestExecutor, sessionService: sessionService),
+                accountStore: accountStore,
+                workspaceStore: workspaceStore,
+                chatStore: chatStore
+            )
         } else {
             let requestExecutor = BlueskyRequestExecutor()
             let keychain = KeychainService()
@@ -42,6 +53,13 @@ final class AppDependencies: ObservableObject {
             localizationManager = LocalizationManager.shared
             mutedWordsStore = MutedWordsStore()
             analyticsStore = AnalyticsStore()
+            chatStore = ChatStore(chatService: ChatService(requestExecutor: requestExecutor, sessionService: sessionService))
+            pushNotificationCoordinator = PushNotificationCoordinator(
+                pushService: BlueskyPushNotificationService(requestExecutor: requestExecutor, sessionService: sessionService),
+                accountStore: accountStore,
+                workspaceStore: workspaceStore,
+                chatStore: chatStore
+            )
         }
     }
 }

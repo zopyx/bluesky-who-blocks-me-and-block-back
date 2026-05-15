@@ -150,15 +150,28 @@ struct FeedTimelineView: View {
             }
             .task {
                 await loadInitial()
+                guard let account = accountStore.activeAccount,
+                      let appPassword = accountStore.appPassword(for: account) else { return }
+                viewModel.startPolling(account: account, appPassword: appPassword, using: blueskyClient)
             }
             .onDisappear {
                 initialLoadTask?.cancel()
                 loadMoreTask?.cancel()
                 loadMoreTask = nil
+                viewModel.stopPolling()
             }
             .onChange(of: viewModel.feedStore.customFeedURI) { _, _ in
                 viewModel.prepareForFeedChange()
                 Task { await refresh() }
+            }
+            .onChange(of: accountStore.activeAccount?.did) { _, _ in
+                viewModel.stopPolling()
+                Task {
+                    await loadInitial()
+                    guard let account = accountStore.activeAccount,
+                          let appPassword = accountStore.appPassword(for: account) else { return }
+                    viewModel.startPolling(account: account, appPassword: appPassword, using: blueskyClient)
+                }
             }
         }
     }
