@@ -112,6 +112,8 @@ struct BlueskyProfileView: View {
         }
         .sheet(isPresented: $showClearskyLists) {
             ClearskyListsView(entries: viewModel.clearskyLists)
+                .environmentObject(accountStore)
+                .environmentObject(blueskyClient)
         }
         .sheet(item: $blockedAccessType) { type in
             NavigationStack {
@@ -250,7 +252,7 @@ struct BlueskyProfileView: View {
                                 ProgressView()
                                     .scaleEffect(0.6)
                             } else if !viewModel.clearskyLists.isEmpty {
-                                Text("\(viewModel.moderationListCount) mod · \(viewModel.regularListCount) reg")
+                                Text("\(viewModel.clearskyLists.count)")
                                     .foregroundStyle(.secondary)
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.semibold))
@@ -631,8 +633,8 @@ struct BlueskyProfileView: View {
         }
         .task(id: viewModel.profile?.did) {
             await fetchBlockCounts()
-            if let did = viewModel.profile?.did {
-                await viewModel.fetchClearskyLists(did: did, using: blueskyClient)
+            if let handle = viewModel.profile?.handle {
+                await viewModel.fetchClearskyLists(handle: handle, using: blueskyClient)
             }
         }
         .alert(loc("profile.block_back.confirm.first.title"), isPresented: $showBlockBackConfirm1) {

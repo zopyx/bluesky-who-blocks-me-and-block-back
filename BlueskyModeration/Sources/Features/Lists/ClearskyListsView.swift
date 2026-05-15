@@ -2,96 +2,123 @@ import SwiftUI
 
 struct ClearskyListsView: View {
     let entries: [ClearskyListEntry]
-    @State private var selectedList: ClearskyListEntry?
-
-    private var regularLists: [ClearskyListEntry] { entries.filter { !$0.isModerationList } }
-    private var modLists: [ClearskyListEntry] { entries.filter { $0.isModerationList } }
 
     var body: some View {
         NavigationStack {
             List {
-                if !modLists.isEmpty {
-                    Section(loc("lists.moderation_lists")) {
-                        ForEach(modLists) { entry in
-                            listRow(entry)
-                        }
-                    }
-                }
-                if !regularLists.isEmpty {
-                    Section(loc("lists.regular_lists")) {
-                        ForEach(regularLists) { entry in
-                            listRow(entry)
+                Section {
+                    ForEach(entries) { entry in
+                        NavigationLink(destination: ListEntryDetailView(entry: entry)) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(entry.name)
+                                        .font(.headline)
+                                        .lineLimit(1)
+                                    if let desc = entry.description, !desc.isEmpty {
+                                        Text(desc)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding(.vertical, 4)
                         }
                     }
                 }
             }
             .navigationTitle(loc("lists.lists_on_profile"))
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(item: $selectedList) { entry in
-                ClearskyListDetailView(entry: entry)
-            }
         }
-    }
-
-    private func listRow(_ entry: ClearskyListEntry) -> some View {
-        Button {
-            selectedList = entry
-        } label: {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(entry.name)
-                        .font(.headline)
-                        .lineLimit(1)
-                    Spacer()
-                    Text("\(entry.memberCount)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                HStack(spacing: 4) {
-                    Image(systemName: "person.circle")
-                        .font(.caption2)
-                    Text(entry.owner.displayName ?? entry.owner.handle)
-                        .font(.caption)
-                }
-                .foregroundStyle(.tertiary)
-            }
-            .padding(.vertical, 4)
-        }
-        .buttonStyle(.plain)
     }
 }
 
-private struct ClearskyListDetailView: View {
+private struct ListEntryDetailView: View {
     let entry: ClearskyListEntry
+    @EnvironmentObject private var blueskyClient: LiveBlueskyClient
+    @EnvironmentObject private var accountStore: AccountStore
+    @State private var listDetail: BlueskyList?
+    @State private var isLoading = true
+    @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    LabeledContent(loc("list.name"), value: entry.name)
-                    if let desc = entry.description, !desc.isEmpty {
-                        Text(desc)
-                            .font(.subheadline)
+        Group {
+            if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let detail = listDetail {
+                List {
+                    Section {
+                        LabeledContent(loc("list.name"), value: detail.name)
+                        if !detail.description.isEmpty {
+                            Text(detail.description)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    Section(loc("list.detail.owner")) {
+                        Text(entry.did)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                }
 
-                Section(loc("list.detail.owner")) {
-                    LabeledContent(loc("profile.stats.handle"), value: entry.owner.handle)
-                    if let displayName = entry.owner.displayName {
-                        LabeledContent(loc("profile.stats.display_name"), value: displayName)
+                    Section {
+                        LabeledContent(loc("list.details.members"), value: "\(detail.memberCount ?? 0)")
+                        LabeledContent(loc("list.details.created"), value: formatDate(entry.createdDate))
+                        LabeledContent(loc("list.details.type"), value: detail.kind == .moderation ? loc("lists.moderation") : loc("lists.regular"))
                     }
-                    LabeledContent(loc("list.details.members"), value: "\(entry.memberCount)")
                 }
-
-                Section {
-                    LabeledContent(loc("list.details.created"), value: formatDate(entry.createdAt))
-                    LabeledContent(loc("list.details.type"), value: entry.isModerationList ? loc("lists.moderation") : loc("lists.regular"))
+            } else if let error = errorMessage {
+                ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
+            } else {
+                List {
+                    Section {
+                        LabeledContent(loc("list.name"), value: entry.name)
+                        if let desc = entry.description, !desc.isEmpty {
+                            Text(desc)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Section(loc("list.detail.owner")) {
+                        Text(entry.did)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Section {
+                        LabeledContent(loc("list.details.created"), value: formatDate(entry.createdDate))
+                        LabeledContent(loc("list.details.members"), value: loc("list.detail.not_found"))
+                    }
                 }
             }
-            .navigationTitle(entry.name)
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationTitle(entry.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await loadDetail()
+        }
+    }
+
+    private func loadDetail() async {
+        guard !entry.url.isEmpty else { isLoading = false; return }
+        let parts = entry.url.split(separator: "/")
+        guard parts.count >= 2, let rkey = parts.last else { isLoading = false; return }
+        let did = entry.did
+        let uri = "at://\(did)/app.bsky.graph.list/\(rkey)"
+        do {
+            guard let account = accountStore.activeAccount,
+                  let appPassword = accountStore.appPassword(for: account) else { isLoading = false; return }
+            let detail = try await blueskyClient.fetchList(uri: uri, account: account, appPassword: appPassword)
+            listDetail = detail
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 
     private func formatDate(_ string: String) -> String {

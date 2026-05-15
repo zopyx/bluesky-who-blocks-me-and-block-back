@@ -16,14 +16,11 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published private(set) var isFetchingLists = false
     @Published var listError: String?
 
-    var regularListCount: Int { clearskyLists.filter { !$0.isModerationList }.count }
-    var moderationListCount: Int { clearskyLists.filter { $0.isModerationList }.count }
-
-    func fetchClearskyLists(did: String, using client: LiveBlueskyClient) async {
+    func fetchClearskyLists(handle: String, using client: LiveBlueskyClient) async {
         isFetchingLists = true
         listError = nil
         do {
-            clearskyLists = try await client.fetchClearskyLists(did: did)
+            clearskyLists = try await client.fetchClearskyLists(handle: handle)
         } catch {
             listError = error.localizedDescription
             AppLogger.moderation.error("Clearsky lists failed: \(error.localizedDescription, privacy: .public)")

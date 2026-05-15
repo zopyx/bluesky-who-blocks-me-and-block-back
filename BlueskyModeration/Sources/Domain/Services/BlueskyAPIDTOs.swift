@@ -107,62 +107,33 @@ struct ClearskyListsResponse: Decodable {
 }
 
 struct ClearskyListsData: Decodable {
+    let identifier: String
     let lists: [ClearskyListEntry]
-    let total: Int
 }
 
 struct ClearskyListEntry: Decodable, Identifiable {
-    let uri: String
     let name: String
-    let purpose: String
     let description: String?
-    let memberCount: Int
-    let owner: ClearskyListOwner
-    let createdAt: String
-    var id: String { uri }
-    var isModerationList: Bool { purpose.contains("mod") }
-
-    enum CodingKeys: String, CodingKey {
-        case uri, name, purpose, description
-        case memberCount = "member_count"
-        case owner
-        case createdAt = "created_at"
-    }
-}
-
-struct ClearskyListOwner: Decodable {
     let did: String
-    let handle: String
-    let displayName: String?
-
-    enum CodingKeys: String, CodingKey {
-        case did, handle
-        case displayName = "display_name"
-    }
-}
-
-// MARK: - Clearsky List Detail
-
-struct ClearskyListDetailResponse: Decodable {
-    let data: ClearskyListDetailData
-}
-
-struct ClearskyListDetailData: Decodable {
-    let members: [ClearskyListMemberEntry]
-    let total: Int
-}
-
-struct ClearskyListMemberEntry: Decodable {
-    let did: String
-    let handle: String?
-    let displayName: String?
+    let url: String
+    let createdDate: String
     let dateAdded: String
 
+    var id: String { url }
+
     enum CodingKeys: String, CodingKey {
-        case did, handle
-        case displayName = "display_name"
+        case name, description, did, url
+        case createdDate = "created_date"
         case dateAdded = "date_added"
     }
+}
+
+struct ClearskyTotalResponse: Decodable {
+    let data: ClearskyTotalData
+}
+
+struct ClearskyTotalData: Decodable {
+    let count: Int
 }
 
 struct GetFollowersResponse: Decodable {
