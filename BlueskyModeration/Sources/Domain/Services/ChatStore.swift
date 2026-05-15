@@ -87,6 +87,7 @@ final class ChatStore: ObservableObject {
                 try? await chatService.updateRead(convoId: convoId, messageId: lastId, account: account, appPassword: activeAppPassword)
             }
         } catch {
+            AppLogger.persistence.error("Failed to load messages for \(convoId, privacy: .public): \(error.localizedDescription, privacy: .public)")
             self.error = error
             isLoadingMessages = false
         }

@@ -32,7 +32,25 @@ struct ConversationDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            scrollView
+            if let error = chatStore.error, convoMessages.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.title2)
+                        .foregroundStyle(.orange)
+                    Text(error.localizedDescription)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button(loc("state.error.retry")) {
+                        Task { await chatStore.loadMessages(convoId: conversation.id) }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+                .frame(maxHeight: .infinity)
+            } else {
+                scrollView
+            }
 
             Divider()
 
