@@ -444,7 +444,9 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
     }
 
     func fetchClearskyLists(did: String) async throws -> [ClearskyListEntry] {
-        guard let url = URL(string: "https://public.api.clearsky.services/api/v1/anon/lists/\(did)") else {
+        let urlString = "https://public.api.clearsky.services/api/v1/anon/lists/\(did)"
+        AppLogger.performance.debug("Fetching Clearsky lists from: \(urlString, privacy: .public)")
+        guard let url = URL(string: urlString) else {
             throw BlueskyAPIError.invalidURL
         }
         var request = URLRequest(url: url)
@@ -452,8 +454,14 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 30
         let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw BlueskyAPIError.invalidResponse
+        }
+        guard (200 ..< 300).contains(httpResponse.statusCode) else {
+            if let body = String(data: data, encoding: .utf8) {
+                AppLogger.performance.error("Clearsky lists API returned \(httpResponse.statusCode): \(body, privacy: .public)")
+            }
+            throw BlueskyAPIError.server("Clearsky returned HTTP \(httpResponse.statusCode)")
         }
         let decoded = try JSONDecoder().decode(ClearskyListsResponse.self, from: data)
         return decoded.data.lists

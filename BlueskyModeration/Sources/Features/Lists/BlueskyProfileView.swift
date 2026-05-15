@@ -259,6 +259,15 @@ struct BlueskyProfileView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    if let error = viewModel.listError {
+                        HStack {
+                            Spacer()
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                                .lineLimit(1)
+                        }
+                    }
                 } header: {
                     Text(verbatim: loc("profile.stats"))
                         .onTapGesture(count: 2) { showPostBrowser = true }
