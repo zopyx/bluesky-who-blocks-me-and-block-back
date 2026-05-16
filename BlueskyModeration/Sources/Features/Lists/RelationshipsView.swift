@@ -119,7 +119,7 @@ struct RelationshipsView: View {
                                     VStack(alignment: .leading, spacing: 1) {
                                         HStack(spacing: 6) {
                                             Text(actor.title)
-                                                .font(.subheadline.weight(.semibold))
+                                                .font(.subheadline.weight(.regular))
                                             if actor.isNew {
                                                 Text(loc("rel.new_badge"))
                                                     .font(.caption2.weight(.semibold))
@@ -128,15 +128,16 @@ struct RelationshipsView: View {
                                                     .padding(.vertical, 1)
                                                     .background(Color.orange.opacity(0.12), in: Capsule())
                                             }
+                                            Spacer(minLength: 0)
+                                            if let blockedDate = actor.blockedDate {
+                                                Text(blockedDateDisplay(blockedDate))
+                                                    .font(.caption2.weight(.regular))
+                                                    .foregroundStyle(.primary)
+                                            }
                                         }
                                         Text(actor.handle)
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
-                                        if let blockedDate = actor.blockedDate {
-                                            Text(blockedDateDisplay(blockedDate))
-                                                .font(.caption2)
-                                                .foregroundStyle(.tertiary)
-                                        }
                                     }
 
                                     Spacer()

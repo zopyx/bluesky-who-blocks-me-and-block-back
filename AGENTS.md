@@ -53,3 +53,18 @@ Every completed task MUST include an accurate description rendered as a table:
   `es.json`, `pt.json`, `ko.json`, `ru.json`, `ar.json`, `nl.json`,
   `pl.json`, `tr.json`, `th.json`, `vi.json`
 - New keys in non-English files require native translation — do not leave English fallback
+
+## Blocking / Blocked-By Consistency
+- Dashboard blocking count (`fetchBlockingCount`/`fetchBlockedByCount`) and detail view count (`fetchBlockedActors`/`fetchBlockedByActors`) MUST come from the **same source** — the paginated Clearsky API (`fetchClearskyActors`), NOT the `/total/` endpoint
+- This ensures the number shown on the dashboard always matches the number in the RelationshipsView detail list
+
+## Blocking / Blocked-By List Item Layout
+In `RelationshipsView`, each blocking/blocked-by list item uses this two-row layout:
+
+## Blocking / Blocked-By List Item Layout
+In `RelationshipsView`, each blocking/blocked-by list item uses this two-row layout:
+
+```
+Row 1: Display Name_____________3 days ago
+Row 2: @handle
+```
