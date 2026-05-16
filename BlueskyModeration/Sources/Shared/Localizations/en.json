@@ -265,6 +265,8 @@
   "profile.stats.did": "DID",
   "profile.stats.joined": "Joined",
   "profile.stats.labels": "Labels",
+  "profile.on_my_moderation_lists": "On my moderation lists",
+  "profile.on_my_lists": "On my lists",
   "list.detail.missing_creds": "Missing Credentials",
   "list.detail.missing_creds.desc": "This account no longer has a saved app password.",
   "list.detail.subscribe.label": "Subscribe",

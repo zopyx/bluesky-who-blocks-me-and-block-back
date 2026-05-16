@@ -6,6 +6,7 @@ struct ClearskyListsView: View {
     @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var accountStore: AccountStore
     @State private var entryKinds: [String: BlueskyList.Kind] = [:]
+    @State private var ownerHandles: [String: String] = [:]
 
     private var sortedEntries: [ClearskyListEntry] {
         entries.sorted { a, b in
@@ -18,45 +19,31 @@ struct ClearskyListsView: View {
             List {
                 Section {
                     ForEach(sortedEntries) { entry in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 6) {
-                                Text(entry.name)
-                                    .font(.headline)
-                                    .lineLimit(1)
-                                if entryKinds[entry.url] == .moderation {
-                                    Text(loc("lists.moderation"))
-                                        .font(.caption2.weight(.semibold))
-                                        .foregroundStyle(Color.skyPrimary)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.skyPrimary.opacity(0.12), in: Capsule())
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(entry.name)
+                                        .lineLimit(1)
+                                    if entryKinds[entry.url] == .moderation {
+                                        Text(loc("lists.moderation"))
+                                            .font(.caption2.weight(.semibold))
+                                            .foregroundStyle(Color.skyPrimary)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(Color.skyPrimary.opacity(0.12), in: Capsule())
+                                    }
+                                }
+                                if let handle = ownerHandles[entry.url] {
+                                    Text(handle)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
                                 }
                             }
-                            if let desc = entry.description, !desc.isEmpty {
-                                Text(desc)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(2)
-                            }
-                            HStack {
-                                Spacer()
-                                Button {
-                                    UIPasteboard.general.string = entry.did
-                                } label: {
-                                    Label(entry.did, systemImage: "doc.on.doc")
-                                        .font(.caption2)
-                                        .foregroundStyle(.tertiary)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                            HStack {
-                                Spacer()
-                                Label(formatDate(entry.createdDate), systemImage: "calendar")
-                                    .font(.caption2)
-                                    .foregroundStyle(.tertiary)
-                            }
+                            Spacer()
+                            Text(formatDateRelative(dateString: entry.dateAdded))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        .padding(.vertical, 6)
                     }
                 }
             }
@@ -73,6 +60,7 @@ struct ClearskyListsView: View {
             }
             .task {
                 await loadKinds()
+                await loadOwnerHandles()
             }
         }
     }
@@ -99,6 +87,39 @@ struct ClearskyListsView: View {
         }
     }
 
+    private func loadOwnerHandles() async {
+        let dids = Set(entries.map(\.did))
+        guard !dids.isEmpty else { return }
+        do {
+            let actors = try await LiveBlueskyClient.fetchProfileBatch(identifiers: Array(dids), session: URLSession.shared)
+            for actor in actors {
+                for entry in entries where entry.did == actor.did {
+                    ownerHandles[entry.url] = actor.handle
+                }
+            }
+        } catch {
+            AppLogger.performance.error("Failed to fetch owner handles: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private func formatDateRelative(dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard let date = formatter.date(from: dateString) ?? {
+            formatter.formatOptions = [.withInternetDateTime]
+            return formatter.date(from: dateString)
+        }() else { return dateString }
+
+        let daysSince = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+        if daysSince < 28 {
+            let relativeFormatter = RelativeDateTimeFormatter()
+            relativeFormatter.unitsStyle = .short
+            relativeFormatter.locale = Locale(identifier: LocalizationManager.shared.currentLanguage)
+            return relativeFormatter.localizedString(for: date, relativeTo: Date())
+        }
+        return date.formatted(date: .abbreviated, time: .omitted)
+    }
+
     private func date(from string: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -113,17 +134,4 @@ private func atURI(from url: String, ownerDID: String) -> String? {
     let parts = url.split(separator: "/")
     guard parts.count >= 2, let rkey = parts.last else { return nil }
     return "at://\(ownerDID)/app.bsky.graph.list/\(rkey)"
-}
-
-private func formatDate(_ string: String) -> String {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    if let date = formatter.date(from: string) {
-        return date.formatted(date: .abbreviated, time: .omitted)
-    }
-    formatter.formatOptions = [.withInternetDateTime]
-    if let date = formatter.date(from: string) {
-        return date.formatted(date: .abbreviated, time: .omitted)
-    }
-    return string
 }

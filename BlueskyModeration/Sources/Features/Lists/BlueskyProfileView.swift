@@ -238,6 +238,9 @@ struct BlueskyProfileView: View {
                                 Image(systemName: "chevron.right")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
+                            } else if !viewModel.isScanningMedia {
+                                Text(verbatim: loc("profile.media.empty"))
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -257,6 +260,9 @@ struct BlueskyProfileView: View {
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.tertiary)
+                            } else if viewModel.listError == nil, !viewModel.isLoading {
+                                ProgressView()
+                                    .scaleEffect(0.6)
                             }
                         }
                     }
@@ -339,39 +345,58 @@ struct BlueskyProfileView: View {
                     }
                 }
 
-                if !isOwnProfile, !viewModel.listMemberships.isEmpty {
-                    let sortedMemberships = viewModel.listMemberships.sorted { $0.kind == .moderation && $1.kind != .moderation }
-                    Section {
-                        ForEach(sortedMemberships) { membership in
-                            Toggle(isOn: Binding(
-                                get: { membership.isMember },
-                                set: { _ in
-                                    runModeration {
-                                        await viewModel.toggleListMembership(
-                                            membership,
-                                            account: account,
-                                            appPassword: appPassword,
-                                            using: blueskyClient
-                                        )
+                if !isOwnProfile {
+                    let moderationMemberships = viewModel.listMemberships.filter { $0.kind == .moderation }
+                    let regularMemberships = viewModel.listMemberships.filter { $0.kind == .regular }
+
+                    if !moderationMemberships.isEmpty {
+                        Section {
+                            ForEach(moderationMemberships) { membership in
+                                Toggle(isOn: Binding(
+                                    get: { membership.isMember },
+                                    set: { _ in
+                                        runModeration {
+                                            await viewModel.toggleListMembership(
+                                                membership,
+                                                account: account,
+                                                appPassword: appPassword,
+                                                using: blueskyClient
+                                            )
+                                        }
                                     }
-                                }
-                            )) {
-                                HStack(spacing: 8) {
+                                )) {
                                     Text(membership.name)
-                                    if membership.kind == .moderation {
-                                        Text(verbatim: loc("profile.moderation_section"))
-                                            .font(.caption2.weight(.semibold))
-                                            .foregroundStyle(Color.skyPrimary)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.skyPrimary.opacity(0.12), in: Capsule())
-                                    }
                                 }
+                                .disabled(viewModel.isUpdatingModeration)
                             }
-                            .disabled(viewModel.isUpdatingModeration)
+                        } header: {
+                            Text(verbatim: loc("profile.on_my_moderation_lists"))
                         }
-                    } header: {
-                        Text(verbatim: loc("lists.lists"))
+                    }
+
+                    if !regularMemberships.isEmpty {
+                        Section {
+                            ForEach(regularMemberships) { membership in
+                                Toggle(isOn: Binding(
+                                    get: { membership.isMember },
+                                    set: { _ in
+                                        runModeration {
+                                            await viewModel.toggleListMembership(
+                                                membership,
+                                                account: account,
+                                                appPassword: appPassword,
+                                                using: blueskyClient
+                                            )
+                                        }
+                                    }
+                                )) {
+                                    Text(membership.name)
+                                }
+                                .disabled(viewModel.isUpdatingModeration)
+                            }
+                        } header: {
+                            Text(verbatim: loc("profile.on_my_lists"))
+                        }
                     }
                 }
 
@@ -648,9 +673,12 @@ struct BlueskyProfileView: View {
             exportTask?.cancel()
         }
         .task(id: viewModel.profile?.did) {
-            await fetchBlockCounts()
+            async let blocks = fetchBlockCounts()
             if let handle = viewModel.profile?.handle {
-                await viewModel.fetchClearskyLists(handle: handle, using: blueskyClient)
+                async let lists = viewModel.fetchClearskyLists(handle: handle, using: blueskyClient)
+                _ = await (blocks, lists)
+            } else {
+                await blocks
             }
         }
         .alert(loc("profile.block_back.confirm.first.title"), isPresented: $showBlockBackConfirm1) {

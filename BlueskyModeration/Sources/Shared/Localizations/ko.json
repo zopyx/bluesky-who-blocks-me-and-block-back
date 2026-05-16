@@ -265,6 +265,8 @@
   "profile.stats.did": "DID (한국어)",
   "profile.stats.joined": "参加日 (한국어)",
   "profile.stats.labels": "ラベル (한국어)",
+  "profile.on_my_moderation_lists": "내 모더레이션 리스트",
+  "profile.on_my_lists": "내 리스트",
   "profile.stats.media": "미디어",
   "profile.media.title": "미디어",
   "profile.media.empty": "미디어를 찾을 수 없음",

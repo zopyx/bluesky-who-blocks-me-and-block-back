@@ -265,6 +265,8 @@
   "profile.stats.did": "DID (PL)",
   "profile.stats.joined": "Joined (PL)",
   "profile.stats.labels": "Labels (PL)",
+  "profile.on_my_moderation_lists": "Na moich listach moderacyjnych",
+  "profile.on_my_lists": "Na moich listach",
   "profile.stats.media": "Multimedia",
   "profile.media.title": "Multimedia",
   "profile.media.empty": "Nie znaleziono multimediów",

@@ -265,6 +265,8 @@
   "profile.stats.did": "DID",
   "profile.stats.joined": "加入时间",
   "profile.stats.labels": "标签",
+  "profile.on_my_moderation_lists": "在我的审核列表中",
+  "profile.on_my_lists": "在我的列表中",
   "profile.stats.media": "媒体",
   "profile.media.title": "媒体",
   "profile.media.empty": "未找到媒体",

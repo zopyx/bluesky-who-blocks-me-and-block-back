@@ -265,6 +265,8 @@
   "profile.stats.did": "DID (VI)",
   "profile.stats.joined": "加入时间 (VI)",
   "profile.stats.labels": "标签 (VI)",
+  "profile.on_my_moderation_lists": "Trong danh sách kiểm duyệt của tôi",
+  "profile.on_my_lists": "Trong danh sách của tôi",
   "profile.stats.media": "Phương tiện",
   "profile.media.title": "Phương tiện",
   "profile.media.empty": "Không tìm thấy phương tiện",

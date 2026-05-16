@@ -265,6 +265,8 @@
   "profile.stats.did": "DID (TR)",
   "profile.stats.joined": "Joined (TR)",
   "profile.stats.labels": "Labels (TR)",
+  "profile.on_my_moderation_lists": "Moderasyon listelerimde",
+  "profile.on_my_lists": "Listelerimde",
   "profile.stats.media": "Medya",
   "profile.media.title": "Medya",
   "profile.media.empty": "Medya bulunamadı",

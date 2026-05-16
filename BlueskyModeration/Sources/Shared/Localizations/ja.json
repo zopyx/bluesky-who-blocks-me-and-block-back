@@ -265,6 +265,8 @@
   "profile.stats.did": "DID",
   "profile.stats.joined": "参加日",
   "profile.stats.labels": "ラベル",
+  "profile.on_my_moderation_lists": "マイモデレーションリスト",
+  "profile.on_my_lists": "マイリスト",
   "profile.stats.media": "メディア",
   "profile.media.title": "メディア",
   "profile.media.empty": "メディアが見つかりません",

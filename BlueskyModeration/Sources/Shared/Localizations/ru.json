@@ -265,6 +265,8 @@
   "profile.stats.did": "DID (RU)",
   "profile.stats.joined": "Joined (RU)",
   "profile.stats.labels": "Labels (RU)",
+  "profile.on_my_moderation_lists": "В моих модерационных списках",
+  "profile.on_my_lists": "В моих списках",
   "profile.stats.media": "Медиа",
   "profile.media.title": "Медиа",
   "profile.media.empty": "Медиа не найдены",

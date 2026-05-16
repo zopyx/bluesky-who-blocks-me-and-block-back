@@ -265,6 +265,8 @@
   "profile.stats.did": "DID (TH)",
   "profile.stats.joined": "Joined (TH)",
   "profile.stats.labels": "Labels (TH)",
+  "profile.on_my_moderation_lists": "ในรายการกลั่นกรองของฉัน",
+  "profile.on_my_lists": "ในรายการของฉัน",
   "profile.stats.media": "สื่อ",
   "profile.media.title": "สื่อ",
   "profile.media.empty": "ไม่พบสื่อ",

@@ -38,14 +38,8 @@ struct ListRowView: View {
 
             if let memberCount = list.memberCount {
                 Text("\(memberCount)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(list.kind == .moderation ? Color.skyOrange : Color.skyPrimary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(
-                        Capsule()
-                            .fill((list.kind == .moderation ? Color.skyOrange : Color.skyPrimary).opacity(0.14))
-                    )
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 4)

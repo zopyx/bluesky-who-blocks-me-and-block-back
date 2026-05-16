@@ -265,6 +265,8 @@
   "profile.stats.did": "DID",
   "profile.stats.joined": "Data de entrada",
   "profile.stats.labels": "Etiquetas",
+  "profile.on_my_moderation_lists": "Nas minhas listas de moderação",
+  "profile.on_my_lists": "Nas minhas listas",
   "profile.stats.media": "Mídia",
   "profile.media.title": "Mídia",
   "profile.media.empty": "Nenhuma mídia encontrada",

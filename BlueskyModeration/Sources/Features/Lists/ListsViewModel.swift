@@ -50,9 +50,17 @@ final class ListsViewModel: ObservableObject {
         if isExplicitRefresh { isRefreshing = true }
         errorMessage = nil
 
+        async let listsTask = client.fetchLists(for: account, appPassword: appPassword)
+        async let profileTask = client.fetchProfile(
+            did: account.did ?? account.handle,
+            account: account,
+            appPassword: appPassword
+        )
+        async let blockingTask = client.fetchBlockingCount(for: account)
+        async let blockedByTask = client.fetchBlockedByCount(for: account)
+
         do {
-            let lists = try await client.fetchLists(for: account, appPassword: appPassword)
-            listsByKind = Dictionary(grouping: lists, by: \.kind)
+            listsByKind = try await Dictionary(grouping: listsTask, by: \.kind)
         } catch {
             if listsByKind.isEmpty {
                 listsByKind = [:]
@@ -60,27 +68,9 @@ final class ListsViewModel: ObservableObject {
             }
         }
 
-        do {
-            activeProfile = try await client.fetchProfile(
-                did: account.did ?? account.handle,
-                account: account,
-                appPassword: appPassword
-            )
-        } catch {
-            AppLogger.moderation.debug("Failed to fetch account profile: \(error.localizedDescription, privacy: .public)")
-        }
-
-        do {
-            blockingCount = try await client.fetchBlockingCount(for: account)
-        } catch {
-            AppLogger.moderation.debug("Failed to fetch blocking count: \(error.localizedDescription, privacy: .public)")
-        }
-
-        do {
-            blockedByCount = try await client.fetchBlockedByCount(for: account)
-        } catch {
-            AppLogger.moderation.debug("Failed to fetch blocked-by count: \(error.localizedDescription, privacy: .public)")
-        }
+        activeProfile = try? await profileTask
+        blockingCount = await (try? blockingTask) ?? 0
+        blockedByCount = await (try? blockedByTask) ?? 0
 
         persistCache(forKey: cacheKey)
         isFromCache = false
@@ -97,7 +87,7 @@ final class ListsViewModel: ObservableObject {
 
     private func persistCache(forKey key: String) {
         let data = DashboardCacheData(
-            lists: Array(listsByKind.values.flatMap { $0 }),
+            lists: Array(listsByKind.values.flatMap(\.self)),
             profile: activeProfile,
             blockingCount: blockingCount,
             blockedByCount: blockedByCount

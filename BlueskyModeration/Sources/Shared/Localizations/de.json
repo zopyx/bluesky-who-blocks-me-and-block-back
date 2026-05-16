@@ -265,6 +265,8 @@
   "profile.stats.did": "DID",
   "profile.stats.joined": "Beigetreten",
   "profile.stats.labels": "Labels",
+  "profile.on_my_moderation_lists": "Auf meinen Moderationslisten",
+  "profile.on_my_lists": "Auf meinen Listen",
   "profile.stats.media": "Medien",
   "profile.media.title": "Medien",
   "profile.media.empty": "Keine Medien gefunden",

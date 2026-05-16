@@ -67,22 +67,23 @@ final class BlueskyProfileViewModel: ObservableObject {
                 account: account,
                 appPassword: appPassword
             )
-            if let profile {
-                let auditLog = try? await client.fetchPLCAuditLog(did: profile.did)
-                if let auditLog {
-                    handleHistory = parseHandleChanges(from: auditLog, currentHandle: profile.handle)
-                }
-            }
         } catch {
             hasLoadedOnce = false
             inspection = nil
             handleHistory = []
             errorMessage = AppError.userMessage(from: error)
+            isLoading = false
+            return
         }
 
         isLoading = false
-        if let profile {
-            await countMedia(for: profile.did, account: account, appPassword: appPassword, using: client)
+        guard let profile else { return }
+
+        async let auditLog = client.fetchPLCAuditLog(did: profile.did)
+        await countMedia(for: profile.did, account: account, appPassword: appPassword, using: client)
+
+        if let log = try? await auditLog {
+            handleHistory = parseHandleChanges(from: log, currentHandle: profile.handle)
         }
     }
 

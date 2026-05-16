@@ -43,51 +43,50 @@ struct ListsView: View {
                             }
                         }
 
-                        Section {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading) {
-                                Button {
-                                    presentationState.showFollowers = true
-                                } label: {
-                                    relationshipRow(
-                                        label: loc("lists.followers"),
-                                        count: viewModel.activeProfile?.followersCount ?? 0
-                                    )
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    presentationState.showFollowing = true
-                                } label: {
-                                    relationshipRow(
-                                        label: loc("lists.following"),
-                                        count: viewModel.activeProfile?.followsCount ?? 0
-                                    )
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    presentationState.showBlocking = true
-                                } label: {
-                                    relationshipRow(
-                                        label: loc("lists.blocking"),
-                                        count: viewModel.blockingCount
-                                    )
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    presentationState.showBlockedBy = true
-                                } label: {
-                                    relationshipRow(
-                                        label: loc("lists.blocked_by"),
-                                        count: viewModel.blockedByCount
-                                    )
-                                }
-                                .buttonStyle(.plain)
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading) {
+                            Button {
+                                presentationState.showFollowers = true
+                            } label: {
+                                relationshipRow(
+                                    label: loc("lists.followers"),
+                                    count: viewModel.activeProfile?.followersCount ?? 0
+                                )
                             }
-                        } header: {
-                            Text(loc("lists.relationships"))
+                            .buttonStyle(.plain)
+
+                            Button {
+                                presentationState.showFollowing = true
+                            } label: {
+                                relationshipRow(
+                                    label: loc("lists.following"),
+                                    count: viewModel.activeProfile?.followsCount ?? 0
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                presentationState.showBlocking = true
+                            } label: {
+                                relationshipRow(
+                                    label: loc("lists.blocking"),
+                                    count: viewModel.blockingCount
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                presentationState.showBlockedBy = true
+                            } label: {
+                                relationshipRow(
+                                    label: loc("lists.blocked_by"),
+                                    count: viewModel.blockedByCount
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listSectionSeparator(.hidden)
 
                         Section {
                             if let lists = viewModel.listsByKind[.moderation], !lists.isEmpty {
@@ -195,10 +194,14 @@ struct ListsView: View {
                     Button {
                         Task { await reload() }
                     } label: {
-                        Image(systemName: "arrow.clockwise")
+                        if viewModel.isRefreshing {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
                     }
                     .accessibilityLabel(loc("lists.refresh.label"))
-                    .disabled(accountStore.activeAccount == nil)
+                    .disabled(accountStore.activeAccount == nil || viewModel.isRefreshing)
                 }
             }
             .sheet(isPresented: $presentationState.isShowingAccountPicker) {
