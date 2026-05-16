@@ -16,6 +16,9 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published private(set) var isFetchingLists = false
     @Published var listError: String?
     @Published private(set) var pendingFollowingState: Bool?
+    @Published private(set) var pendingBlockState: Bool?
+    @Published private(set) var pendingMuteState: Bool?
+    @Published private(set) var pendingListMemberStates: [String: Bool] = [:]
 
     func fetchClearskyLists(handle: String, using client: LiveBlueskyClient) async {
         isFetchingLists = true
@@ -122,12 +125,17 @@ final class BlueskyProfileViewModel: ObservableObject {
         using client: LiveBlueskyClient
     ) async {
         guard let profile else { return }
+        let isCurrentlyMuted = pendingMuteState ?? profile.viewerState?.muted ?? false
 
         isUpdatingModeration = true
-        defer { isUpdatingModeration = false }
+        pendingMuteState = !isCurrentlyMuted
+        defer {
+            isUpdatingModeration = false
+            pendingMuteState = nil
+        }
 
         do {
-            if profile.viewerState?.muted == true {
+            if isCurrentlyMuted {
                 try await client.unmuteActor(
                     did: profile.did,
                     account: account,
@@ -267,13 +275,18 @@ final class BlueskyProfileViewModel: ObservableObject {
         using client: LiveBlueskyClient
     ) async {
         guard let profile else { return }
+        let isCurrentlyBlocking = pendingBlockState ?? profile.viewerState?.isBlocking ?? false
 
         isUpdatingModeration = true
-        defer { isUpdatingModeration = false }
+        pendingBlockState = !isCurrentlyBlocking
+        defer {
+            isUpdatingModeration = false
+            pendingBlockState = nil
+        }
 
         do {
             if let recordURI = profile.viewerState?.blockingRecordURI,
-               profile.viewerState?.isBlocking == true
+               isCurrentlyBlocking
             {
                 try await client.unblockActor(
                     recordURI: recordURI,
@@ -352,12 +365,17 @@ final class BlueskyProfileViewModel: ObservableObject {
         using client: LiveBlueskyClient
     ) async {
         guard let profile else { return }
+        let isCurrentlyMember = pendingListMemberStates[membership.listURI] ?? membership.isMember
 
         isUpdatingModeration = true
-        defer { isUpdatingModeration = false }
+        pendingListMemberStates[membership.listURI] = !isCurrentlyMember
+        defer {
+            isUpdatingModeration = false
+            pendingListMemberStates[membership.listURI] = nil
+        }
 
         do {
-            if membership.isMember, let recordURI = membership.listItemRecordURI {
+            if isCurrentlyMember, let recordURI = membership.listItemRecordURI {
                 try await client.removeMember(
                     recordURI: recordURI,
                     account: account,

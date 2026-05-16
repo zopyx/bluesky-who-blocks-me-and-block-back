@@ -301,7 +301,7 @@ struct BlueskyProfileView: View {
                             .disabled(viewModel.isUpdatingModeration)
 
                             Toggle(isOn: Binding(
-                                get: { viewerState.isBlocking },
+                                get: { viewModel.pendingBlockState ?? viewerState.isBlocking },
                                 set: { _ in
                                     runModeration {
                                         await viewModel.toggleBlock(
@@ -318,7 +318,7 @@ struct BlueskyProfileView: View {
                             .accessibilityHint(viewerState.isBlocking ? loc("profile.unblock.hint") : loc("profile.block.hint"))
 
                             Toggle(isOn: Binding(
-                                get: { viewerState.muted },
+                                get: { viewModel.pendingMuteState ?? viewerState.muted },
                                 set: { _ in
                                     runModeration {
                                         await viewModel.toggleMute(
@@ -353,7 +353,7 @@ struct BlueskyProfileView: View {
                         Section {
                             ForEach(moderationMemberships) { membership in
                                 Toggle(isOn: Binding(
-                                    get: { membership.isMember },
+                                    get: { viewModel.pendingListMemberStates[membership.listURI] ?? membership.isMember },
                                     set: { _ in
                                         runModeration {
                                             await viewModel.toggleListMembership(
@@ -378,7 +378,7 @@ struct BlueskyProfileView: View {
                         Section {
                             ForEach(regularMemberships) { membership in
                                 Toggle(isOn: Binding(
-                                    get: { membership.isMember },
+                                    get: { viewModel.pendingListMemberStates[membership.listURI] ?? membership.isMember },
                                     set: { _ in
                                         runModeration {
                                             await viewModel.toggleListMembership(

@@ -1,17 +1,27 @@
 import SwiftUI
 
-struct BlueskyActorRow: View {
+struct BlueskyActorRow<Extra: View>: View {
     let actor: BlueskyActor
+    let extra: Extra
 
     @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 40
+
+    init(actor: BlueskyActor, @ViewBuilder extra: () -> Extra) {
+        self.actor = actor
+        self.extra = extra()
+    }
 
     var body: some View {
         HStack(spacing: 12) {
             avatarView
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(actor.title)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(actor.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    extra
+                }
                 Text(actor.handle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -53,6 +63,13 @@ struct BlueskyActorRow: View {
                     .font(.headline)
                     .foregroundStyle(Color.skyPrimary)
             }
+    }
+}
+
+extension BlueskyActorRow where Extra == EmptyView {
+    init(actor: BlueskyActor) {
+        self.actor = actor
+        extra = EmptyView()
     }
 }
 

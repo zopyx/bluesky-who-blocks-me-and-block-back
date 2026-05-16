@@ -113,42 +113,29 @@ struct RelationshipsView: View {
                                     list: nil
                                 )
                             } label: {
-                                HStack(spacing: 8) {
-                                    avatarView(for: actor)
-
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        HStack(spacing: 6) {
-                                            Text(actor.title)
-                                                .font(.subheadline.weight(.regular))
-                                            if actor.isNew {
-                                                Text(loc("rel.new_badge"))
-                                                    .font(.caption2.weight(.semibold))
-                                                    .foregroundStyle(.orange)
-                                                    .padding(.horizontal, 5)
-                                                    .padding(.vertical, 1)
-                                                    .background(Color.orange.opacity(0.12), in: Capsule())
-                                            }
-                                            Spacer(minLength: 0)
-                                            if let blockedDate = actor.blockedDate {
-                                                Text(blockedDateDisplay(blockedDate))
-                                                    .font(.caption2.weight(.regular))
-                                                    .foregroundStyle(.primary)
-                                            }
+                                HStack(spacing: 0) {
+                                    BlueskyActorRow(actor: actor) {
+                                        if actor.isNew {
+                                            Text(loc("rel.new_badge"))
+                                                .font(.caption2.weight(.semibold))
+                                                .foregroundStyle(.orange)
+                                                .padding(.horizontal, 5)
+                                                .padding(.vertical, 1)
+                                                .background(Color.orange.opacity(0.12), in: Capsule())
                                         }
-                                        Text(actor.handle)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                        Spacer(minLength: 0)
+                                        if let blockedDate = actor.blockedDate {
+                                            Text(blockedDateDisplay(blockedDate))
+                                                .font(.caption2.weight(.regular))
+                                                .foregroundStyle(.primary)
+                                        }
                                     }
-
-                                    Spacer()
-
                                     if debugMode {
                                         Text("\(index + 1)")
                                             .font(.caption2)
                                             .foregroundStyle(.tertiary)
                                     }
                                 }
-                                .padding(.vertical, 2)
                             }
                             .appScrollTransition()
                             .contextMenu {
@@ -317,40 +304,6 @@ struct RelationshipsView: View {
             return date.formatted(.relative(presentation: .named))
         }
         return date.formatted(date: .abbreviated, time: .omitted)
-    }
-
-    @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 30
-
-    @ViewBuilder
-    private func avatarView(for actor: BlueskyActor) -> some View {
-        if let avatarURL = actor.avatarURL {
-            AsyncImage(url: avatarURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                avatarPlaceholder(for: actor)
-            }
-            .frame(width: avatarSize, height: avatarSize)
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
-            }
-        } else {
-            avatarPlaceholder(for: actor)
-        }
-    }
-
-    private func avatarPlaceholder(for actor: BlueskyActor) -> some View {
-        Circle()
-            .fill(Color.skyPrimary.opacity(0.16))
-            .frame(width: avatarSize, height: avatarSize)
-            .overlay {
-                Text(actor.title.prefix(1).uppercased())
-                    .font(.headline)
-                    .foregroundStyle(Color.skyPrimary)
-            }
     }
 
     private func exportAll(format: ExportFormat) async {
