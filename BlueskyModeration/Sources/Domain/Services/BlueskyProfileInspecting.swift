@@ -8,6 +8,8 @@ protocol BlueskyProfileInspecting {
     func inspectProfile(query: String, account: AppAccount, appPassword: String?) async throws -> ProfileInspection
     func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
     func unblockActor(recordURI: String, account: AppAccount, appPassword: String?) async throws
+    func followActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
+    func unfollowActor(recordURI: String, account: AppAccount, appPassword: String?) async throws
     func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
     func unmuteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws
     func fetchFollowers(actor actorDID: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor]

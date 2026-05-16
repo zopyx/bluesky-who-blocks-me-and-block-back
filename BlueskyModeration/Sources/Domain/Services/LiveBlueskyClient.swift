@@ -1,5 +1,10 @@
 import Foundation
 
+struct ClearskyBlocklistResult {
+    let actors: [BlueskyActor]
+    let totalCount: Int
+}
+
 @MainActor
 class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListServicing, BlueskyProfileInspecting {
     private let baseURL: URL
@@ -314,6 +319,34 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         try await removeMember(recordURI: recordURI, account: account, appPassword: appPassword)
     }
 
+    func followActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
+        let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.graph.follow",
+                record: SubjectRecord(type: "app.bsky.graph.follow", subject: actorDID)
+            )
+
+            let _: CreateRecordResponse = try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+
+            return EmptyResponse()
+        }
+    }
+
+    func unfollowActor(recordURI: String, account: AppAccount, appPassword: String?) async throws {
+        try await removeMember(recordURI: recordURI, account: account, appPassword: appPassword)
+    }
+
     func muteActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
         let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
             account: account,
@@ -376,20 +409,20 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
 
     // MARK: - Clearsky Integration
 
-    func fetchBlockedActors(account: AppAccount, appPassword _: String?) async throws -> [BlueskyActor] {
+    func fetchBlockedActors(account: AppAccount, appPassword _: String?) async throws -> ClearskyBlocklistResult {
         try await fetchClearskyActors(account: account, endpoint: "blocklist")
     }
 
-    func fetchBlockedByActors(account: AppAccount, appPassword _: String?) async throws -> [BlueskyActor] {
+    func fetchBlockedByActors(account: AppAccount, appPassword _: String?) async throws -> ClearskyBlocklistResult {
         try await fetchClearskyActors(account: account, endpoint: "single-blocklist")
     }
 
     func fetchBlockingCount(for account: AppAccount) async throws -> Int {
-        try await fetchClearskyCount(account: account, endpoint: "blocklist")
+        try await fetchClearskyActors(account: account, endpoint: "blocklist").totalCount
     }
 
     func fetchBlockedByCount(for account: AppAccount) async throws -> Int {
-        try await fetchClearskyCount(account: account, endpoint: "single-blocklist")
+        try await fetchClearskyActors(account: account, endpoint: "single-blocklist").totalCount
     }
 
     private func resolveAccountDID(_ account: AppAccount) async throws -> String {
@@ -397,10 +430,11 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         return try await resolveHandleToDID(handle: account.handle)
     }
 
-    private func fetchClearskyActors(account: AppAccount, endpoint: String) async throws -> [BlueskyActor] {
+    private func fetchClearskyActors(account: AppAccount, endpoint: String) async throws -> ClearskyBlocklistResult {
         let actorDID = try await resolveAccountDID(account)
 
         var allDIDs = Set<String>()
+        var blockedDates = [String: String]()
         var page = 1
         repeat {
             let urlString = page == 1
@@ -419,28 +453,19 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             let entries = decoded.data.blocklist
             for entry in entries {
                 allDIDs.insert(entry.did)
+                blockedDates[entry.did] = entry.blockedDate
             }
             if entries.count < 100 { break }
             page += 1
         } while true
 
-        return try await resolveProfiles(dids: Array(allDIDs).sorted())
-    }
-
-    private func fetchClearskyCount(account: AppAccount, endpoint: String) async throws -> Int {
-        let actorDID = try await resolveAccountDID(account)
-        let urlString = "https://public.api.clearsky.services/api/v1/anon/\(endpoint)/total/\(actorDID)"
-        guard let url = URL(string: urlString) else { throw BlueskyAPIError.invalidURL }
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue(UserAgentProvider.random, forHTTPHeaderField: "User-Agent")
-        request.timeoutInterval = 30
-        let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200 ..< 300).contains(httpResponse.statusCode) else {
-            throw BlueskyAPIError.invalidResponse
+        var actors = try await resolveProfiles(dids: Array(allDIDs).sorted())
+        for i in actors.indices {
+            if let dateStr = blockedDates[actors[i].did] {
+                actors[i].blockedDate = parseDate(dateStr)
+            }
         }
-        let decoded = try JSONDecoder().decode(ClearskyBlocklistTotalResponse.self, from: data)
-        return decoded.data.count
+        return ClearskyBlocklistResult(actors: actors, totalCount: allDIDs.count)
     }
 
     func fetchClearskyLists(handle: String) async throws -> [ClearskyListEntry] {

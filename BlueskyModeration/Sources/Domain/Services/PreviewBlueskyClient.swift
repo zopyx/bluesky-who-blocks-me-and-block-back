@@ -280,6 +280,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                 isBlocking: false,
                 blockingRecordURI: nil,
                 isFollowing: true,
+                followingRecordURI: "at://did:plc:preview/app.bsky.graph.follow/1",
                 followsYou: false,
                 mutedByListName: nil,
                 blockingByListName: nil
@@ -317,6 +318,7 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
                     isBlocking: true,
                     blockingRecordURI: "at://did:plc:preview/app.bsky.graph.block/1",
                     isFollowing: true,
+                    followingRecordURI: "at://did:plc:preview/app.bsky.graph.follow/1",
                     followsYou: false,
                     mutedByListName: nil,
                     blockingByListName: "Reply Filters"
@@ -363,20 +365,21 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     override func fetchBlockedActors(
         account _: AppAccount,
         appPassword _: String?
-    ) async throws -> [BlueskyActor] {
+    ) async throws -> ClearskyBlocklistResult {
         try await Task.sleep(for: .milliseconds(80))
-        return [
+        let actors = [
             BlueskyActor(did: "did:plc:blocked1", handle: "spam.bsky.social", displayName: "Spam Account"),
             BlueskyActor(did: "did:plc:blocked2", handle: "troll.bsky.social", displayName: "Troll Account"),
         ]
+        return ClearskyBlocklistResult(actors: actors, totalCount: actors.count)
     }
 
     override func fetchBlockedByActors(
         account _: AppAccount,
         appPassword _: String?
-    ) async throws -> [BlueskyActor] {
+    ) async throws -> ClearskyBlocklistResult {
         try await Task.sleep(for: .milliseconds(80))
-        return []
+        return ClearskyBlocklistResult(actors: [], totalCount: 0)
     }
 
     override func fetchBlockingCount(for _: AppAccount) async throws -> Int {
@@ -405,6 +408,22 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
 
     override func muteActor(
         did _: String,
+        account _: AppAccount,
+        appPassword _: String?
+    ) async throws {
+        try await Task.sleep(for: .milliseconds(120))
+    }
+
+    override func followActor(
+        did _: String,
+        account _: AppAccount,
+        appPassword _: String?
+    ) async throws {
+        try await Task.sleep(for: .milliseconds(120))
+    }
+
+    override func unfollowActor(
+        recordURI _: String,
         account _: AppAccount,
         appPassword _: String?
     ) async throws {

@@ -241,8 +241,8 @@
   "profile.using_account": "Using {handle} for authenticated lookup. (한국어)",
   "profile.add_account_first": "Add and select an account first. (한국어)",
   "profile.labels_section": "ラベル (한국어)",
-  "profile.your_lists_section": "自分のリスト (한국어)",
-  "profile.no_lists": "なし owned lists available for membership comparison. (한국어)",
+  "profile.your_lists_section": "프로필이 등록된 리스트...",
+  "profile.no_lists": "이 프로필이 등록된 리스트가 여기에 표시됩니다.",
   "profile.member_status": "メンバー (한국어)",
   "profile.not_in_list_status": "リストに含まれていません (한국어)",
   "profile.your_starter_packs_section": "自分のスターターパック (한국어)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "フォロワー (한국어)",
   "profile.stats.following": "フォロー中 (한국어)",
   "profile.stats.posts": "投稿 (한국어)",
-  "profile.stats.lists": "リスト (한국어)",
+  "profile.stats.lists": "등록된 리스트",
   "profile.stats.starter_packs": "スターターパック (한국어)",
   "profile.stats.handle": "ハンドル (한국어)",
   "profile.stats.did": "DID (한국어)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "프로필이 등록된 리스트...",
 
 }

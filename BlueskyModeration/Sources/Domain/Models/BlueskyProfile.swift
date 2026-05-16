@@ -37,6 +37,7 @@ struct BlueskyViewerState: Hashable, Codable {
     let isBlocking: Bool
     let blockingRecordURI: String?
     let isFollowing: Bool
+    let followingRecordURI: String?
     let followsYou: Bool
     let mutedByListName: String?
     let blockingByListName: String?

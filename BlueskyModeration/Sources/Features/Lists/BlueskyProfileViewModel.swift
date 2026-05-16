@@ -15,6 +15,7 @@ final class BlueskyProfileViewModel: ObservableObject {
     @Published private(set) var clearskyLists: [ClearskyListEntry] = []
     @Published private(set) var isFetchingLists = false
     @Published var listError: String?
+    @Published private(set) var pendingFollowingState: Bool?
 
     func fetchClearskyLists(handle: String, using client: LiveBlueskyClient) async {
         isFetchingLists = true
@@ -141,6 +142,50 @@ final class BlueskyProfileViewModel: ObservableObject {
                 statusMessage = "Account muted."
             }
 
+            await load(
+                did: profile.did,
+                account: account,
+                appPassword: appPassword,
+                using: client
+            )
+        } catch {
+            errorMessage = AppError.userMessage(from: error)
+        }
+    }
+
+    func toggleFollow(
+        account: AppAccount,
+        appPassword: String,
+        using client: LiveBlueskyClient
+    ) async {
+        guard let profile else { return }
+        let isCurrentlyFollowing = pendingFollowingState ?? profile.viewerState?.isFollowing ?? false
+
+        isUpdatingModeration = true
+        pendingFollowingState = !isCurrentlyFollowing
+        defer {
+            isUpdatingModeration = false
+            pendingFollowingState = nil
+        }
+
+        do {
+            if let recordURI = profile.viewerState?.followingRecordURI,
+               isCurrentlyFollowing
+            {
+                try await client.unfollowActor(
+                    recordURI: recordURI,
+                    account: account,
+                    appPassword: appPassword
+                )
+            } else {
+                try await client.followActor(
+                    did: profile.did,
+                    account: account,
+                    appPassword: appPassword
+                )
+            }
+
+            statusMessage = nil
             await load(
                 did: profile.did,
                 account: account,

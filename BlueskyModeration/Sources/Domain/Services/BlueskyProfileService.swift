@@ -364,6 +364,61 @@ final class BlueskyProfileService: ObservableObject, BlueskyProfileInspecting {
         }
     }
 
+    func followActor(
+        did actorDID: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws {
+        let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = CreateGenericRecordRequest(
+                repo: authSession.did,
+                collection: "app.bsky.graph.follow",
+                record: SubjectRecord(type: "app.bsky.graph.follow", subject: actorDID)
+            )
+
+            let _: CreateRecordResponse = try await requestExecutor.send(
+                path: "com.atproto.repo.createRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+
+            return EmptyResponse()
+        }
+    }
+
+    func unfollowActor(
+        recordURI: String,
+        account: AppAccount,
+        appPassword: String?
+    ) async throws {
+        let record = try parseATURI(recordURI)
+        let _: EmptyResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let body = DeleteRecordRequest(
+                repo: authSession.did,
+                collection: record.collection,
+                rkey: record.rkey
+            )
+
+            return try await requestExecutor.send(
+                path: "com.atproto.repo.deleteRecord",
+                method: "POST",
+                queryItems: [],
+                body: body,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
+
     func muteActor(
         did actorDID: String,
         account: AppAccount,

@@ -241,8 +241,8 @@
   "profile.using_account": "[it] Authentifizierte Suche mit {handle}.",
   "profile.add_account_first": "Aggiungi prima un account.",
   "profile.labels_section": "Etichette",
-  "profile.your_lists_section": "Le tue liste",
-  "profile.no_lists": "Nessuna lista disponibile per il confronto.",
+  "profile.your_lists_section": "Profilo presente nelle liste...",
+  "profile.no_lists": "Le liste in cui compare questo profilo appariranno qui.",
   "profile.member_status": "Membro",
   "profile.not_in_list_status": "Non nella lista",
   "profile.your_starter_packs_section": "I tuoi Starter Pack",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Follower",
   "profile.stats.following": "Seguiti",
   "profile.stats.posts": "Post",
-  "profile.stats.lists": "Liste",
+  "profile.stats.lists": "Presente in",
   "profile.stats.starter_packs": "Starter Pack",
   "profile.stats.handle": "Handle",
   "profile.stats.did": "DID",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Profilo presente nelle liste...",
 
 }

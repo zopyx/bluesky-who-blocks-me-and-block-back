@@ -54,7 +54,10 @@ final class MediaDownloadServiceTests: XCTestCase {
             progress.withLock { $0.append((completed, total)) }
         }
 
-        XCTAssertEqual(progress.withLock { $0 }, [(1, 1)])
+        let progressUpdates = progress.withLock { $0 }
+        XCTAssertEqual(progressUpdates.count, 1)
+        XCTAssertEqual(progressUpdates.first?.0, 1)
+        XCTAssertEqual(progressUpdates.first?.1, 1)
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results.first?.savedFilename, "image-1.png")
         let fileURL = tempDirectory.appendingPathComponent("image-1.png")

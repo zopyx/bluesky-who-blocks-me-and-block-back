@@ -241,8 +241,8 @@
   "profile.using_account": "Using {handle} for authenticated lookup. (AR)",
   "profile.add_account_first": "Add and select an account first. (AR)",
   "profile.labels_section": "Labels (AR)",
-  "profile.your_lists_section": "Your Lists (AR)",
-  "profile.no_lists": "No owned lists available for membership comparison. (AR)",
+  "profile.your_lists_section": "الملف الشخصي مُدرج في القوائم...",
+  "profile.no_lists": "ستظهر هنا القوائم التي أُدرج هذا الملف الشخصي فيها.",
   "profile.member_status": "Member (AR)",
   "profile.not_in_list_status": "Not In List (AR)",
   "profile.your_starter_packs_section": "Your Starter Packs (AR)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Followers (AR)",
   "profile.stats.following": "Following (AR)",
   "profile.stats.posts": "Posts (AR)",
-  "profile.stats.lists": "Lists (AR)",
+  "profile.stats.lists": "مدرج في",
   "profile.stats.starter_packs": "Starter Packs (AR)",
   "profile.stats.handle": "Handle (AR)",
   "profile.stats.did": "DID (AR)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "الملف الشخصي مُدرج في القوائم...",
 
 }

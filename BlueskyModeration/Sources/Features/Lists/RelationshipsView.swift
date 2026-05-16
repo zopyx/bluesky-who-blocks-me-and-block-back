@@ -42,6 +42,7 @@ struct RelationshipsView: View {
     @State private var isExporting = false
     @State private var exportProgressMessage: String?
     @State private var exportProgressFraction: Double?
+    @State private var clearskyTotal: Int?
 
     private var filteredActors: [BlueskyActor] {
         let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -81,7 +82,7 @@ struct RelationshipsView: View {
             } else {
                 List {
                     Section {
-                        Text("\(modeLocalized) (\(isLoading ? (initialCount ?? 0) : actors.count))")
+                        Text("\(modeLocalized) (\(clearskyTotal ?? actors.count))")
                             .font(.title2.weight(.bold))
                     }
 
@@ -131,6 +132,11 @@ struct RelationshipsView: View {
                                         Text(actor.handle)
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
+                                        if let blockedDate = actor.blockedDate {
+                                            Text(blockedDateDisplay(blockedDate))
+                                                .font(.caption2)
+                                                .foregroundStyle(.tertiary)
+                                        }
                                     }
 
                                     Spacer()
@@ -302,6 +308,14 @@ struct RelationshipsView: View {
                 ShareSheet(activityItems: [url])
             }
         }
+    }
+
+    private func blockedDateDisplay(_ date: Date) -> String {
+        let days = Calendar.current.dateComponents([.day], from: date, to: .now).day ?? 0
+        if days < 30 {
+            return date.formatted(.relative(presentation: .named))
+        }
+        return date.formatted(date: .abbreviated, time: .omitted)
     }
 
     @ScaledMetric(relativeTo: .body) private var avatarSize: CGFloat = 30
@@ -480,20 +494,29 @@ struct RelationshipsView: View {
     private func fetchFromAPI(account: AppAccount, appPassword: String) async {
         do {
             let did = profileDID ?? account.did ?? account.handle
-            let result: [BlueskyActor] = switch mode {
+            let result: [BlueskyActor]
+            switch mode {
             case .followers:
-                try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
+                result = try await blueskyClient.fetchFollowers(actor: did, account: account, appPassword: appPassword)
             case .following:
-                try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
+                result = try await blueskyClient.fetchFollowing(actor: did, account: account, appPassword: appPassword)
             case .blocking:
-                try await blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
+                let r = try await blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
+                result = r.actors
+                clearskyTotal = r.totalCount
             case .blockedBy:
-                try await blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
+                let r = try await blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
+                result = r.actors
+                clearskyTotal = r.totalCount
             }
-            actors = result
+            if mode == .blocking || mode == .blockedBy {
+                actors = result.sorted { ($0.blockedDate ?? .distantPast) > ($1.blockedDate ?? .distantPast) }
+            } else {
+                actors = result
+            }
             isLoading = false
             if let key = cacheKey {
-                RelationshipCache.save(result, forKey: key)
+                RelationshipCache.save(actors, forKey: key)
             }
         } catch {
             if actors.isEmpty {

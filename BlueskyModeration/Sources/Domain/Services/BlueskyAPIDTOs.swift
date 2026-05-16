@@ -92,14 +92,6 @@ struct ClearskyBlocklistEntry: Decodable {
     }
 }
 
-struct ClearskyBlocklistTotalResponse: Decodable {
-    let data: ClearskyBlocklistTotalData
-}
-
-struct ClearskyBlocklistTotalData: Decodable {
-    let count: Int
-}
-
 // MARK: - Clearsky Lists
 
 struct ClearskyListsResponse: Decodable {
@@ -338,6 +330,7 @@ func mapViewerState(_ viewer: ProfileViewerState?) -> BlueskyViewerState? {
         isBlocking: viewer.blocking != nil,
         blockingRecordURI: viewer.blocking,
         isFollowing: viewer.following != nil,
+        followingRecordURI: viewer.following,
         followsYou: viewer.followedBy != nil,
         mutedByListName: viewer.mutedByList?.name,
         blockingByListName: viewer.blockingByList?.name

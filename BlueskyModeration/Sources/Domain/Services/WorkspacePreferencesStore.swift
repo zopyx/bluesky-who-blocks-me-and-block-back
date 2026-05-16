@@ -1,6 +1,6 @@
 import Foundation
 
-enum WorkspaceTab: Hashable {
+enum WorkspaceTab: String, Hashable {
     case moderation
     case account
     case settings
@@ -44,7 +44,11 @@ struct RecentProfileSearch: Identifiable, Codable, Hashable {
 final class WorkspacePreferencesStore: ObservableObject {
     @Published private(set) var savedSearches: [SavedProfileSearch] = []
     @Published private(set) var recentSearches: [RecentProfileSearch] = []
-    @Published var selectedTab: WorkspaceTab = .moderation
+    @Published var selectedTab: WorkspaceTab = .moderation {
+        didSet {
+            defaults.set(selectedTab.rawValue, forKey: selectedTabKey)
+        }
+    }
     @Published var lastProfileQuery = "" {
         didSet {
             defaults.set(lastProfileQuery, forKey: lastProfileQueryKey)
@@ -54,6 +58,7 @@ final class WorkspacePreferencesStore: ObservableObject {
     private let defaults: UserDefaults
     private let savedSearchesKey = "moderation.savedProfileSearches"
     private let recentSearchesKey = "moderation.recentProfileSearches"
+    private let selectedTabKey = "moderation.selectedTab"
     private let lastProfileQueryKey = "moderation.lastProfileQuery"
     private let recentSearchLimit = 12
 
@@ -69,6 +74,7 @@ final class WorkspacePreferencesStore: ObservableObject {
                 RecentProfileSearch(query: "alice.bsky.social"),
                 RecentProfileSearch(query: "reply filters"),
             ]
+            selectedTab = .moderation
             lastProfileQuery = "safety"
             return
         }
@@ -123,6 +129,12 @@ final class WorkspacePreferencesStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([RecentProfileSearch].self, from: data)
         {
             recentSearches = decoded.sorted { $0.usedAt > $1.usedAt }
+        }
+
+        if let storedSelectedTab = defaults.string(forKey: selectedTabKey),
+           let selectedTab = WorkspaceTab(rawValue: storedSelectedTab)
+        {
+            self.selectedTab = selectedTab
         }
 
         lastProfileQuery = defaults.string(forKey: lastProfileQueryKey) ?? ""

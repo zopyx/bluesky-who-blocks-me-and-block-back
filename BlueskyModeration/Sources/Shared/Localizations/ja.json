@@ -241,8 +241,8 @@
   "profile.using_account": "{handle} を使用して認証検索中。",
   "profile.add_account_first": "先にアカウントを追加してください。",
   "profile.labels_section": "ラベル",
-  "profile.your_lists_section": "自分のリスト",
-  "profile.no_lists": "なし owned lists available for membership comparison.",
+  "profile.your_lists_section": "このプロフィールが掲載されているリスト...",
+  "profile.no_lists": "このプロフィールが掲載されているリストがここに表示されます。",
   "profile.member_status": "メンバー",
   "profile.not_in_list_status": "リストに含まれていません",
   "profile.your_starter_packs_section": "自分のスターターパック",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "フォロワー",
   "profile.stats.following": "フォロー中",
   "profile.stats.posts": "投稿",
-  "profile.stats.lists": "リスト",
+  "profile.stats.lists": "掲載先",
   "profile.stats.starter_packs": "スターターパック",
   "profile.stats.handle": "ハンドル",
   "profile.stats.did": "DID",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "このプロフィールが掲載されているリスト...",
 
 }

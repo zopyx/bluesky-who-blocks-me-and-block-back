@@ -241,8 +241,8 @@
   "profile.using_account": "Using {handle} for authenticated lookup. (TH)",
   "profile.add_account_first": "Add and select an account first. (TH)",
   "profile.labels_section": "Labels (TH)",
-  "profile.your_lists_section": "Your Lists (TH)",
-  "profile.no_lists": "No owned lists available for membership comparison. (TH)",
+  "profile.your_lists_section": "โปรไฟล์นี้อยู่ในรายการ...",
+  "profile.no_lists": "รายการที่มีโปรไฟล์นี้อยู่จะแสดงที่นี่",
   "profile.member_status": "Member (TH)",
   "profile.not_in_list_status": "Not In List (TH)",
   "profile.your_starter_packs_section": "Your Starter Packs (TH)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Followers (TH)",
   "profile.stats.following": "Following (TH)",
   "profile.stats.posts": "Posts (TH)",
-  "profile.stats.lists": "Lists (TH)",
+  "profile.stats.lists": "อยู่ในรายการ",
   "profile.stats.starter_packs": "Starter Packs (TH)",
   "profile.stats.handle": "Handle (TH)",
   "profile.stats.did": "DID (TH)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "โปรไฟล์นี้อยู่ในรายการ...",
 
 }

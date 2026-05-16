@@ -241,8 +241,8 @@
   "profile.using_account": "Using {handle} for authenticated lookup. (NL)",
   "profile.add_account_first": "Fügen Sie zuerst einen Account hinzu und wählen Sie ihn aus. (NL)",
   "profile.labels_section": "Labels (NL)",
-  "profile.your_lists_section": "Ihre Listen (NL)",
-  "profile.no_lists": "Keine eigenen Listen für Mitgliedschaftsvergleich verfügbar. (NL)",
+  "profile.your_lists_section": "Profiel staat op lijsten...",
+  "profile.no_lists": "Lijsten waarop dit profiel voorkomt, verschijnen hier.",
   "profile.member_status": "Mitglied (NL)",
   "profile.not_in_list_status": "Nicht in Liste (NL)",
   "profile.your_starter_packs_section": "Ihre Starter Packs (NL)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Followers (NL)",
   "profile.stats.following": "Following (NL)",
   "profile.stats.posts": "Posts (NL)",
-  "profile.stats.lists": "Lists (NL)",
+  "profile.stats.lists": "Vermeld op",
   "profile.stats.starter_packs": "Starter Packs (NL)",
   "profile.stats.handle": "Handle (NL)",
   "profile.stats.did": "DID (NL)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Profiel staat op lijsten...",
 
 }

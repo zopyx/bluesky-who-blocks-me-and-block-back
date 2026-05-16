@@ -2,10 +2,10 @@ import SwiftUI
 
 struct ListRowView: View {
     let list: BlueskyList
-    @ScaledMetric private var iconSize = 36
+    @ScaledMetric private var iconSize = 32
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             if let avatarURL = list.avatarURL {
                 AsyncImage(url: avatarURL) { image in
                     image
@@ -24,41 +24,42 @@ struct ListRowView: View {
                 listIcon
             }
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
-                    .appFont(.subheading)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
                 Text(list.description)
-                    .appFont(.label)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
             }
 
             Spacer()
 
             if let memberCount = list.memberCount {
                 Text("\(memberCount)")
-                    .appFont(.statistic)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(list.kind == .moderation ? Color.skyOrange : Color.skyPrimary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
                     .background(
                         Capsule()
-                            .fill(.secondary.opacity(0.1))
+                            .fill((list.kind == .moderation ? Color.skyOrange : Color.skyPrimary).opacity(0.14))
                     )
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
         .appScrollTransition()
     }
 
     private var listIcon: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
-                .fill(list.kind == .moderation ? Color.orange.opacity(0.12) : Color.skyPrimary.opacity(0.12))
+                .fill(list.kind == .moderation ? Color.skyOrange.opacity(0.16) : Color.skyPrimary.opacity(0.14))
                 .frame(width: iconSize, height: iconSize)
             Image(systemName: list.kind.symbolName)
-                .font(.headline)
-                .foregroundStyle(list.kind == .moderation ? .orange : .skyPrimary)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(list.kind == .moderation ? Color.skyOrange : Color.skyPrimary)
         }
     }
 }

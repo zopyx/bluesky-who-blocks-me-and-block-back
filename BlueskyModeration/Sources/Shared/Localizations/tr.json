@@ -241,8 +241,8 @@
   "profile.using_account": "Using {handle} for authenticated lookup. (TR)",
   "profile.add_account_first": "Add and select an account first. (TR)",
   "profile.labels_section": "Labels (TR)",
-  "profile.your_lists_section": "Your Lists (TR)",
-  "profile.no_lists": "No owned lists available for membership comparison. (TR)",
+  "profile.your_lists_section": "Profilin yer aldığı listeler...",
+  "profile.no_lists": "Bu profilin yer aldığı listeler burada görünecek.",
   "profile.member_status": "Member (TR)",
   "profile.not_in_list_status": "Not In List (TR)",
   "profile.your_starter_packs_section": "Your Starter Packs (TR)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Followers (TR)",
   "profile.stats.following": "Following (TR)",
   "profile.stats.posts": "Posts (TR)",
-  "profile.stats.lists": "Lists (TR)",
+  "profile.stats.lists": "Bulunduğu listeler",
   "profile.stats.starter_packs": "Starter Packs (TR)",
   "profile.stats.handle": "Handle (TR)",
   "profile.stats.did": "DID (TR)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Profilin yer aldığı listeler...",
 
 }

@@ -133,7 +133,7 @@ struct AccountTabView: View {
 
     private func switchToAccount(_ account: AppAccount) {
         switchingAccountID = account.id
-        workspaceStore.selectedTab = .moderation
+        workspaceStore.returnToModerationRoot()
         Task { @MainActor in
             await accountStore.switchAccount(to: account, using: blueskyClient)
             switchingAccountID = nil

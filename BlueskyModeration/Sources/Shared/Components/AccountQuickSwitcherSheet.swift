@@ -64,9 +64,8 @@ struct AccountQuickSwitcherSheet: View {
         let generator = UISelectionFeedbackGenerator()
         generator.prepare()
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(300))
             await accountStore.switchAccount(to: account, using: blueskyClient)
-            workspaceStore.selectedTab = .moderation
+            workspaceStore.returnToModerationRoot()
             generator.selectionChanged()
             switchingAccountID = nil
             dismiss()

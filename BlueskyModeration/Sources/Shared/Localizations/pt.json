@@ -241,8 +241,8 @@
   "profile.using_account": "[pt] Authentifizierte Suche mit {handle}.",
   "profile.add_account_first": "Adicionar and select an account first.",
   "profile.labels_section": "Etiquetas",
-  "profile.your_lists_section": "Suas listas",
-  "profile.no_lists": "Não owned lists available for membership comparison.",
+  "profile.your_lists_section": "Perfil incluído em listas...",
+  "profile.no_lists": "As listas em que este perfil aparece serão mostradas aqui.",
   "profile.member_status": "Membro",
   "profile.not_in_list_status": "Não na lista",
   "profile.your_starter_packs_section": "Suas Starter Packs",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Seguidores",
   "profile.stats.following": "Seguindo",
   "profile.stats.posts": "Publicações",
-  "profile.stats.lists": "Listas",
+  "profile.stats.lists": "Incluído em",
   "profile.stats.starter_packs": "Pacotes iniciais",
   "profile.stats.handle": "Handle",
   "profile.stats.did": "DID",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Perfil incluído em listas...",
 
 }

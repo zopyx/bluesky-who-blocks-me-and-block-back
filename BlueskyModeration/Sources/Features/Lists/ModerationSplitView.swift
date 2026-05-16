@@ -38,6 +38,18 @@ struct ModerationSplitView: View {
                 Task { await loadInitial() }
             }
         }
+        .onChange(of: workspaceStore.moderationNavigationResetToken) { _, _ in
+            selectedList = nil
+            showProfile = false
+            showFollowers = false
+            showFollowing = false
+            showBlocking = false
+            showBlockedBy = false
+            isShowingCreateList = false
+            isShowingBulkLookup = false
+            isShowingAccountManagement = false
+            columnVisibility = .all
+        }
     }
 
     // MARK: - Compact (iPhone) — delegate to existing ListsView

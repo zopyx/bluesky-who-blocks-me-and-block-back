@@ -123,6 +123,14 @@ final class WorkspacePreferencesStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedTab, .moderation)
     }
 
+    func testSelectedTabPersisted() {
+        let store1 = WorkspacePreferencesStore(defaults: defaults)
+        store1.selectedTab = .account
+
+        let store2 = WorkspacePreferencesStore(defaults: defaults)
+        XCTAssertEqual(store2.selectedTab, .account)
+    }
+
     func testRecentSearchEmptyIgnored() {
         let store = WorkspacePreferencesStore(defaults: defaults)
         store.noteRecentSearch("  ")

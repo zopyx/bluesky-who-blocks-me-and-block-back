@@ -279,6 +279,22 @@ struct BlueskyProfileView: View {
                     Section {
                         if let viewerState = profile.viewerState {
                             Toggle(isOn: Binding(
+                                get: { viewModel.pendingFollowingState ?? viewerState.isFollowing },
+                                set: { _ in
+                                    runModeration {
+                                        await viewModel.toggleFollow(
+                                            account: account,
+                                            appPassword: appPassword,
+                                            using: blueskyClient
+                                        )
+                                    }
+                                }
+                            )) {
+                                Label { Text(verbatim: loc("profile.following")) } icon: { Image(systemName: "person.badge.plus") }
+                            }
+                            .disabled(viewModel.isUpdatingModeration)
+
+                            Toggle(isOn: Binding(
                                 get: { viewerState.isBlocking },
                                 set: { _ in
                                     runModeration {
@@ -735,9 +751,9 @@ struct BlueskyProfileView: View {
         blockBackTotal = 0
 
         do {
-            async let blockedBy = blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
-            async let blocked = blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
-            let (blockedByActors, blockedActors) = try await (blockedBy, blocked)
+            async let blockedByResult = blueskyClient.fetchBlockedByActors(account: account, appPassword: appPassword)
+            async let blockedResult = blueskyClient.fetchBlockedActors(account: account, appPassword: appPassword)
+            let (blockedByActors, blockedActors) = try await (blockedByResult.actors, blockedResult.actors)
 
             let blockedDIDs = Set(blockedActors.map(\.did))
             let toBlock = blockedByActors.filter { !blockedDIDs.contains($0.did) }

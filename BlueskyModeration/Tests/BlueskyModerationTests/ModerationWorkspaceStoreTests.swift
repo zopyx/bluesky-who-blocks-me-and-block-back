@@ -94,4 +94,32 @@ final class ModerationWorkspaceStoreTests: XCTestCase {
         XCTAssertEqual(store.operationLog.first?.title, "Operation 25")
         XCTAssertEqual(store.operationLog.last?.title, "Operation 1")
     }
+
+    func testSelectedTabPersistsAcrossWorkspaceStores() {
+        let store1 = ModerationWorkspaceStore(defaults: defaults)
+        store1.selectedTab = .account
+
+        let store2 = ModerationWorkspaceStore(defaults: defaults)
+        XCTAssertEqual(store2.selectedTab, .account)
+    }
+
+    func testPreferenceUpdatesDoNotResetSelectedTab() {
+        let store = ModerationWorkspaceStore(defaults: defaults)
+        store.selectedTab = .account
+
+        store.noteRecentSearch("alice.bsky.social")
+
+        XCTAssertEqual(store.selectedTab, .account)
+    }
+
+    func testReturnToModerationRootSelectsModerationAndResetsNavigationToken() {
+        let store = ModerationWorkspaceStore(defaults: defaults)
+        let originalToken = store.moderationNavigationResetToken
+
+        store.selectedTab = .account
+        store.returnToModerationRoot()
+
+        XCTAssertEqual(store.selectedTab, .moderation)
+        XCTAssertNotEqual(store.moderationNavigationResetToken, originalToken)
+    }
 }

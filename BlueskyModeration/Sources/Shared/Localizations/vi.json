@@ -241,8 +241,8 @@
   "profile.using_account": "使用 {handle} 进行认证查找。 (VI)",
   "profile.add_account_first": "请先添加并选择一个账户。 (VI)",
   "profile.labels_section": "标签 (VI)",
-  "profile.your_lists_section": "您的列表 (VI)",
-  "profile.no_lists": "没有可用于成员比较的列表。 (VI)",
+  "profile.your_lists_section": "Hồ sơ có trong các danh sách...",
+  "profile.no_lists": "Các danh sách có hồ sơ này sẽ xuất hiện ở đây.",
   "profile.member_status": "成员 (VI)",
   "profile.not_in_list_status": "不在列表中 (VI)",
   "profile.your_starter_packs_section": "您的 Starter Pack (VI)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "粉丝 (VI)",
   "profile.stats.following": "关注中 (VI)",
   "profile.stats.posts": "帖子 (VI)",
-  "profile.stats.lists": "列表 (VI)",
+  "profile.stats.lists": "Có trong danh sách",
   "profile.stats.starter_packs": "Starter Pack (VI)",
   "profile.stats.handle": "Handle (VI)",
   "profile.stats.did": "DID (VI)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Hồ sơ có trong các danh sách...",
 
 }

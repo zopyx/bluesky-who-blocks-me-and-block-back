@@ -241,8 +241,8 @@
   "profile.using_account": "使用 {handle} 进行认证查找。",
   "profile.add_account_first": "请先添加并选择一个账户。",
   "profile.labels_section": "标签",
-  "profile.your_lists_section": "您的列表",
-  "profile.no_lists": "没有可用于成员比较的列表。",
+  "profile.your_lists_section": "个人资料被收录的列表...",
+  "profile.no_lists": "该个人资料被收录到的列表将显示在这里。",
   "profile.member_status": "成员",
   "profile.not_in_list_status": "不在列表中",
   "profile.your_starter_packs_section": "您的 Starter Pack",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "粉丝",
   "profile.stats.following": "关注中",
   "profile.stats.posts": "帖子",
-  "profile.stats.lists": "列表",
+  "profile.stats.lists": "被收录于",
   "profile.stats.starter_packs": "Starter Pack",
   "profile.stats.handle": "Handle",
   "profile.stats.did": "DID",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "个人资料被收录的列表...",
 
 }

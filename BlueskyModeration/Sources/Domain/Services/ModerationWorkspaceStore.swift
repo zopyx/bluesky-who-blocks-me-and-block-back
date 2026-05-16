@@ -6,7 +6,13 @@ final class ModerationWorkspaceStore: ObservableObject {
     @Published private(set) var savedSearches: [SavedProfileSearch] = []
     @Published private(set) var recentSearches: [RecentProfileSearch] = []
     @Published private(set) var operationLog: [ModerationOperationLogEntry] = []
-    @Published var selectedTab: WorkspaceTab = .moderation
+    @Published var selectedTab: WorkspaceTab = .moderation {
+        didSet {
+            guard selectedTab != oldValue else { return }
+            preferencesStore.selectedTab = selectedTab
+        }
+    }
+    @Published private(set) var moderationNavigationResetToken = UUID()
     @Published var pendingChatConversation: ChatConversation?
     @Published var pendingChatConversationID: String?
     @Published var lastProfileQuery = ""
@@ -20,9 +26,15 @@ final class ModerationWorkspaceStore: ObservableObject {
     init(defaults: UserDefaults = .standard, preview: Bool = false) {
         preferencesStore = WorkspacePreferencesStore(defaults: defaults, preview: preview)
         auditStore = ModerationAuditStore(defaults: defaults, preview: preview)
+        selectedTab = preferencesStore.selectedTab
         syncFromStores()
         setupBindings()
         setupActionQueueBindings()
+    }
+
+    func returnToModerationRoot() {
+        selectedTab = .moderation
+        moderationNavigationResetToken = UUID()
     }
 
     func saveProfileSearch(_ query: String) {
@@ -86,7 +98,6 @@ final class ModerationWorkspaceStore: ObservableObject {
     private func syncFromPreferences() {
         savedSearches = preferencesStore.savedSearches
         recentSearches = preferencesStore.recentSearches
-        selectedTab = preferencesStore.selectedTab
         lastProfileQuery = preferencesStore.lastProfileQuery
     }
 

@@ -241,8 +241,8 @@
   "profile.using_account": "Utilisation de {handle} pour la recherche authentifiée.",
   "profile.add_account_first": "Ajoutez d'abord un compte.",
   "profile.labels_section": "Labels",
-  "profile.your_lists_section": "Vos listes",
-  "profile.no_lists": "Aucune liste disponible pour la comparaison.",
+  "profile.your_lists_section": "Profil présent sur des listes...",
+  "profile.no_lists": "Les listes sur lesquelles figure ce profil apparaîtront ici.",
   "profile.member_status": "Membre",
   "profile.not_in_list_status": "Pas dans la liste",
   "profile.your_starter_packs_section": "Vos Starter Packs",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Abonnés",
   "profile.stats.following": "Abonnements",
   "profile.stats.posts": "Publications",
-  "profile.stats.lists": "Listes",
+  "profile.stats.lists": "Présent sur",
   "profile.stats.starter_packs": "Starter Packs",
   "profile.stats.handle": "Handle",
   "profile.stats.did": "DID",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Profil présent sur des listes...",
 
 }

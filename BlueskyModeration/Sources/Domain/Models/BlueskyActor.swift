@@ -7,6 +7,7 @@ struct BlueskyActor: Identifiable, Hashable, Codable {
     let displayName: String?
     let avatarURL: URL?
     let createdAt: Date?
+    var blockedDate: Date?
 
     init(
         id: String? = nil,
@@ -14,7 +15,8 @@ struct BlueskyActor: Identifiable, Hashable, Codable {
         handle: String,
         displayName: String? = nil,
         avatarURL: URL? = nil,
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        blockedDate: Date? = nil
     ) {
         self.id = id ?? did
         self.did = did
@@ -22,6 +24,7 @@ struct BlueskyActor: Identifiable, Hashable, Codable {
         self.displayName = displayName
         self.avatarURL = avatarURL
         self.createdAt = createdAt
+        self.blockedDate = blockedDate
     }
 
     var title: String {

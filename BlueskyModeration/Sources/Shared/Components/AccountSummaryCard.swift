@@ -3,37 +3,44 @@ import SwiftUI
 struct AccountSummaryCard: View {
     let account: AppAccount
     let avatarURL: URL?
-    @ScaledMetric private var avatarSize = 52.0
+    @ScaledMetric private var avatarSize = 44.0
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             avatarView
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(account.displayName)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
                 Text(account.handle)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.skyPrimary)
         }
-        .padding(16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [Color.skyPrimary.opacity(0.14), Color.skyAccent.opacity(0.06)],
+                        colors: [Color.skyPrimary.opacity(0.16), Color.skyAccent.opacity(0.10)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
         )
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.skyPrimary.opacity(0.14), lineWidth: 1)
+        }
     }
 
     @ViewBuilder

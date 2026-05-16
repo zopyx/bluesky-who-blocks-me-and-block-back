@@ -287,6 +287,17 @@ struct ListsView: View {
                     .environmentObject(blueskyClient)
             }
         }
+        .id(workspaceStore.moderationNavigationResetToken)
+        .onChange(of: workspaceStore.moderationNavigationResetToken) { _, _ in
+            presentationState = PresentationState()
+            exportFormat = nil
+            isShowingListPicker = false
+            shareFileURL = nil
+            isExporting = false
+            exportProgressMessage = nil
+            exportProgressFraction = nil
+            showShareSheet = false
+        }
     }
 
     private func loadInitial() async {
@@ -309,24 +320,37 @@ struct ListsView: View {
     }
 
     private func relationshipRow(label: String, count: Int) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(label)
-                    .appFont(.heading)
+                    .font(.caption.weight(.semibold))
                     .lineLimit(1)
                     .foregroundStyle(.primary)
                 Text("\(count)")
-                    .appFont(.statistic)
-                    .foregroundStyle(.secondary)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(Color.skyPrimary)
             }
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.skyPrimary.opacity(0.8))
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 4)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.surfacePrimary, Color.skyPrimary.opacity(0.07)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
+        }
         .appButtonAccessibility(label: label, hint: loc("rel.view.hint"))
     }
 

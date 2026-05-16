@@ -241,8 +241,8 @@
   "profile.using_account": "Using {handle} for authenticated lookup. (RU)",
   "profile.add_account_first": "Add and select an account first. (RU)",
   "profile.labels_section": "Labels (RU)",
-  "profile.your_lists_section": "Your Lists (RU)",
-  "profile.no_lists": "No owned lists available for membership comparison. (RU)",
+  "profile.your_lists_section": "Профиль добавлен в списки...",
+  "profile.no_lists": "Списки, в которых находится этот профиль, появятся здесь.",
   "profile.member_status": "Member (RU)",
   "profile.not_in_list_status": "Not In List (RU)",
   "profile.your_starter_packs_section": "Your Starter Packs (RU)",
@@ -259,7 +259,7 @@
   "profile.stats.followers": "Followers (RU)",
   "profile.stats.following": "Following (RU)",
   "profile.stats.posts": "Posts (RU)",
-  "profile.stats.lists": "Lists (RU)",
+  "profile.stats.lists": "В списках",
   "profile.stats.starter_packs": "Starter Packs (RU)",
   "profile.stats.handle": "Handle (RU)",
   "profile.stats.did": "DID (RU)",
@@ -875,5 +875,6 @@
   "chat.select_all": "Select All",
   "profile.direct_message": "Direct Message",
   "chat.error.title": "Failed to Load Conversations",
+  "lists.lists_on_profile": "Профиль добавлен в списки...",
 
 }
