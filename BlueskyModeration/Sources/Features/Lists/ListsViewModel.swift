@@ -69,8 +69,8 @@ final class ListsViewModel: ObservableObject {
         }
 
         activeProfile = try? await profileTask
-        blockingCount = await (try? blockingTask) ?? 0
-        blockedByCount = await (try? blockedByTask) ?? 0
+        if let count = try? await blockingTask { blockingCount = count }
+        if let count = try? await blockedByTask { blockedByCount = count }
 
         persistCache(forKey: cacheKey)
         isFromCache = false

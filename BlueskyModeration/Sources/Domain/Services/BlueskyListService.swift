@@ -208,7 +208,7 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
         return BlueskyList(
             id: response.uri,
             name: name,
-            description: description.isEmpty ? kind.title : description,
+            description: description,
             memberCount: 0,
             kind: kind
         )

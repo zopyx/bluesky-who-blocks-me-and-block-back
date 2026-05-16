@@ -238,7 +238,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             )
         }
 
-        return BlueskyList(id: response.uri, name: name, description: description.isEmpty ? kind.title : description, memberCount: 0, kind: kind)
+        return BlueskyList(id: response.uri, name: name, description: description, memberCount: 0, kind: kind)
     }
 
     func deleteList(list: BlueskyList, account: AppAccount, appPassword: String?) async throws {
