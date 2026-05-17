@@ -220,9 +220,14 @@ struct ListMetadataSheet: View {
                     Text(verbatim: loc("list.edit.desc_label"))
                 }
             }
-            .navigationTitle(mode == .create(kind: .moderation) ? loc("list.create.moderation_title") : mode == .create(kind: .regular) ? loc("list.create.title") : loc("list.edit.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(navigationTitle)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
+
                 ToolbarItem(placement: .cancellationAction) {
                     Button(loc("actions.cancel")) {
                         dismiss()
@@ -240,6 +245,15 @@ struct ListMetadataSheet: View {
                     .accessibilityHint(isCreating ? loc("list.create.create.hint") : loc("list.edit.save.hint"))
                 }
             }
+        }
+    }
+
+    private var navigationTitle: String {
+        switch mode {
+        case .create(let k):
+            return k == .moderation ? loc("list.create.moderation_title") : loc("list.create.title")
+        case .edit:
+            return loc("list.edit.title")
         }
     }
 
