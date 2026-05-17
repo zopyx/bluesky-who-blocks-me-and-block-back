@@ -158,7 +158,7 @@ struct BlueskyProfileView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(profile.title)
-                                    .font(.title3.weight(.semibold))
+                                    .appFont(.heading)
                                 Text(profile.handle)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
@@ -167,7 +167,7 @@ struct BlueskyProfileView: View {
 
                         if let description = profile.description, !description.isEmpty {
                             Text(description)
-                                .font(.body)
+                                .appFont(.body)
                         }
 
                         if !isOwnProfile, let state = profile.viewerState {
@@ -211,7 +211,7 @@ struct BlueskyProfileView: View {
                             Text(statText(profile.postsCount))
                                 .foregroundStyle(.secondary)
                             Image(systemName: "chevron.right")
-                                .font(.caption.weight(.semibold))
+                                .appFont(.subheading)
                                 .foregroundStyle(.tertiary)
                         }
                     }
@@ -236,7 +236,7 @@ struct BlueskyProfileView: View {
                                 ].compactMap(\.self).joined(separator: " · "))
                                     .foregroundStyle(.secondary)
                                 Image(systemName: "chevron.right")
-                                    .font(.caption)
+                                    .appFont(.subheading)
                                     .foregroundStyle(.tertiary)
                             } else if !viewModel.isScanningMedia {
                                 Text(verbatim: loc("profile.media.empty"))
@@ -258,7 +258,7 @@ struct BlueskyProfileView: View {
                                 Text("\(viewModel.clearskyLists.count)")
                                     .foregroundStyle(.secondary)
                                 Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.semibold))
+                                    .appFont(.subheading)
                                     .foregroundStyle(.tertiary)
                             } else if viewModel.listError == nil, !viewModel.isLoading {
                                 ProgressView()
@@ -596,7 +596,7 @@ struct BlueskyProfileView: View {
                                                 .font(.caption.weight(.semibold))
                                         }
                                         Image(systemName: "chevron.right")
-                                            .font(.caption)
+                                            .appFont(.subheading)
                                             .foregroundStyle(.tertiary)
                                     }
                                 }
@@ -839,7 +839,7 @@ struct BlueskyProfileView: View {
                             Image(systemName: badge.icon)
                                 .font(.caption2)
                             Text(badge.label)
-                                .font(.caption.weight(.semibold))
+                                .appFont(.caption)
                         }
                         .foregroundStyle(badge.color)
                         .padding(.horizontal, 10)

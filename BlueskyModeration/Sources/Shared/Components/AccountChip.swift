@@ -3,7 +3,7 @@ import SwiftUI
 struct AccountChip: View {
     let account: AppAccount
     let avatarURL: URL?
-    @ScaledMetric private var avatarSize = 22.0
+    @ScaledMetric(relativeTo: .caption) private var avatarSize = 22.0
 
     var body: some View {
         HStack(spacing: 8) {

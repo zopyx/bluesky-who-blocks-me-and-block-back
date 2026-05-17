@@ -110,6 +110,18 @@ extension LinearGradient {
         endPoint: .bottom
     )
 
+    static let cardSurfaceGradient = LinearGradient(
+        colors: [Color.surfacePrimary, Color.skyPrimary.opacity(0.07)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let cardAccentGradient = LinearGradient(
+        colors: [Color.skyPrimary.opacity(0.16), Color.skyAccent.opacity(0.10)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
     static func semanticGradient(for color: Color) -> LinearGradient {
         LinearGradient(
             colors: [color.opacity(0.14), color.opacity(0.04)],

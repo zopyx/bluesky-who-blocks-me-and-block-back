@@ -3,7 +3,7 @@ import SwiftUI
 struct AccountSummaryCard: View {
     let account: AppAccount
     let avatarURL: URL?
-    @ScaledMetric private var avatarSize = 60.0
+    @ScaledMetric(relativeTo: .title2) private var avatarSize = 60.0
 
     var body: some View {
         HStack(spacing: 14) {
@@ -28,17 +28,11 @@ struct AccountSummaryCard: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.skyPrimary.opacity(0.16), Color.skyAccent.opacity(0.10)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(LinearGradient.cardAccentGradient)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.skyPrimary.opacity(0.14), lineWidth: 1)
         }
     }

@@ -56,7 +56,7 @@ struct GradientCardStyle: ViewModifier {
 }
 
 extension View {
-    func gradientCardStyle(gradient: LinearGradient = .skySubtleGradient, cornerRadius: CGFloat = 18) -> some View {
+    func gradientCardStyle(gradient: LinearGradient = .skySubtleGradient, cornerRadius: CGFloat = 16) -> some View {
         modifier(GradientCardStyle(gradient: gradient, cornerRadius: cornerRadius))
     }
 }
@@ -165,6 +165,7 @@ extension View {
     }
 
     func appScrollTransition() -> some View {
+        if UIAccessibility.isReduceMotionEnabled { return self }
         if #available(iOS 18, *) {
             return scrollTransition(.interactive, axis: .vertical) { content, phase in
                 content

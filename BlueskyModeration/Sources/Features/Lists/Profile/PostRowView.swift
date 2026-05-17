@@ -271,7 +271,6 @@ struct PostRowView: View {
         .foregroundStyle(.tertiary)
     }
 
-    @ViewBuilder
     private func externalEmbedCard(_ external: RichEmbedExternal) -> some View {
         HStack(spacing: 12) {
             if let thumb = external.thumb, let url = URL(string: thumb) {
@@ -313,7 +312,6 @@ struct PostRowView: View {
         }
     }
 
-    @ViewBuilder
     private func videoEmbedCard(_ video: RichEmbedVideo) -> some View {
         ZStack {
             if let thumb = video.thumbnail, let url = URL(string: thumb) {

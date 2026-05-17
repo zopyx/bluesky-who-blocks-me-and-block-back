@@ -337,23 +337,17 @@ struct ListsView: View {
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
+                .appFont(.subheading)
                 .foregroundStyle(Color.skyPrimary.opacity(0.8))
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 12)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.surfacePrimary, Color.skyPrimary.opacity(0.07)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(LinearGradient.cardSurfaceGradient)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.skyPrimary.opacity(0.12), lineWidth: 1)
         }
         .appButtonAccessibility(label: label, hint: loc("rel.view.hint"))

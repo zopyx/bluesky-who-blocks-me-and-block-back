@@ -3,7 +3,7 @@ import SwiftUI
 struct AccountRowView: View {
     let account: AppAccount
     let isActive: Bool
-    @ScaledMetric private var avatarSize = 40.0
+    @ScaledMetric(relativeTo: .body) private var avatarSize = 40.0
 
     private var entrywayLabel: String? {
         guard let entryway = account.entrywayURL else { return nil }

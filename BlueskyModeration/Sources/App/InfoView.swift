@@ -81,7 +81,7 @@ struct InfoView: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(verbatim: "Build")
-                        .font(.subheadline.weight(.semibold))
+                        .appFont(.subheading)
                         .foregroundStyle(.primary)
                     Text(buildDate)
                         .font(.subheadline)
@@ -155,7 +155,7 @@ struct InfoView: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(verbatim: localizationManager.localized("info.view_github"))
-                        .font(.subheadline.weight(.semibold))
+                        .appFont(.subheading)
                         .foregroundStyle(.primary)
                     Text(verbatim: localizationManager.localized("info.github_url"))
                         .font(.subheadline)
@@ -165,7 +165,7 @@ struct InfoView: View {
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
-                    .font(.subheadline)
+                    .appFont(.label)
                     .foregroundStyle(.secondary)
             }
             .padding(16)
@@ -186,10 +186,10 @@ struct InfoView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(verbatim: localizationManager.localized("info.keychain.title"))
-                    .font(.subheadline.weight(.semibold))
+                    .appFont(.subheading)
                     .foregroundStyle(.primary)
                 Text(verbatim: localizationManager.localized("info.keychain.desc"))
-                    .font(.subheadline)
+                    .appFont(.label)
                     .foregroundStyle(.secondary)
             }
 
@@ -279,7 +279,7 @@ struct InfoView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(verbatim: localizationManager.localized("info.third_party"))
-                    .font(.subheadline.weight(.semibold))
+                    .appFont(.subheading)
                     .foregroundStyle(.primary)
 
                 Link(destination: URL(string: "https://clearsky.app")!) {
@@ -297,7 +297,7 @@ struct InfoView: View {
                 .accessibilityHint(loc("info.clearsky_github.hint"))
 
                 Text(verbatim: localizationManager.localized("info.clearsky.desc"))
-                    .font(.subheadline)
+                    .appFont(.label)
                     .foregroundStyle(.secondary)
                     .padding(.leading, 50)
             }
@@ -309,7 +309,7 @@ struct InfoView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(verbatim: localizationManager.localized("info.data_classification"))
-                    .font(.subheadline.weight(.semibold))
+                    .appFont(.subheading)
                     .foregroundStyle(.primary)
 
                 dataRow(label: localizationManager.localized("info.data.account"), value: localizationManager.localized("info.data.account_value"))
@@ -330,7 +330,7 @@ struct InfoView: View {
                 .font(.title)
                 .foregroundStyle(color)
             Text(text)
-                .font(.subheadline.weight(.semibold))
+                .appFont(.subheading)
                 .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity, minHeight: 80)
@@ -384,7 +384,7 @@ struct InfoView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
+                    .appFont(.subheading)
                     .foregroundStyle(.primary)
                 if let value {
                     Text(value)
@@ -397,7 +397,7 @@ struct InfoView: View {
 
             if link {
                 Image(systemName: "arrow.up.right")
-                    .font(.subheadline)
+                    .appFont(.label)
                     .foregroundStyle(.secondary)
             }
         }
@@ -418,7 +418,7 @@ struct InfoView: View {
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
-                .font(.subheadline.weight(.semibold))
+                .appFont(.subheading)
                 .foregroundStyle(.primary)
         }
     }

@@ -345,7 +345,7 @@ struct ListDetailView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(currentList.name)
-                            .font(.title2.weight(.bold))
+                            .appFont(.title)
                             .lineLimit(2)
                             .minimumScaleFactor(0.5)
                         if !currentList.description.isEmpty, currentList.description != currentList.name {

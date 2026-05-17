@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ListRowView: View {
     let list: BlueskyList
-    @ScaledMetric private var iconSize = 32
+    @ScaledMetric(relativeTo: .body) private var iconSize = 32
 
     var body: some View {
         HStack(spacing: 12) {
