@@ -1,3 +1,10 @@
 bluesky-media-downloader/
 web/
 IMG_*.PNG
+.env
+my-blockings-listed.json
+my-blockings.json
+old/
+__pycache__/
+*.pyc
+
