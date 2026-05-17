@@ -934,5 +934,9 @@
   "list.details.type": "Type",
   "profile.stats.display_name": "Display Name",
   "profile.stats.lists": "Listed on",
-  "list.detail.not_found": "That list could not be loaded."
+  "list.detail.not_found": "That list could not be loaded.",
+  "usersearch.title": "Search Users",
+  "usersearch.placeholder": "Name, handle or description...",
+  "usersearch.no_results": "No users found",
+  "usersearch.no_results_desc": "Try a different name or handle"
 }

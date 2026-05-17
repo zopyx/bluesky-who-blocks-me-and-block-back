@@ -7,6 +7,7 @@ struct ListsView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = ListsViewModel()
     @State private var presentationState = PresentationState()
+    @State private var isShowingUserSearch = false
     @State private var exportFormat: ExportFormat?
     @State private var isShowingListPicker = false
     @State private var shareFileURL: URL?
@@ -192,6 +193,15 @@ struct ListsView: View {
             .navigationTitle("")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        isShowingUserSearch = true
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                    }
+                    .disabled(accountStore.activeAccount == nil)
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task { await reload() }
@@ -241,6 +251,13 @@ struct ListsView: View {
                 }
                 .environmentObject(accountStore)
                 .environmentObject(blueskyClient)
+            }
+            .sheet(isPresented: $isShowingUserSearch) {
+                NavigationStack {
+                    UserSearchSheet()
+                        .environmentObject(accountStore)
+                        .environmentObject(blueskyClient)
+                }
             }
             .sheet(isPresented: $isShowingListPicker) {
                 exportListPickerSheet

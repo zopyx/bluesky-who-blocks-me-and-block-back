@@ -25,6 +25,12 @@ struct BlueskyActorRow<Extra: View>: View {
                 Text(actor.handle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                if let description = actor.description, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
 
             Spacer()

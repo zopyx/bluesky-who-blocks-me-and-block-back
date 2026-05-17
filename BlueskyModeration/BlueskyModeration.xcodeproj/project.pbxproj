@@ -75,6 +75,7 @@
 		5165EDC2FE9BE35295B2F749 /* ReportGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29D257614499D35E1D3F8194 /* ReportGeneratorView.swift */; };
 		54823952C6026CFFFEC6201D /* PushNotificationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD7CCB1F89A82127480D938 /* PushNotificationCoordinator.swift */; };
 		54C2EF8D797B10C173440B6D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E74C74F6834686D4C613D35 /* RootView.swift */; };
+		54CDD36BAF66400229DF0C3A /* UserSearchSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1980AE97BC10B37100FFA70 /* UserSearchSheet.swift */; };
 		55718730D3E181B90078F4E7 /* BulkProfileLookupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4E57BAD6E7DFECAC4CBBD3 /* BulkProfileLookupView.swift */; };
 		5574169A66760B0B6B2665A8 /* ModerationRuleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B90EB01283830E6D941663 /* ModerationRuleStore.swift */; };
 		57463BDF5FE8746553C8DF37 /* PreviewBlueskyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6BE810AB5A008635BAA3BD1 /* PreviewBlueskyClient.swift */; };
@@ -356,6 +357,7 @@
 		AF5292156492A363FF0B7F56 /* AppStyling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStyling.swift; sourceTree = "<group>"; };
 		AF69C498C96A3D2D3FC09B29 /* ListImportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListImportController.swift; sourceTree = "<group>"; };
 		B12265535BE015A48B451511 /* ListDetailView+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailView+Helpers.swift"; sourceTree = "<group>"; };
+		B1980AE97BC10B37100FFA70 /* UserSearchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSearchSheet.swift; sourceTree = "<group>"; };
 		B1F016FD34001C8C06C7F8A3 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		B25EB876DB3431556F62F89C /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		B4163CB401DA247B6429425C /* ListsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewModelTests.swift; sourceTree = "<group>"; };
@@ -595,6 +597,7 @@
 				1C0333662556B11CF98A88B2 /* RelationshipsView.swift */,
 				29D257614499D35E1D3F8194 /* ReportGeneratorView.swift */,
 				6EC32DEFF79522CECD21F031 /* TrendDetectionView.swift */,
+				B1980AE97BC10B37100FFA70 /* UserSearchSheet.swift */,
 				EB3107F885296BBB3C3EAC7D /* Profile */,
 			);
 			path = Lists;
@@ -1136,6 +1139,7 @@
 				6988F8DD1CCE7A3D86F4CF55 /* UserAgentProvider.swift in Sources */,
 				428D7C45A2B2102335127F53 /* UserPostsView.swift in Sources */,
 				E875B47899BF5B033E4CE528 /* UserPostsViewModel.swift in Sources */,
+				54CDD36BAF66400229DF0C3A /* UserSearchSheet.swift in Sources */,
 				2A361832265E870EAA9D4997 /* WorkspacePreferencesStore.swift in Sources */,
 				368A8AEBCA8A88B63B4B766B /* iCloudAccountSync.swift in Sources */,
 			);

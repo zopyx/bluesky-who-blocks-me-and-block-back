@@ -180,7 +180,7 @@ struct ListMetadataSheet: View {
             _kind = State(initialValue: k)
         case .edit(let list, _):
             _title = State(initialValue: list.name)
-            _description = State(initialValue: list.description == list.kind.title ? "" : list.description)
+            _description = State(initialValue: list.description)
             _kind = State(initialValue: list.kind)
         }
     }

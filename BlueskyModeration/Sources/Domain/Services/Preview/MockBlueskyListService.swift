@@ -77,7 +77,7 @@ final class MockBlueskyListService: BlueskyListServicing {
 
     func updateListMetadata(list: BlueskyList, title: String, description: String, account _: AppAccount, appPassword _: String?) async throws -> BlueskyList {
         try await Task.sleep(for: .milliseconds(120))
-        return BlueskyList(id: list.id, name: title, description: description.isEmpty ? list.kind.title : description, memberCount: list.memberCount, kind: list.kind)
+        return BlueskyList(id: list.id, name: title, description: description, memberCount: list.memberCount, kind: list.kind)
     }
 
     private func previewMembers(for list: BlueskyList) -> [BlueskyListMember] {

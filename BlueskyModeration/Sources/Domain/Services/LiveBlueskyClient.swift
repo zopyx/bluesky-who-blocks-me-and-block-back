@@ -138,6 +138,43 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
         return page.actors
     }
 
+    func searchActorsFull(query: String, account: AppAccount, appPassword: String?) async throws -> [BlueskyActor] {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else { return [] }
+
+        struct SearchResponse: Decodable {
+            let cursor: String?
+            let actors: [ProfileViewDetailed]
+        }
+
+        let response: SearchResponse = try await sessionService.performAuthenticatedRequest(
+            account: account,
+            appPassword: appPassword
+        ) { authSession in
+            let queryItems = [
+                URLQueryItem(name: "q", value: trimmedQuery),
+                URLQueryItem(name: "limit", value: "25"),
+            ]
+            return try await requestExecutor.send(
+                path: "app.bsky.actor.searchActors",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+
+        return response.actors.map {
+            BlueskyActor(
+                did: $0.did,
+                handle: $0.handle,
+                displayName: $0.displayName,
+                avatarURL: URL(string: $0.avatar ?? ""),
+                description: $0.description
+            )
+        }
+    }
+
     func searchActorsPage(query: String, cursor: String?, account: AppAccount, appPassword: String?) async throws -> PagedActorSearch {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
@@ -288,7 +325,7 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             )
         }
 
-        return BlueskyList(id: list.id, name: title, description: description.isEmpty ? list.kind.title : description, memberCount: list.memberCount, kind: list.kind)
+        return BlueskyList(id: list.id, name: title, description: description, memberCount: list.memberCount, kind: list.kind)
     }
 
     func blockActor(did actorDID: String, account: AppAccount, appPassword: String?) async throws {
