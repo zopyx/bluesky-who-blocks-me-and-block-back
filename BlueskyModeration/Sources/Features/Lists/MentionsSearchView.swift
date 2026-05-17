@@ -105,9 +105,6 @@ struct MentionsSearchView: View {
                 ForEach(viewModel.entries, id: \.post.uri) { entry in
                     PostRowView(
                         entry: entry,
-                        onTapThread: {
-                            selectedPostURI = entry.post.uri
-                        },
                         onTapImage: { index in
                             let allImages = entry.post.embed?.images ?? []
                             let urls = allImages.compactMap { $0.fullsize.flatMap(URL.init) }

@@ -903,5 +903,20 @@
   "mentions.empty_desc": "아직 아무도 당신을 언급하지 않았습니다",
   "mentions.end": "더 이상 게시물이 없습니다",
   "mentions.searching_as": "검색 계정",
-  "mentions.switch": "전환"
+  "mentions.switch": "전환",
+  "lists.advanced.customsearch_button": "Custom search",
+  "customsearch.title": "Custom Search",
+  "customsearch.placeholder": "Search posts and users...",
+  "customsearch.searching_as": "Searching as",
+  "customsearch.recent": "Recent Searches",
+  "customsearch.tab": "Tab",
+  "customsearch.tab.top": "Top",
+  "customsearch.tab.newest": "Newest",
+  "customsearch.tab.users": "Users",
+  "customsearch.loading": "Searching...",
+  "customsearch.empty": "No posts found",
+  "customsearch.empty_desc": "No posts match your search query",
+  "customsearch.empty_users": "No users found",
+  "customsearch.empty_users_desc": "No users match your search query",
+  "customsearch.end": "No more results"
 }

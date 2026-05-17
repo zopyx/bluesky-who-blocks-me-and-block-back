@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PostRowView: View {
     let entry: RichFeedEntry
-    let onTapThread: () -> Void
+    var onTapThread: (() -> Void)?
     let onTapImage: (Int) -> Void
     var onPlayVideo: (() -> Void)?
     var onReply: (() -> Void)?
@@ -121,7 +121,7 @@ struct PostRowView: View {
 
             Group {
                 if let text = post.safeRecord.text, !text.isEmpty {
-                    Text(mentionAttributedString(from: text))
+                    let textContent = Text(mentionAttributedString(from: text))
                         .font(.body)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -132,8 +132,13 @@ struct PostRowView: View {
                             }
                             return .systemAction
                         })
-                        .contentShape(Rectangle())
-                        .onTapGesture { onTapThread() }
+                    if let onTapThread {
+                        textContent
+                            .contentShape(Rectangle())
+                            .onTapGesture { onTapThread() }
+                    } else {
+                        textContent
+                    }
                 }
             }
 
@@ -254,62 +259,64 @@ struct PostRowView: View {
                 )
             }
             Spacer()
-            Menu {
-                if let onBlockAllLikers {
-                    Button {
-                        onBlockAllLikers()
-                    } label: {
-                        Label(loc("post.block_likers"), systemImage: "hand.raised.slash")
+            if let likeCount = post.likeCount, likeCount > 0 {
+                Menu {
+                    if let onBlockAllLikers {
+                        Button {
+                            onBlockAllLikers()
+                        } label: {
+                            Label(loc("post.block_likers"), systemImage: "hand.raised.slash")
+                        }
                     }
-                }
-                if let onAddAllLikersToList, !availableLikerTargetLists.isEmpty {
-                    Menu {
-                        if !moderationLikerTargetLists.isEmpty {
-                            Menu(loc("lists.moderation_lists")) {
-                                ForEach(moderationLikerTargetLists) { list in
-                                    Button {
-                                        onAddAllLikersToList(list)
-                                    } label: {
-                                        Label(list.name, systemImage: list.kind.symbolName)
+                    if let onAddAllLikersToList, !availableLikerTargetLists.isEmpty {
+                        Menu {
+                            if !moderationLikerTargetLists.isEmpty {
+                                Menu(loc("lists.moderation_lists")) {
+                                    ForEach(moderationLikerTargetLists) { list in
+                                        Button {
+                                            onAddAllLikersToList(list)
+                                        } label: {
+                                            Label(list.name, systemImage: list.kind.symbolName)
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if !regularLikerTargetLists.isEmpty {
-                            Menu(loc("lists.lists")) {
-                                ForEach(regularLikerTargetLists) { list in
-                                    Button {
-                                        onAddAllLikersToList(list)
-                                    } label: {
-                                        Label(list.name, systemImage: list.kind.symbolName)
+                            if !regularLikerTargetLists.isEmpty {
+                                Menu(loc("lists.lists")) {
+                                    ForEach(regularLikerTargetLists) { list in
+                                        Button {
+                                            onAddAllLikersToList(list)
+                                        } label: {
+                                            Label(list.name, systemImage: list.kind.symbolName)
+                                        }
                                     }
                                 }
                             }
+                        } label: {
+                            Label(loc("post.add_likers_to_list"), systemImage: "text.badge.plus")
                         }
-                    } label: {
-                        Label(loc("post.add_likers_to_list"), systemImage: "text.badge.plus")
                     }
-                }
-                if let onCopy {
-                    Button(action: onCopy) {
-                        Label(loc("post.copy"), systemImage: "doc.on.doc")
+                    if let onCopy {
+                        Button(action: onCopy) {
+                            Label(loc("post.copy"), systemImage: "doc.on.doc")
+                        }
                     }
-                }
-                if let onTranslate {
-                    Button(action: onTranslate) {
-                        Label(loc("post.translate"), systemImage: "globe")
+                    if let onTranslate {
+                        Button(action: onTranslate) {
+                            Label(loc("post.translate"), systemImage: "globe")
+                        }
                     }
-                }
-                if let onDeletePost {
-                    Divider()
-                    Button(role: .destructive, action: onDeletePost) {
-                        Label(loc("post.delete"), systemImage: "trash")
+                    if let onDeletePost {
+                        Divider()
+                        Button(role: .destructive, action: onDeletePost) {
+                            Label(loc("post.delete"), systemImage: "trash")
+                        }
                     }
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.tertiary)
                 }
-            } label: {
-                Image(systemName: "gearshape")
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(.tertiary)
             }
         }
         .foregroundStyle(.tertiary)

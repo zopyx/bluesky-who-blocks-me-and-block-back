@@ -21,7 +21,19 @@ struct ListDetailView: View {
     @State private var isExporting = false
     @State private var exportProgressMessage: String?
     @State private var exportProgressFraction: Double?
+    @State private var ownerActor: BlueskyActor?
     @Environment(\.dismiss) private var dismiss
+
+    private var ownerDID: String? {
+        let parts = currentList.id.split(separator: "/")
+        guard parts.count >= 2, parts[0].description == "at:" else { return nil }
+        return parts[1].description
+    }
+
+    private var isOwnedList: Bool {
+        guard let activeDID = accountStore.activeAccount?.did else { return false }
+        return currentList.id.hasPrefix("at://\(activeDID)")
+    }
 
     init(list: BlueskyList, onListUpdated: ((BlueskyList) -> Void)? = nil) {
         self.onListUpdated = onListUpdated
@@ -189,22 +201,24 @@ struct ListDetailView: View {
 
     @ToolbarContentBuilder
     private func toolbarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button(role: .destructive) {
-                isShowingDeleteConfirmation = true
-            } label: {
-                Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
+        if isOwnedList {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(role: .destructive) {
+                    isShowingDeleteConfirmation = true
+                } label: {
+                    Label { Text(verbatim: loc("list.detail.delete")) } icon: { Image(systemName: "trash") }
+                }
+                .accessibilityHint(loc("list.detail.delete_list.hint"))
             }
-            .accessibilityHint(loc("list.detail.delete_list.hint"))
-        }
 
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                importState.isShowingEditSheet = true
-            } label: {
-                Label { Text(verbatim: loc("list.detail.edit")) } icon: { Image(systemName: "pencil") }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    importState.isShowingEditSheet = true
+                } label: {
+                    Label { Text(verbatim: loc("list.detail.edit")) } icon: { Image(systemName: "pencil") }
+                }
+                .accessibilityHint(loc("list.detail.edit_list.hint"))
             }
-            .accessibilityHint(loc("list.detail.edit_list.hint"))
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -352,6 +366,39 @@ struct ListDetailView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
+                        if !isOwnedList, let ownerActor {
+                            HStack(spacing: 10) {
+                                if let avatarURL = ownerActor.avatarURL {
+                                    AsyncImage(url: avatarURL) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                    } placeholder: {
+                                        Circle()
+                                            .fill(Color.skyPrimary.opacity(0.16))
+                                    }
+                                    .frame(width: 28, height: 28)
+                                    .clipShape(Circle())
+                                } else {
+                                    Circle()
+                                        .fill(Color.skyPrimary.opacity(0.16))
+                                        .frame(width: 28, height: 28)
+                                        .overlay {
+                                            Text(ownerActor.displayName?.prefix(1).uppercased() ?? "?")
+                                                .font(.caption.weight(.bold))
+                                                .foregroundStyle(Color.skyPrimary)
+                                        }
+                                }
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(ownerActor.displayName ?? ownerActor.handle)
+                                        .font(.subheadline.weight(.semibold))
+                                    Text("@\(ownerActor.handle)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.top, 8)
+                        }
                     }
                 }
                 .padding(.vertical, 4)
@@ -359,18 +406,20 @@ struct ListDetailView: View {
 
             BatchProgressSection(batchState: batchState, viewModel: viewModel)
 
-            ListSearchSection(
-                viewModel: viewModel,
-                batchState: batchState,
-                searchQuery: $searchQuery,
-                currentList: currentList,
-                account: account,
-                appPassword: appPassword,
-                isShowingImportSheet: $importState.isShowingImportSheet,
-                isShowingImportFilePicker: $importState.isShowingImportFilePicker,
-                exportFileURL: exportFileURL,
-                syncSnapshot: { syncSnapshot() }
-            )
+            if isOwnedList {
+                ListSearchSection(
+                    viewModel: viewModel,
+                    batchState: batchState,
+                    searchQuery: $searchQuery,
+                    currentList: currentList,
+                    account: account,
+                    appPassword: appPassword,
+                    isShowingImportSheet: $importState.isShowingImportSheet,
+                    isShowingImportFilePicker: $importState.isShowingImportFilePicker,
+                    exportFileURL: exportFileURL,
+                    syncSnapshot: { syncSnapshot() }
+                )
+            }
 
             ListMembersSection(
                 viewModel: viewModel,
@@ -391,6 +440,9 @@ struct ListDetailView: View {
         .listStyle(.insetGrouped)
         .task {
             await reloadListContext(account: account, appPassword: appPassword)
+        }
+        .task {
+            await loadOwner()
         }
         .task(id: searchQuery) {
             do {
@@ -560,6 +612,16 @@ struct ListDetailView: View {
                     .font(.title3)
                     .foregroundStyle(Color.skyPrimary)
             }
+    }
+
+    private func loadOwner() async {
+        guard !isOwnedList, let did = ownerDID else { return }
+        do {
+            let actors = try await LiveBlueskyClient.fetchProfileBatch(identifiers: [did], session: URLSession.shared)
+            ownerActor = actors.first
+        } catch {
+            AppLogger.performance.error("Failed to fetch list owner: \(error.localizedDescription, privacy: .public)")
+        }
     }
 }
 

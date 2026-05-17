@@ -189,6 +189,19 @@ struct ListsView: View {
                                 }
                                 .padding(.vertical, 4)
                             }
+                            Button {
+                                presentationState.showCustomSearch = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                    Text(loc("lists.advanced.customsearch_button"))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.vertical, 4)
+                            }
                         } header: {
                             Text(loc("lists.advanced"))
                         }
@@ -336,6 +349,11 @@ struct ListsView: View {
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
                 }
+            }
+            .navigationDestination(isPresented: $presentationState.showCustomSearch) {
+                CustomSearchView()
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
             }
         }
         .id(workspaceStore.moderationNavigationResetToken)

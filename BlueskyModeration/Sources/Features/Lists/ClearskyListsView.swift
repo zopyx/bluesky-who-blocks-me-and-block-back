@@ -3,14 +3,13 @@ import SwiftUI
 struct ClearskyListsView: View {
     let entries: [ClearskyListEntry]
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @EnvironmentObject private var accountStore: AccountStore
-    @State private var entryKinds: [String: BlueskyList.Kind] = [:]
+    @EnvironmentObject private var blueskyClient: LiveBlueskyClient
     @State private var ownerHandles: [String: String] = [:]
 
     private var sortedEntries: [ClearskyListEntry] {
         entries.sorted { a, b in
-            date(from: a.createdDate) > date(from: b.createdDate)
+            date(from: a.dateAdded) > date(from: b.dateAdded)
         }
     }
 
@@ -19,30 +18,15 @@ struct ClearskyListsView: View {
             List {
                 Section {
                     ForEach(sortedEntries) { entry in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack(spacing: 6) {
-                                    Text(entry.name)
-                                        .lineLimit(1)
-                                    if entryKinds[entry.url] == .moderation {
-                                        Text(loc("lists.moderation"))
-                                            .font(.caption2.weight(.semibold))
-                                            .foregroundStyle(Color.skyPrimary)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
-                                            .background(Color.skyPrimary.opacity(0.12), in: Capsule())
-                                    }
-                                }
-                                if let handle = ownerHandles[entry.url] {
-                                    Text(handle)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            Spacer()
-                            Text(formatDateRelative(dateString: entry.dateAdded))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        NavigationLink {
+                            ListDetailView(
+                                list: blueskyList(from: entry),
+                                onListUpdated: { _ in }
+                            )
+                            .environmentObject(accountStore)
+                            .environmentObject(blueskyClient)
+                        } label: {
+                            rowContent(entry)
                         }
                     }
                 }
@@ -59,31 +43,45 @@ struct ClearskyListsView: View {
                 }
             }
             .task {
-                await loadKinds()
                 await loadOwnerHandles()
             }
         }
     }
 
-    private func loadKinds() async {
-        guard let account = accountStore.activeAccount,
-              let appPassword = accountStore.appPassword(for: account) else { return }
-        let batchSize = 10
-        let batch = entries.prefix(50)
-        for batchStart in stride(from: 0, to: batch.count, by: batchSize) {
-            let slice = batch[batchStart ..< min(batchStart + batchSize, batch.count)]
-            await withTaskGroup(of: (String, BlueskyList.Kind?).self) { group in
-                for entry in slice {
-                    group.addTask {
-                        guard let uri = atURI(from: entry.url, ownerDID: entry.did) else { return (entry.url, nil) }
-                        guard let detail = try? await blueskyClient.fetchList(uri: uri, account: account, appPassword: appPassword) else { return (entry.url, nil) }
-                        return (entry.url, detail.kind)
-                    }
+    private func blueskyList(from entry: ClearskyListEntry) -> BlueskyList {
+        BlueskyList(
+            id: atURI(from: entry.url, ownerDID: entry.did) ?? entry.url,
+            name: entry.name,
+            description: entry.description ?? "",
+            memberCount: nil,
+            kind: .regular,
+            avatarURL: nil
+        )
+    }
+
+    private func rowContent(_ entry: ClearskyListEntry) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(entry.name)
+                        .lineLimit(1)
                 }
-                for await (url, kind) in group {
-                    if let kind { entryKinds[url] = kind }
+                if let handle = ownerHandles[entry.url] {
+                    Text(handle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let desc = entry.description, !desc.isEmpty {
+                    Text(desc)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(2)
                 }
             }
+            Spacer()
+            Text(formatDateRelative(dateString: entry.dateAdded))
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 

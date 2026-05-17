@@ -903,5 +903,20 @@
   "mentions.empty_desc": "Chưa có ai nhắc đến bạn",
   "mentions.end": "Không còn bài viết nào nữa",
   "mentions.searching_as": "Tìm kiếm với tư cách",
-  "mentions.switch": "Chuyển"
+  "mentions.switch": "Chuyển",
+  "lists.advanced.customsearch_button": "Custom search",
+  "customsearch.title": "Custom Search",
+  "customsearch.placeholder": "Search posts and users...",
+  "customsearch.searching_as": "Searching as",
+  "customsearch.recent": "Recent Searches",
+  "customsearch.tab": "Tab",
+  "customsearch.tab.top": "Top",
+  "customsearch.tab.newest": "Newest",
+  "customsearch.tab.users": "Users",
+  "customsearch.loading": "Searching...",
+  "customsearch.empty": "No posts found",
+  "customsearch.empty_desc": "No posts match your search query",
+  "customsearch.empty_users": "No users found",
+  "customsearch.empty_users_desc": "No users match your search query",
+  "customsearch.end": "No more results"
 }

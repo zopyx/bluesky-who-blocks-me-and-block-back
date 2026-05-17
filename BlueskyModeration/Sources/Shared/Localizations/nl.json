@@ -903,5 +903,20 @@
   "mentions.empty_desc": "Nog niemand heeft je vermeld",
   "mentions.end": "Geen verdere berichten",
   "mentions.searching_as": "Zoeken als",
-  "mentions.switch": "Wissel"
+  "mentions.switch": "Wissel",
+  "lists.advanced.customsearch_button": "Custom search",
+  "customsearch.title": "Custom Search",
+  "customsearch.placeholder": "Search posts and users...",
+  "customsearch.searching_as": "Searching as",
+  "customsearch.recent": "Recent Searches",
+  "customsearch.tab": "Tab",
+  "customsearch.tab.top": "Top",
+  "customsearch.tab.newest": "Newest",
+  "customsearch.tab.users": "Users",
+  "customsearch.loading": "Searching...",
+  "customsearch.empty": "No posts found",
+  "customsearch.empty_desc": "No posts match your search query",
+  "customsearch.empty_users": "No users found",
+  "customsearch.empty_users_desc": "No users match your search query",
+  "customsearch.end": "No more results"
 }

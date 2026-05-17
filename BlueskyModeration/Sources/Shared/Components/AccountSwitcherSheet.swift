@@ -11,6 +11,7 @@ struct AccountSwitcherSheet: View {
     @State private var editingLabelAccount: AppAccount?
     @State private var editLabelText = ""
     @State private var switchingAccountID: AppAccount.ID?
+    @State private var editMode: EditMode = .inactive
 
     var body: some View {
         NavigationStack {
@@ -74,8 +75,16 @@ struct AccountSwitcherSheet: View {
             .task {
                 await accountStore.refreshAccountProfiles(using: blueskyClient)
             }
-            .environment(\.editMode, .constant(.active))
+            .environment(\.editMode, $editMode)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(editMode.isEditing ? loc("actions.done") : loc("account.manage.edit")) {
+                        withAnimation {
+                            editMode = editMode.isEditing ? .inactive : .active
+                        }
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isPresentingAddAccount = true
