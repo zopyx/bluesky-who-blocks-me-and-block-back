@@ -173,7 +173,7 @@ extension ListDetailView {
 
                 if let exportFileURL {
                     ShareLink(item: exportFileURL) {
-                        Label { Text(verbatim: loc("list.search.export_csv")) } icon: { Image(systemName: "square.and.arrow.up") }
+                        Label { Text(verbatim: loc("list.search.export_csv")) } icon: { Image(systemName: "arrow.down.doc") }
                     }
                     .accessibilityLabel(loc("list.search.export_csv.label"))
                     .accessibilityHint(loc("list.search.export_csv.hint"))

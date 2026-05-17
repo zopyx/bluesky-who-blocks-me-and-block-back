@@ -228,7 +228,7 @@ extension ListDetailView {
 
                 if let diffExportFileURL {
                     ShareLink(item: diffExportFileURL) {
-                        Label { Text(verbatim: loc("list.compare.export_csv")) } icon: { Image(systemName: "square.and.arrow.up") }
+                        Label { Text(verbatim: loc("list.compare.export_csv")) } icon: { Image(systemName: "arrow.down.doc") }
                     }
                     .accessibilityHint(loc("list.compare.export_csv.hint"))
                 }

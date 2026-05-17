@@ -28,6 +28,8 @@ struct ListRowView: View {
                 Text(list.name)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.5)
                 Text(list.description)
                     .font(.caption)
                     .foregroundStyle(.primary)

@@ -259,7 +259,7 @@ struct UserPostsView: View {
                 try? csv.write(to: url, atomically: true, encoding: .utf8)
                 shareFileURL = url
             } label: {
-                Label { Text(verbatim: loc("profile.export.csv")) } icon: { Image(systemName: "doc.text") }
+                Label { Text(verbatim: loc("profile.export.csv")) } icon: { Image(systemName: "arrow.down.doc") }
             }
             Button {
                 let json = viewModel.exportJSON()
@@ -267,10 +267,10 @@ struct UserPostsView: View {
                 try? json.write(to: url, options: .atomic)
                 shareFileURL = url
             } label: {
-                Label { Text(verbatim: loc("profile.export.json")) } icon: { Image(systemName: "doc") }
+                Label { Text(verbatim: loc("profile.export.json")) } icon: { Image(systemName: "arrow.down.doc") }
             }
         } label: {
-            Image(systemName: "square.and.arrow.down")
+            Image(systemName: "arrow.down.doc")
         }
     }
 

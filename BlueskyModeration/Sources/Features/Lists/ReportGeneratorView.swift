@@ -27,7 +27,7 @@ struct ReportGeneratorView: View {
                         Label {
                             Text(verbatim: loc("report.share"))
                         } icon: {
-                            Image(systemName: "square.and.arrow.up")
+                            Image(systemName: "arrow.down.doc")
                         }
                     }
                     .accessibilityHint(loc("report.share.hint"))

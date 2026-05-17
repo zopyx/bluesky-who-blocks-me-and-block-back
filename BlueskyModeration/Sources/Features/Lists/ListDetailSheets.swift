@@ -188,7 +188,11 @@ struct EditListMetadataSheet: View {
                         }
                     counterBadge(count: title.count, max: Self.maxTitleLength)
                         .font(.caption)
+                } header: {
+                    Text(verbatim: loc("list.edit.name_label"))
+                }
 
+                Section {
                     TextField(loc("list.edit.desc_placeholder"), text: $description, axis: .vertical)
                         .lineLimit(3 ... 6)
                         .onChange(of: description) { _, newValue in
@@ -199,7 +203,7 @@ struct EditListMetadataSheet: View {
                     counterBadge(count: description.count, max: Self.maxDescriptionLength)
                         .font(.caption)
                 } header: {
-                    Text(verbatim: loc("list.edit.metadata"))
+                    Text(verbatim: loc("list.edit.desc_label"))
                 }
             }
             .navigationTitle(loc("list.edit.title"))

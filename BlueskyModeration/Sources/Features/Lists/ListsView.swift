@@ -376,7 +376,7 @@ struct ListsView: View {
                 if lists.isEmpty {
                     ContentUnavailableView(
                         loc("lists.export.no_members"),
-                        systemImage: "square.and.arrow.up",
+                        systemImage: "arrow.down.doc",
                         description: Text(verbatim: loc("lists.export.no_members_desc"))
                     )
                 }
@@ -399,7 +399,7 @@ struct ListsView: View {
                             if isExporting {
                                 ProgressView()
                             } else {
-                                Image(systemName: "square.and.arrow.up")
+                                Image(systemName: "arrow.down.doc")
                                     .foregroundStyle(.secondary)
                             }
                         }

@@ -187,28 +187,28 @@ struct RelationshipsView: View {
                                 isExporting = true
                                 Task { await exportAll(format: .csv) }
                             } label: {
-                                Label { Text(verbatim: loc("list.search.export_csv_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                                Label { Text(verbatim: loc("list.search.export_csv_all")) } icon: { Image(systemName: "arrow.down.doc") }
                             }
 
                             Button {
                                 isExporting = true
                                 Task { await exportAll(format: .json) }
                             } label: {
-                                Label { Text(verbatim: loc("list.search.export_json_all")) } icon: { Image(systemName: "square.and.arrow.up") }
+                                Label { Text(verbatim: loc("list.search.export_json_all")) } icon: { Image(systemName: "arrow.down.doc") }
                             }
 
                             Button {
                                 isExporting = true
                                 Task { await exportAll(format: .xlsx) }
                             } label: {
-                                Label { Text(verbatim: loc("list.export.excel")) } icon: { Image(systemName: "tablecells") }
+                                Label { Text(verbatim: loc("list.export.excel")) } icon: { Image(systemName: "arrow.down.doc") }
                             }
 
                             Button {
                                 isExporting = true
                                 Task { await exportAll(format: .ods) }
                             } label: {
-                                Label { Text(verbatim: loc("list.export.ods")) } icon: { Image(systemName: "doc.text") }
+                                Label { Text(verbatim: loc("list.export.ods")) } icon: { Image(systemName: "arrow.down.doc") }
                             }
                         } label: {
                             if isExporting {
@@ -228,7 +228,7 @@ struct RelationshipsView: View {
                                     }
                                 }
                             } else {
-                                Image(systemName: "square.and.arrow.up")
+                                Image(systemName: "arrow.down.doc")
                             }
                         }
                         .disabled(isExporting)
