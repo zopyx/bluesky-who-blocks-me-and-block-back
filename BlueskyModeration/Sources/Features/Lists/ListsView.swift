@@ -219,7 +219,7 @@ struct ListsView: View {
                 }
             }
             .sheet(isPresented: $presentationState.isShowingCreateList) {
-                CreateListSheet(kind: presentationState.createListKind) { name, description, kind in
+                ListMetadataSheet(mode: .create(kind: presentationState.createListKind)) { name, description, kind in
                     if let account = accountStore.activeAccount,
                        let appPassword = accountStore.appPassword(for: account)
                     {

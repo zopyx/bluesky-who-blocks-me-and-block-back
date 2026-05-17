@@ -152,28 +152,42 @@ struct ImportPreviewSheet: View {
     }
 }
 
-struct EditListMetadataSheet: View {
+struct ListMetadataSheet: View {
     @Environment(\.dismiss) private var dismiss
-    let list: BlueskyList
-    let isSaving: Bool
-    let saveAction: (_ title: String, _ description: String) -> Void
+
+    enum Mode: Equatable {
+        case create(kind: BlueskyList.Kind)
+        case edit(list: BlueskyList, isSaving: Bool)
+    }
+
+    let mode: Mode
+    let onConfirm: (_ title: String, _ description: String, _ kind: BlueskyList.Kind) -> Void
 
     private static let maxTitleLength = 64
     private static let maxDescriptionLength = 300
 
     @State private var title: String
     @State private var description: String
+    @State private var kind: BlueskyList.Kind
 
-    init(
-        list: BlueskyList,
-        isSaving: Bool,
-        saveAction: @escaping (_ title: String, _ description: String) -> Void
-    ) {
-        self.list = list
-        self.isSaving = isSaving
-        self.saveAction = saveAction
-        _title = State(initialValue: list.name)
-        _description = State(initialValue: list.description == list.kind.title ? "" : list.description)
+    init(mode: Mode, onConfirm: @escaping (_ title: String, _ description: String, _ kind: BlueskyList.Kind) -> Void) {
+        self.mode = mode
+        self.onConfirm = onConfirm
+        switch mode {
+        case .create(let k):
+            _title = State(initialValue: "")
+            _description = State(initialValue: "")
+            _kind = State(initialValue: k)
+        case .edit(let list, _):
+            _title = State(initialValue: list.name)
+            _description = State(initialValue: list.description == list.kind.title ? "" : list.description)
+            _kind = State(initialValue: list.kind)
+        }
+    }
+
+    private var isSaving: Bool {
+        if case .edit(_, let saving) = mode { return saving }
+        return false
     }
 
     var body: some View {
@@ -206,7 +220,7 @@ struct EditListMetadataSheet: View {
                     Text(verbatim: loc("list.edit.desc_label"))
                 }
             }
-            .navigationTitle(loc("list.edit.title"))
+            .navigationTitle(mode == .create(kind: .moderation) ? loc("list.create.moderation_title") : mode == .create(kind: .regular) ? loc("list.create.title") : loc("list.edit.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -214,18 +228,24 @@ struct EditListMetadataSheet: View {
                         dismiss()
                     }
                     .disabled(isSaving)
-                    .accessibilityHint(loc("list.edit.discard.hint"))
+                    .accessibilityHint(isCreating ? loc("list.create.discard.hint") : loc("list.edit.discard.hint"))
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(loc("actions.save")) {
-                        saveAction(title, description)
+                    Button(isCreating ? loc("list.create.create") : loc("actions.save")) {
+                        onConfirm(title, description, kind)
+                        dismiss()
                     }
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
-                    .accessibilityHint(loc("list.edit.save.hint"))
+                    .accessibilityHint(isCreating ? loc("list.create.create.hint") : loc("list.edit.save.hint"))
                 }
             }
         }
+    }
+
+    private var isCreating: Bool {
+        if case .create = mode { return true }
+        return false
     }
 
     private func counterBadge(count: Int, max: Int) -> some View {

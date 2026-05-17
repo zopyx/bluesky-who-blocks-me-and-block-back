@@ -98,7 +98,6 @@
 		79AACF75B425CC5EBDF3A467 /* AccountQuickSwitcherSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06066F9AA64B404438E1DF91 /* AccountQuickSwitcherSheet.swift */; };
 		7B0F420541C16E2AEE22861B /* RelationshipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0333662556B11CF98A88B2 /* RelationshipsView.swift */; };
 		7B197CC1AECA9F7144D9C953 /* ThumbnailImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DA319C638081F040D7489C /* ThumbnailImageView.swift */; };
-		7B5BF1C7905CE59F13B13C44 /* CreateListSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B1F6017FABE697E2F1D8BDC /* CreateListSheet.swift */; };
 		7B6C7E9E50BD9B2FD8FACFE1 /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDCFCF67DC94A7322A8A4A9 /* ChatModels.swift */; };
 		808F386501A09A708A6FA847 /* ProfileInspectorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC53589A50B1C167E514A800 /* ProfileInspectorViewModelTests.swift */; };
 		818FB9B3ACB323DBDC411784 /* ProfileInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 440FEDDE082EAEE9C03C608F /* ProfileInspectorView.swift */; };
@@ -295,7 +294,6 @@
 		6524D24E2085F35ADFDB37E4 /* vi.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = vi.json; sourceTree = "<group>"; };
 		69EC0405E28F2993D2F08CD9 /* LoadableState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadableState.swift; sourceTree = "<group>"; };
 		69FDF0CFB109541C51CEAAA8 /* de.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = de.json; sourceTree = "<group>"; };
-		6B1F6017FABE697E2F1D8BDC /* CreateListSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateListSheet.swift; sourceTree = "<group>"; };
 		6B80E5E2025B8AA5882C4DF2 /* BlueskyProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyProfile.swift; sourceTree = "<group>"; };
 		6C3A64461CD00A9DF8DA33D3 /* ThreadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadView.swift; sourceTree = "<group>"; };
 		6D60B72E580FEAAF85EE74B3 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -375,7 +373,7 @@
 		C65C73E860FC0B9A04A7E781 /* BlueskyAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyAPIError.swift; sourceTree = "<group>"; };
 		C6B884F490FEB25B8E1D1176 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		C80E5F0901F51FE022BA9DE4 /* ListDetailViewModel+Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListDetailViewModel+Data.swift"; sourceTree = "<group>"; };
-		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C90099ED0910E3AD55FA3EE7 /* BlueskyModeration.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BlueskyModeration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB4E57BAD6E7DFECAC4CBBD3 /* BulkProfileLookupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkProfileLookupView.swift; sourceTree = "<group>"; };
 		CB61E1D6174ECCA54D9A4C82 /* MockBlueskyListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlueskyListService.swift; sourceTree = "<group>"; };
 		CF294652EF8FD853EEA4FB99 /* BlueskyPushNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueskyPushNotificationService.swift; sourceTree = "<group>"; };
@@ -391,7 +389,7 @@
 		DB8AAD4D3A2E278AC0E58F83 /* StatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePanels.swift; sourceTree = "<group>"; };
 		DBD49F5D31AD7E39041AD778 /* ListTemplatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTemplatesView.swift; sourceTree = "<group>"; };
 		DF724B3AC46DD8943DA15180 /* ListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsView.swift; sourceTree = "<group>"; };
-		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DF8FFF71CA6FEEA785949612 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E02F73A9B4075276A0DA42A2 /* AccountSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSummaryCard.swift; sourceTree = "<group>"; };
 		E038BB7F81793651195D96DF /* MediaDownloadServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDownloadServiceTests.swift; sourceTree = "<group>"; };
 		E20DA0AD00F89BF117613EC6 /* ListsView+Presentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Presentation.swift"; sourceTree = "<group>"; };
@@ -566,7 +564,6 @@
 				9D493CE6BEC23FAEDADC7AED /* BlueskyProfileViewModel.swift */,
 				21D4D69AD60052A31111DB5B /* ClearskyListsView.swift */,
 				AE305280A1A0EDD058EDD5C8 /* ComposePostView.swift */,
-				6B1F6017FABE697E2F1D8BDC /* CreateListSheet.swift */,
 				1428B2B7544B3F6DDABF69BA /* DashboardView.swift */,
 				1D071F1CF3D62971E99E7446 /* ListBatchController.swift */,
 				003DB1B6D237800AF7B512DB /* ListBatchProgressState.swift */,
@@ -877,6 +874,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					0608BB4380516450DC5105DF = {
+						DevelopmentTeam = "";
+					};
 					28FA462115B88F07A4C1D7CE = {
 						DevelopmentTeam = "";
 						TestTargetID = 0608BB4380516450DC5105DF;
@@ -1052,7 +1052,6 @@
 				4D5288FDAC4AE69FE419CA4B /* ComposePostView.swift in Sources */,
 				07D01FC25B45588D9C74F55F /* ConversationDetailView.swift in Sources */,
 				27C3087E01AD0A6E19340DA1 /* ConversationListView.swift in Sources */,
-				7B5BF1C7905CE59F13B13C44 /* CreateListSheet.swift in Sources */,
 				3416BB3C2276A7D57F86B9AA /* DashboardCache.swift in Sources */,
 				6691930F0ED40550F40E1E1E /* DashboardView.swift in Sources */,
 				2B158961EF08B514DDD640F0 /* FeedPickerView.swift in Sources */,
@@ -1342,7 +1341,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				INFOPLIST_FILE = Sources/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1379,7 +1377,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PC9Z56E47;
 				INFOPLIST_FILE = Sources/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

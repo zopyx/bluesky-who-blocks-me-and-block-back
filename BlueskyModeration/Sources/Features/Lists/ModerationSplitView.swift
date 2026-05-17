@@ -80,7 +80,7 @@ struct ModerationSplitView: View {
                     }
                 }
                 .sheet(isPresented: $isShowingCreateList) {
-                    CreateListSheet(kind: createListKind) { name, description, kind in
+                    ListMetadataSheet(mode: .create(kind: createListKind)) { name, description, kind in
                         if let account = accountStore.activeAccount,
                            let appPassword = accountStore.appPassword(for: account)
                         {

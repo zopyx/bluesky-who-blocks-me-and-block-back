@@ -37,10 +37,9 @@ struct ListDetailView: View {
                 if let account = accountStore.activeAccount,
                    let appPassword = accountStore.appPassword(for: account)
                 {
-                    EditListMetadataSheet(
-                        list: currentList,
-                        isSaving: viewModel.isUpdatingMetadata
-                    ) { title, description in
+                    ListMetadataSheet(
+                        mode: .edit(list: currentList, isSaving: viewModel.isUpdatingMetadata)
+                    ) { title, description, _ in
                         Task {
                             if let updatedList = await viewModel.updateMetadata(
                                 for: currentList,
