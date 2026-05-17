@@ -439,10 +439,12 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
     }
 
     private func previewMembers(for list: BlueskyList) -> [BlueskyListMember] {
-        previewActors.enumerated().map { index, actor in
+        let now = Date()
+        return previewActors.enumerated().map { index, actor in
             BlueskyListMember(
                 recordURI: "at://did:plc:preview/\(list.id)/app.bsky.graph.listitem/\(index + 1)",
-                actor: actor
+                actor: actor,
+                createdAt: now.addingTimeInterval(-Double(index) * 86400 * 7)
             )
         }
     }

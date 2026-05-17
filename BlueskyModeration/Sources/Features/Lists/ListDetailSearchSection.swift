@@ -19,7 +19,6 @@ extension ListDetailView {
 
         var body: some View {
             searchSection
-            workflowToolsSection
         }
 
         @FocusState private var searchFieldFocused: Bool

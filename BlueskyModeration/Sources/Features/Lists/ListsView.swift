@@ -99,6 +99,7 @@ struct ListsView: View {
                                         ListRowView(list: list)
                                             .accessibilityLabel(loc("list.row.label").replacingOccurrences(of: "{name}", with: list.name).replacingOccurrences(of: "{count}", with: "\(list.memberCount ?? 0)"))
                                     }
+                                    .buttonStyle(.plain)
                                 }
                             } else {
                                 Button {
@@ -141,6 +142,7 @@ struct ListsView: View {
                                         ListRowView(list: list)
                                             .accessibilityLabel(loc("list.row.label").replacingOccurrences(of: "{name}", with: list.name).replacingOccurrences(of: "{count}", with: "\(list.memberCount ?? 0)"))
                                     }
+                                    .buttonStyle(.plain)
                                 }
                             } else {
                                 Button {
@@ -326,11 +328,11 @@ struct ListsView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
-                    .font(.caption.weight(.semibold))
+                    .appFont(.heading)
                     .lineLimit(1)
                     .foregroundStyle(.primary)
                 Text("\(count)")
-                    .font(.headline.weight(.bold))
+                    .appFont(.statistic)
                     .foregroundStyle(Color.skyPrimary)
             }
             Spacer()

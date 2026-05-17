@@ -30,7 +30,7 @@ struct ListRowView: View {
                     .foregroundStyle(.primary)
                 Text(list.description)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
             }
 

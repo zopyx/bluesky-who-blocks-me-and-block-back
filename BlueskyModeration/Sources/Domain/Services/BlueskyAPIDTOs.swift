@@ -42,6 +42,7 @@ struct ListWithMembership: Decodable {
 struct ListItemView: Decodable {
     let uri: String
     let subject: ActorView
+    let createdAt: String?
 }
 
 struct StarterPackWithMembership: Decodable {
@@ -111,7 +112,9 @@ struct ClearskyListEntry: Decodable, Identifiable {
     let createdDate: String
     let dateAdded: String
 
-    var id: String { url }
+    var id: String {
+        url
+    }
 
     enum CodingKeys: String, CodingKey {
         case name, description, did, url

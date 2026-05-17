@@ -81,8 +81,13 @@ final class MockBlueskyListService: BlueskyListServicing {
     }
 
     private func previewMembers(for list: BlueskyList) -> [BlueskyListMember] {
-        Self.previewActors.enumerated().map { index, actor in
-            BlueskyListMember(recordURI: "at://did:plc:preview/\(list.id)/app.bsky.graph.listitem/\(index + 1)", actor: actor)
+        let now = Date()
+        return Self.previewActors.enumerated().map { index, actor in
+            BlueskyListMember(
+                recordURI: "at://did:plc:preview/\(list.id)/app.bsky.graph.listitem/\(index + 1)",
+                actor: actor,
+                createdAt: now.addingTimeInterval(-Double(index) * 86400 * 7)
+            )
         }
     }
 }

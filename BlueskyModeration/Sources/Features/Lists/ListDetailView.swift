@@ -17,6 +17,7 @@ struct ListDetailView: View {
     @State var exportState = ExportState()
     @State private var isShowingDeleteConfirmation = false
     @State private var shareFileURL: URL?
+    @State private var imagePreview: ImagePreviewCollection?
     @State private var isExporting = false
     @State private var exportProgressMessage: String?
     @State private var exportProgressFraction: Double?
@@ -64,6 +65,11 @@ struct ListDetailView: View {
                 allowedContentTypes: [.plainText, .commaSeparatedText]
             ) { result in
                 handleImportedFile(result)
+            }
+            .fullScreenCover(item: $imagePreview) { preview in
+                ImageCarouselView(urls: preview.urls, initialIndex: preview.initialIndex) {
+                    imagePreview = nil
+                }
             }
             .sheet(isPresented: .init(get: { shareFileURL != nil }, set: { if !$0 { shareFileURL = nil } })) {
                 if let url = shareFileURL {
@@ -315,13 +321,38 @@ struct ListDetailView: View {
     private func content(account: AppAccount, appPassword: String) -> some View {
         List {
             Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(currentList.name)
-                        .font(.title2.weight(.bold))
-                    if !currentList.description.isEmpty, currentList.description != currentList.name {
-                        Text(currentList.description)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                HStack(alignment: .top, spacing: 14) {
+                    if let avatarURL = currentList.avatarURL {
+                        Button {
+                            imagePreview = ImagePreviewCollection(urls: [avatarURL], initialIndex: 0)
+                        } label: {
+                            AsyncImage(url: avatarURL) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            } placeholder: {
+                                avatarPlaceholder
+                            }
+                            .frame(width: 48, height: 48)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(currentList.name)
+                            .font(.title2.weight(.bold))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.5)
+                        if !currentList.description.isEmpty, currentList.description != currentList.name {
+                            Text(currentList.description)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 .padding(.vertical, 4)
@@ -352,37 +383,11 @@ struct ListDetailView: View {
                 syncSnapshot: { syncSnapshot() }
             )
 
-            ListComparisonSection(
-                viewModel: viewModel,
-                batchState: batchState,
-                selectedComparisonListID: $comparisonState.selectedComparisonListID,
-                currentList: currentList,
-                account: account,
-                appPassword: appPassword,
-                diffExportFileURL: diffExportFileURL,
-                comparisonList: comparisonList,
-                syncSnapshot: { syncSnapshot() }
-            )
-
             Section {
                 LabeledContent(loc("list.detail.members"), value: "\(currentList.memberCount ?? viewModel.members.count)")
-                LabeledContent(loc("list.detail.snapshots"), value: "\(snapshotHistory.count)")
-                if let first = snapshotHistory.last, let last = snapshotHistory.first {
-                    let growth = last.members.count - first.members.count
-                    LabeledContent(loc("list.detail.growth"), value: growth == 0 ? loc("list.detail.stable") : (growth > 0 ? "+\(growth)" : "\(growth)"))
-                }
             } header: {
                 Text(verbatim: loc("list.detail.stats_section"))
             }
-
-            ListSnapshotSection(
-                viewModel: viewModel,
-                snapshotSummary: comparisonState.snapshotSummary,
-                selectedNewerSnapshotID: $comparisonState.selectedNewerSnapshotID,
-                selectedOlderSnapshotID: $comparisonState.selectedOlderSnapshotID,
-                snapshotHistory: snapshotHistory,
-                selectedSnapshotComparison: selectedSnapshotComparison
-            )
         }
         .listStyle(.insetGrouped)
         .task {
@@ -545,6 +550,17 @@ struct ListDetailView: View {
             ] as [String: Any]
         }
         return (try? JSONSerialization.data(withJSONObject: objects, options: [.prettyPrinted, .sortedKeys])) ?? Data()
+    }
+
+    @ViewBuilder
+    private var avatarPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(Color.skyPrimary.opacity(0.12))
+            .overlay {
+                Image(systemName: currentList.kind.symbolName)
+                    .font(.title3)
+                    .foregroundStyle(Color.skyPrimary)
+            }
     }
 }
 

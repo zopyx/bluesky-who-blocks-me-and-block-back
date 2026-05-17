@@ -105,7 +105,8 @@ final class BlueskyListService: ObservableObject, BlueskyListServicing {
                         handle: $0.subject.handle,
                         displayName: $0.subject.displayName,
                         avatarURL: URL(string: $0.subject.avatar ?? "")
-                    )
+                    ),
+                    createdAt: parseDate($0.createdAt)
                 )
             },
             cursor: response.cursor

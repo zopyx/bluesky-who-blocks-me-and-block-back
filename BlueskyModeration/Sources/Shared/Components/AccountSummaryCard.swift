@@ -3,18 +3,18 @@ import SwiftUI
 struct AccountSummaryCard: View {
     let account: AppAccount
     let avatarURL: URL?
-    @ScaledMetric private var avatarSize = 44.0
+    @ScaledMetric private var avatarSize = 60.0
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             avatarView
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(account.displayName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.headline.weight(.semibold))
                     .foregroundStyle(.primary)
                 Text(account.handle)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -22,11 +22,11 @@ struct AccountSummaryCard: View {
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.skyPrimary)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
