@@ -1039,6 +1039,39 @@ class LiveBlueskyClient: ObservableObject, BlueskyAuthenticating, BlueskyListSer
             )
         }
     }
+
+    // MARK: - Search Posts
+
+    struct SearchPostsResponse: Decodable {
+        let cursor: String?
+        let hitsTotal: Int?
+        let posts: [RichPost]
+    }
+
+    func searchPosts(q: String, mentions: String? = nil, sort: String? = nil, cursor: String? = nil, limit: Int = 25, account: AppAccount, appPassword: String?) async throws -> SearchPostsResponse {
+        try await sessionService.performAuthenticatedRequest(account: account, appPassword: appPassword) { authSession in
+            var queryItems = [
+                URLQueryItem(name: "q", value: q),
+                URLQueryItem(name: "limit", value: "\(limit)"),
+            ]
+            if let mentions {
+                queryItems.append(URLQueryItem(name: "mentions", value: mentions))
+            }
+            if let sort {
+                queryItems.append(URLQueryItem(name: "sort", value: sort))
+            }
+            if let cursor {
+                queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+            }
+            return try await requestExecutor.send(
+                path: "app.bsky.feed.searchPosts",
+                method: "GET",
+                queryItems: queryItems,
+                accessToken: authSession.accessJWT,
+                hostURL: authSession.pdsURL
+            )
+        }
+    }
 }
 
 struct PostImageAttachment {

@@ -16,6 +16,9 @@ struct PostRowView: View {
     var onTranslate: (() -> Void)?
     var onDeletePost: (() -> Void)?
     var onOpenProfile: ((String) -> Void)?
+    var onBlockAllLikers: (() -> Void)?
+    var availableLikerTargetLists: [BlueskyList] = []
+    var onAddAllLikersToList: ((BlueskyList) -> Void)?
     @Environment(\.openURL) private var openURL
     @State private var altTextToShow: String?
 
@@ -25,6 +28,14 @@ struct PostRowView: View {
 
     private var author: RichAuthor {
         post.safeAuthor
+    }
+
+    private var moderationLikerTargetLists: [BlueskyList] {
+        availableLikerTargetLists.filter { $0.kind == .moderation }
+    }
+
+    private var regularLikerTargetLists: [BlueskyList] {
+        availableLikerTargetLists.filter { $0.kind == .regular }
     }
 
     var body: some View {
@@ -243,29 +254,62 @@ struct PostRowView: View {
                 )
             }
             Spacer()
-            if onCopy != nil || onTranslate != nil || onDeletePost != nil {
-                Menu {
-                    if let onCopy {
-                        Button(action: onCopy) {
-                            Label(loc("post.copy"), systemImage: "doc.on.doc")
-                        }
+            Menu {
+                if let onBlockAllLikers {
+                    Button {
+                        onBlockAllLikers()
+                    } label: {
+                        Label(loc("post.block_likers"), systemImage: "hand.raised.slash")
                     }
-                    if let onTranslate {
-                        Button(action: onTranslate) {
-                            Label(loc("post.translate"), systemImage: "globe")
-                        }
-                    }
-                    if let onDeletePost {
-                        Divider()
-                        Button(role: .destructive, action: onDeletePost) {
-                            Label(loc("post.delete"), systemImage: "trash")
-                        }
-                    }
-                } label: {
-                    Image(systemName: "gearshape")
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(.tertiary)
                 }
+                if let onAddAllLikersToList, !availableLikerTargetLists.isEmpty {
+                    Menu {
+                        if !moderationLikerTargetLists.isEmpty {
+                            Menu(loc("lists.moderation_lists")) {
+                                ForEach(moderationLikerTargetLists) { list in
+                                    Button {
+                                        onAddAllLikersToList(list)
+                                    } label: {
+                                        Label(list.name, systemImage: list.kind.symbolName)
+                                    }
+                                }
+                            }
+                        }
+                        if !regularLikerTargetLists.isEmpty {
+                            Menu(loc("lists.lists")) {
+                                ForEach(regularLikerTargetLists) { list in
+                                    Button {
+                                        onAddAllLikersToList(list)
+                                    } label: {
+                                        Label(list.name, systemImage: list.kind.symbolName)
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(loc("post.add_likers_to_list"), systemImage: "text.badge.plus")
+                    }
+                }
+                if let onCopy {
+                    Button(action: onCopy) {
+                        Label(loc("post.copy"), systemImage: "doc.on.doc")
+                    }
+                }
+                if let onTranslate {
+                    Button(action: onTranslate) {
+                        Label(loc("post.translate"), systemImage: "globe")
+                    }
+                }
+                if let onDeletePost {
+                    Divider()
+                    Button(role: .destructive, action: onDeletePost) {
+                        Label(loc("post.delete"), systemImage: "trash")
+                    }
+                }
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(.tertiary)
             }
         }
         .foregroundStyle(.tertiary)

@@ -175,6 +175,24 @@ struct ListsView: View {
                             }
                         }
 
+                        Section {
+                            Button {
+                                presentationState.showMentionsSearch = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "at")
+                                    Text(loc("lists.advanced.mentions_button"))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        } header: {
+                            Text(loc("lists.advanced"))
+                        }
+
                         if let errorMessage = viewModel.errorMessage {
                             ErrorRetryBanner(message: errorMessage) {
                                 viewModel.errorMessage = nil
@@ -307,6 +325,17 @@ struct ListsView: View {
                 RelationshipsView(mode: .blockedBy, initialCount: viewModel.blockedByCount)
                     .environmentObject(accountStore)
                     .environmentObject(blueskyClient)
+            }
+            .navigationDestination(isPresented: $presentationState.showMentionsSearch) {
+                if let activeAccount = accountStore.activeAccount {
+                    MentionsSearchView(
+                        did: activeAccount.did ?? activeAccount.handle,
+                        handle: activeAccount.handle,
+                        displayName: activeAccount.displayName ?? activeAccount.handle
+                    )
+                    .environmentObject(accountStore)
+                    .environmentObject(blueskyClient)
+                }
             }
         }
         .id(workspaceStore.moderationNavigationResetToken)

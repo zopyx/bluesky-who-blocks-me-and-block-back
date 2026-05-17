@@ -438,6 +438,39 @@ final class PreviewBlueskyClient: LiveBlueskyClient {
         try await Task.sleep(for: .milliseconds(120))
     }
 
+    override func searchPosts(q _: String, mentions _: String? = nil, sort _: String? = nil, cursor: String? = nil, limit _: Int = 25, account _: AppAccount, appPassword _: String?) async throws -> SearchPostsResponse {
+        try await Task.sleep(for: .milliseconds(120))
+
+        let previewEntries: [RichFeedEntry] = previewActors.enumerated().map { index, actor in
+            RichFeedEntry(
+                post: RichPost(
+                    uri: "at://\(actor.did)/app.bsky.feed.post/\(UUID().uuidString)",
+                    cid: "preview-cid-\(index)",
+                    author: RichAuthor(did: actor.did, handle: actor.handle, displayName: actor.displayName, avatar: nil),
+                    record: RichRecord(text: "Hey @user this is a mention! Check out this post \(index + 1)", createdAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-Double(index) * 3600))),
+                    embed: nil,
+                    viewer: nil,
+                    replyCount: Int.random(in: 0 ... 10),
+                    repostCount: Int.random(in: 0 ... 5),
+                    likeCount: Int.random(in: 0 ... 20),
+                    indexedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-Double(index) * 3600))
+                ),
+                reply: nil
+            )
+        }
+
+        let pageSize = 3
+        let startIndex = Int(cursor ?? "0") ?? 0
+        let endIndex = min(startIndex + pageSize, previewEntries.count)
+        let nextCursor = endIndex < previewEntries.count ? String(endIndex) : nil
+
+        return SearchPostsResponse(
+            cursor: nextCursor,
+            hitsTotal: previewEntries.count,
+            posts: previewEntries[startIndex ..< endIndex].map(\.post)
+        )
+    }
+
     private func previewMembers(for list: BlueskyList) -> [BlueskyListMember] {
         let now = Date()
         return previewActors.enumerated().map { index, actor in

@@ -14,5 +14,6 @@ extension ListsView {
         var showBlockedBy = false
         var isShowingBulkLookup = false
         var isShowingAccountManagement = false
+        var showMentionsSearch = false
     }
 }
