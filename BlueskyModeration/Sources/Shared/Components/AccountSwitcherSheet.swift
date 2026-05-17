@@ -76,16 +76,6 @@ struct AccountSwitcherSheet: View {
             }
             .environment(\.editMode, .constant(.active))
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
-                    .accessibilityLabel(loc("account.manage.back"))
-                    .accessibilityHint("Returns to the previous screen")
-                }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isPresentingAddAccount = true
